@@ -4,9 +4,9 @@ Honest ledger against the engineering blueprint. **Verified** = covered by an au
 
 | Blueprint area | Status | Evidence / gap |
 |---|---|---|
-| Modular monolith (NestJS) with domain/application/presentation layering | ✅ built | 14 modules in `apps/api/src`; boundary guard `tools/check-boundaries.ts` (tested) |
+| Modular monolith (NestJS) with domain/application/presentation layering | ✅ built | 17 modules in `apps/api/src` (adds people, quality, administration); boundary guard `tools/check-boundaries.ts` (tested) |
 | Versioned REST + OpenAPI | ✅ built | `packages/contracts` route table → controllers (`@Op`) → `openapi.json` (CI drift check); conformance test: contract ⇄ implemented routes |
-| PostgreSQL schema, constraints, composite tenant FKs | ✅ verified | `database/migrations/001–012` |
+| PostgreSQL schema, constraints, composite tenant FKs | ✅ verified | `database/migrations/001–013` (013: people, quality, messages, hold release rules) |
 | Multi-tenancy: `tenant_id` + **RLS (forced)** + non-bypass runtime role | ✅ verified | tests: cross-tenant API denial, raw SQL under RLS, every `tenant_id` table has FORCE RLS, role is not SUPERUSER/BYPASSRLS, separate migrator/worker roles |
 | Transactional commands, idempotency keys, optimistic concurrency (`If-Match`), retry on 40001/40P01 | ✅ verified | replayed key → same response; reused key/different body refused; concurrent identical posts → one posting |
 | Audit (append-only) + transactional outbox | ✅ verified | triggers + revoked privileges; worker relay test (two racing relays → one delivery) |
@@ -21,7 +21,8 @@ Honest ledger against the engineering blueprint. **Verified** = covered by an au
 | Worker: outbox relay, exactly-once-effect consumers, durable workflows + timers, inbox normaliser, scan | ✅ verified with real Redis | e-invoice / carrier / messaging **adapters not built** (ports only) |
 | Integrations framework | 🟡 partial | connections table, signed-webhook inbox with dedupe ✅; no provider adapters, no sync cursors in use, no outbound retry framework |
 | AI: tool registry, user-permission enforcement, high-risk → approval, budget, audit | ✅ verified | **No LLM is called.** Tools are the controlled surface; model orchestration/retrieval is not built |
-| Staff web (Next.js): shell, Today, jobs list/workspace, enquiries, quote builder, warehouse, finance, approvals | ✅ built, 7 browser tests | 7 of 14 nav areas have screens; workspace tabs plan/bookings/cargo/tasks/conversations/incidents/audit are placeholders |
+| Staff web (Next.js): all 14 navigation areas | ✅ built, browser-tested | Today (with attention strip), Enquiries & quotes, Jobs and the full job workspace (overview, plan, bookings, cargo, documents, customs, tracking, tasks, conversations, costs, billing, incidents, audit), Customers (party 360 + bank-change maker-checker), Transport, Customs & trade, Documents, Warehouse (stock, receive, release orders, holds), Money (invoices, receipts, supplier bills, charges), People & assets, Service & quality, Intelligence (ageing, profitability, AI tools), Automation, Administration. All lists use one `DataTable`, all multi-section screens one `SectionTabs`, all forms the shared `fields`. 99 API operations back them; E2E in `apps/staff-web/e2e` (`staff.spec.ts`, `screens.spec.ts`). **Gaps:** no workflow *designer* (definitions are created via API), no facility/location admin screen, no document preview/OCR, no bulk import, no mobile layout for staff-web |
+| People & assets, quality | ✅ verified | qualification-gated dispatch, incident → hold → separately authorised release, append-only conversation log (`breadth.test.ts`). **Not built:** rosters/payroll, training catalogue, CAPA workflow, insurance-claim settlement |
 | Partner portal | 🟡 minimal | customer jobs, tracking, quote acceptance, invoices. Agent/transporter experiences not built |
 | Driver/warehouse mobile | 🟡 skeleton | queue logic tested (`packages/offline-sync`) + server contract tested; the Expo app itself is **not built/run** here |
 | Design system & tokens (Tailwind preset, components) | ✅ built | `packages/design-tokens`, `packages/ui` (tested) |

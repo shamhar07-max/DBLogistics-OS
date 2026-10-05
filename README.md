@@ -14,14 +14,14 @@ psql -h /tmp -p 54329 -U postgres -c "CREATE DATABASE dbl OWNER dbl_migrator" &&
 npm run db:migrate
 (cd apps/api && DEV_AUTH_SECRET=dev-secret-dev-secret-dev-secret-00 npx tsx src/main.ts)     # API :3001   (run tsx from apps/api: it needs that tsconfig)
 (cd apps/api && npx tsx scripts/seed-dev.ts)                 # demo tenant + realistic scenario through the real API
-(cd apps/staff-web && SESSION_SECRET=… DEV_AUTH_SECRET=… API_BASE_URL=http://localhost:3001 npm run dev)   # http://localhost:3000 → "Local development login": subject `layla`, tenant id from the seed output
+(cd apps/staff-web && SESSION_SECRET=… DEV_AUTH_SECRET=… API_BASE_URL=http://localhost:3001 npm run dev)   # http://localhost:3000 → "Local development login": subject `layla` (owner) — or `omar` sales, `nadia` pricing, `faisal` finance, `sana` accountant, `yusuf`/`hamad` warehouse, `rami` freight ops, `hana` HR, `qadir` quality — tenant id from the seed output
 ```
 With Docker: `docker compose up -d postgres redis minio keycloak` (then `--profile apps up --build`).
 
 ## Verify
 ```bash
 npm run check:boundaries && npm run typecheck && npm test      # 60+ tests; API/worker suites hit real PostgreSQL (and Redis)
-cd apps/staff-web && TENANT_ID=<uuid from seed> npm run e2e    # 7 browser tests against the live stack (use `next dev`; `next start` refuses dev auth by design)
+cd apps/staff-web && TENANT_ID=<uuid from seed> npm run e2e    # ~20 browser tests against the live stack (every nav screen + key interactions) (use `next dev`; `next start` refuses dev auth by design)
 ```
 
 ## Layout

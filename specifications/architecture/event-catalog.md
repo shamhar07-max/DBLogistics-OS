@@ -25,5 +25,10 @@ Published through the **transactional outbox** (`platform.outbox`) in the same t
 | `DocumentApproved` | documents | malware scan (stage=registered) |
 | `ApprovalDecided` | collaboration | — |
 | `IntegrationEventReceived` | integrations | inbox normaliser → tracking events |
+| `IncidentReported` | quality | — |
+| `IncidentResolved` | quality | — |
+| `HoldReleased` | warehouse | — |
+| `TripDispatched` | transport | — |
+| `QualificationExpiring` | — (reserved) | — |
 
 Event time vs received time: tracking events store both (`event_time`, `received_at`) plus `source`; late or duplicate events never corrupt current state (see `logistics/domain/lifecycle.ts`).

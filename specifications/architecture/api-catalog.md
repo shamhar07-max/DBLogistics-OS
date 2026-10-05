@@ -7,6 +7,7 @@ Base path `/api/v1`. Full schemas: [`openapi.json`](./openapi.json). Money is a 
 | `getMe` | GET `/api/v1/me` | authenticated | Current user, tenant and effective permissions |
 | `listMemberships` | GET `/api/v1/me/memberships` | authenticated | Tenants the user belongs to |
 | `listLegalEntities` | GET `/api/v1/legal-entities` | `parties.view` | Legal entities |
+| `listFacilities` | GET `/api/v1/facilities` | `parties.view` | Facilities (warehouses, yards, offices) and their locations |
 | `listParties` | GET `/api/v1/parties` | `parties.view` | List parties |
 | `createParty` | POST `/api/v1/parties` | `parties.create` | Create party |
 | `proposeBankChange` | POST `/api/v1/parties/:id/bank-detail-changes` | `bank-details.change.propose` | Propose bank-detail change (maker) |
@@ -59,3 +60,46 @@ Base path `/api/v1`. Full schemas: [`openapi.json`](./openapi.json). Money is a 
 | `activateWorkflow` | POST `/api/v1/workflows/:id/activate` | `automation.manage` | Activate workflow version |
 | `invokeAiTool` | POST `/api/v1/ai/tools/:name/invoke` | `ai.use` | Invoke a controlled AI tool as the calling user |
 | `getOwnerOverview` | GET `/api/v1/reports/owner-overview` | `reports.owner.view` | Owner overview KPIs (live, drill-down ready) |
+| `getParty` | GET `/api/v1/parties/:id` | `parties.view` | Party 360: roles, bank details, open work |
+| `listBankChanges` | GET `/api/v1/bank-detail-changes` | `bank-details.change.propose` | Bank-detail change requests |
+| `listShipments` | GET `/api/v1/shipments` | `shipments.view` | Shipments (optionally by job) |
+| `getShipment` | GET `/api/v1/shipments/:id` | `shipments.view` | Shipment with legs, cargo, bookings |
+| `listTrips` | GET `/api/v1/trips` | `transport.view` | Trips with stops and POD state |
+| `createTrip` | POST `/api/v1/trips` | `transport.dispatch` | Plan a trip |
+| `dispatchTrip` | POST `/api/v1/trips/:id/dispatch` | `transport.dispatch` | 🔁 Dispatch trip (driver must hold a valid driving qualification) |
+| `listCustomsCases` | GET `/api/v1/customs-cases` | `customs.view` | Customs cases: authority vs internal status |
+| `listDocuments` | GET `/api/v1/documents` | `documents.view` | Document library |
+| `getDocumentDownloadUrl` | GET `/api/v1/documents/:id/download-url` | `documents.view` | Short-lived signed download URL (clean documents only) |
+| `listTasks` | GET `/api/v1/tasks` | `tasks.view` | Tasks |
+| `createTask` | POST `/api/v1/tasks` | `tasks.manage` | Create task |
+| `completeTask` | POST `/api/v1/tasks/:id/complete` | `tasks.manage` | Complete task |
+| `listMessages` | GET `/api/v1/messages` | `conversations.view` | Conversation log for a record (append-only) |
+| `postMessage` | POST `/api/v1/messages` | `conversations.post` | Log a message / call note against a record |
+| `listEmployees` | GET `/api/v1/employees` | `people.view` | Employees |
+| `createEmployee` | POST `/api/v1/employees` | `people.manage` | Create employee |
+| `addQualification` | POST `/api/v1/employees/:id/qualifications` | `people.manage` | Record a qualification with validity |
+| `listQualifications` | GET `/api/v1/qualifications` | `people.view` | Qualifications (filter: expiring within N days) |
+| `listAssets` | GET `/api/v1/assets` | `people.view` | Operating assets with service / calibration due |
+| `createAsset` | POST `/api/v1/assets` | `people.manage` | Register asset |
+| `listIncidents` | GET `/api/v1/incidents` | `quality.view` | Incidents |
+| `createIncident` | POST `/api/v1/incidents` | `quality.manage` | Report incident (optionally placing a hold on a lot) |
+| `investigateIncident` | POST `/api/v1/incidents/:id/investigate` | `quality.manage` | Start investigation |
+| `resolveIncident` | POST `/api/v1/incidents/:id/resolve` | `quality.manage` | Resolve incident — never auto-releases holds |
+| `listClaims` | GET `/api/v1/claims` | `quality.view` | Claims |
+| `createClaim` | POST `/api/v1/claims` | `quality.manage` | Open claim against an incident |
+| `listHolds` | GET `/api/v1/warehouse/holds` | `warehouse.view` | Holds (active and released) |
+| `releaseHold` | POST `/api/v1/warehouse/holds/:id/release` | `quality.hold.release` | 🔁 Release hold (quality role, not the person who placed it) |
+| `listReleaseOrders` | GET `/api/v1/release-orders` | `warehouse.view` | Release orders |
+| `listCharges` | GET `/api/v1/charges` | `jobs.margin.view` | Charges for a job (cost data → margin permission) |
+| `listPayments` | GET `/api/v1/payments` | `invoices.view` | Customer receipts |
+| `listSupplierBills` | GET `/api/v1/supplier-bills` | `bills.record` | Supplier bills |
+| `getReceivablesAgeing` | GET `/api/v1/reports/receivables-ageing` | `reports.finance.view` | Receivables ageing by due date |
+| `getJobProfitability` | GET `/api/v1/reports/job-profitability` | `reports.finance.view` | Per-job expected vs accounting margin |
+| `listAiTools` | GET `/api/v1/ai/tools` | `ai.use` | Controlled AI tools and whether the caller may use them |
+| `listWorkflows` | GET `/api/v1/workflows` | `automation.manage` | Workflow definitions (versioned) |
+| `listWorkflowRuns` | GET `/api/v1/workflow-runs` | `automation.manage` | Workflow executions |
+| `listIntegrations` | GET `/api/v1/integrations` | `integrations.manage` | Connections and health (no secrets) |
+| `listMembers` | GET `/api/v1/admin/members` | `admin.tenant` | Tenant members and roles |
+| `addMember` | POST `/api/v1/admin/members` | `admin.tenant` | Add member with a role template |
+| `listRoles` | GET `/api/v1/admin/roles` | `admin.tenant` | Roles and their permissions |
+| `listAuditEvents` | GET `/api/v1/audit-events` | `audit.view` | Append-only audit log |

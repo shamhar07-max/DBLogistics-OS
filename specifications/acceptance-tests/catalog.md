@@ -26,3 +26,13 @@ Run: `npm test` (needs PostgreSQL 16 + Redis; see README). "Real DB" = executed 
 | Gateway: HttpOnly sealed session, CSRF, allow-list | `gateway` unit + `staff.spec` › *browser JS never sees the access token…* | — / browser |
 | UI states: loading/empty/error/forbidden/stale; estimated vs actual badge | `ui` unit; `staff.spec` | — / browser |
 | Architecture boundaries | `tools/check-boundaries.test.ts` | — |
+| Driver without valid driving qualification → dispatch refused | `breadth` › *qualification dispatch rule*; `screens.spec` › *transport…* | ✅ / browser |
+| Quality incident → hold → release by a different, authorised person | `breadth` › *incident → hold → separately authorised release*; `screens.spec` › *quality…* | ✅ / browser |
+| Conversation log is append-only; tasks complete once | `breadth` › *tasks and append-only messages* | ✅ |
+| Signed download only for scanned-clean documents, audited | `breadth` › *documents and downloads* | ✅ |
+| Members/roles/audit visible only to authorised roles | `breadth` › *audit visibility*, *admin members and roles*; `screens.spec` › *admin…* | ✅ / browser |
+| Receivables ageing buckets and job profitability (estimated vs posted) | `breadth` › *ageing and profitability*; `screens.spec` › *intelligence…* | ✅ / browser |
+| Party 360 and bank-change maker-checker; integrations never expose secrets | `breadth` › *party 360…*; `screens.spec` › *customers…* | ✅ / browser |
+| New people/quality tables are tenant-isolated; facilities list is tenant-scoped | `breadth` › *new tenant-scoped tables…*, *facilities list…* | ✅ |
+| Every navigation item opens a real screen (no placeholders) | `screens.spec` › *every navigation item…* | browser |
+| Receive cargo through the form; job tasks and messages persist | `screens.spec` › *warehouse: receive…*, *job workspace…* | browser |

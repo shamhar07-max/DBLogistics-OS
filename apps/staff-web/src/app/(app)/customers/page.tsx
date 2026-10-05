@@ -14,7 +14,9 @@ import { FormGrid, SelectField, TextField } from '@/components/fields';
 type P = { id: string; legal_name: string; trading_name?: string; tax_registration_number?: string; country?: string; status: string; roles: string[] };
 const col = createColumnHelper<P>();
 const ROLES = ['customer', 'supplier', 'carrier', 'transporter', 'agent', 'shipper', 'consignee', 'insurer', 'broker'] as const;
-const Form = CreatePartyBody.omit({ roles: true }).extend({ role: z.enum(ROLES) });
+const blank = z.literal('').transform(() => undefined);
+/** Blank optional inputs are "not provided", not invalid. */
+const Form = CreatePartyBody.omit({ roles: true }).extend({ role: z.enum(ROLES), tradingName: z.union([blank, z.string()]).optional(), taxRegistrationNumber: z.union([blank, z.string()]).optional(), country: z.union([blank, z.string().length(2, 'Use a 2-letter ISO code')]).optional() });
 export default function Customers() {
   const q = useOp('listParties'); const create = useCmd('createParty', { invalidate: ['listParties'] });
   const { register, handleSubmit, reset, formState: { errors } } = useForm<z.input<typeof Form>>({ resolver: zodResolver(Form), defaultValues: { role: 'customer' } });
@@ -31,7 +33,7 @@ export default function Customers() {
       <Card title="Parties"><DataTable q={q} columns={columns} empty="No parties yet — create the first on the right." label="Filter parties" /></Card>
       <Card title="New party"><form className="grid gap-3" onSubmit={handleSubmit(({ role, ...b }) => create.mutate({ body: { ...b, roles: [role] } as any }, { onSuccess: () => reset() } as any))}>
         <TextField label="Legal name" error={errors.legalName?.message} {...register('legalName')} />
-        <FormGrid><TextField label="Tax reg. no." {...register('taxRegistrationNumber')} /><TextField label="Country (ISO-2)" maxLength={2} {...register('country')} /></FormGrid>
+        <FormGrid><TextField label="Tax reg. no." {...register('taxRegistrationNumber')} /><TextField label="Country (ISO-2)" maxLength={2} error={errors.country?.message} {...register('country')} /></FormGrid>
         <SelectField label="Primary role" {...register('role')}>{ROLES.map((r) => <option key={r}>{r}</option>)}</SelectField>
         <Button type="submit" disabled={create.isPending}>Create party</Button><ErrorNote e={create.error} /></form></Card>
     </div></>);

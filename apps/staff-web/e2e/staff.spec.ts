@@ -18,7 +18,8 @@ test('job workspace: tabs, tracking separates estimated from actual, four margin
   await page.getByRole('tab', { name: 'tracking' }).click(); await expect(page.getByTestId('source-badge').first()).toBeVisible();
   await expect(page.getByTestId('source-badge').filter({ hasText: /^estimated/ })).toHaveCount(1); await expect(page.getByTestId('source-badge').filter({ hasText: /^carrier/ })).toHaveCount(1); await shot(page, '04-tracking');
   await page.getByRole('tab', { name: 'Costs & Revenue' }).click(); await expect(page.getByText('Accounting (posted)')).toBeVisible(); await expect(page.getByText('Cash collected')).toBeVisible(); await shot(page, '05-margin');
-  await page.getByRole('tab', { name: 'audit' }).click(); await expect(page.getByTestId('not-in-release')).toBeVisible();
+  await page.getByRole('tab', { name: 'plan' }).click(); await expect(page.getByText('Plan a shipment')).toBeVisible();
+  await page.getByRole('tab', { name: 'audit' }).click(); await expect(page.getByText(/Audit trail/)).toBeVisible();
 });
 test('quote builder: live totals use server rounding rules (tax half-up per line)', async ({ page }) => {
   await login(page, 'omar'); await page.goto('/quotes/new');
@@ -29,8 +30,8 @@ test('quote builder: live totals use server rounding rules (tax half-up per line
 test('warehouse: maker-checker is enforced and the API error is shown, not swallowed', async ({ page }) => {
   await login(page, 'layla'); await page.goto('/warehouse'); await expect(page.getByText('Insulin pens 2–8 °C')).toBeVisible(); await shot(page, '07-warehouse');
   await page.getByRole('row', { name: /Canned goods/ }).getByRole('button', { name: 'Request release' }).click();     // bonded stock, owner requests…
-  await expect(page.getByLabel('Release order to authorise (second person)')).toHaveValue(/^[0-9a-f-]{36}$/);
-  await page.getByRole('button', { name: 'Authorise & release' }).click();                                              // …and tries to authorise own request
+  await page.getByRole('tab', { name: 'Release orders' }).click(); await expect(page.getByRole('row', { name: /Canned goods/ })).toBeVisible();
+  await page.getByRole('row', { name: /Canned goods/ }).getByRole('button', { name: 'Authorise release' }).click();      // …and tries to authorise own request
   await expect(page.getByRole('alert').filter({ hasText: 'SEPARATION_OF_DUTIES' })).toBeVisible(); await shot(page, '08-separation-of-duties');
 });
 test('permission-denied state: sales has no approvals access', async ({ page }) => {
