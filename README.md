@@ -25,6 +25,13 @@ Without MinIO/S3 (`S3_ENDPOINT` unset) the API stores documents on local disk be
 
 With Docker: `docker compose up -d postgres redis minio keycloak` (then `--profile apps up --build`).
 
+## Run everything locally (one command)
+```bash
+bash scripts/local-up.sh      # PostgreSQL · Redis · ClamAV · Mailpit (Docker if present, else local binaries) → migrate → demo data → API · worker · staff · portal
+bash scripts/local-down.sh    # stop the apps (add --infra to stop the containers too)
+```
+Needs Node 22 and Docker (or PostgreSQL 16 + redis-server). It prints the URLs and the demo **tenant id**: open http://localhost:3000 (staff) or http://localhost:3002 (portal), use "Local development login" with subject `layla` (owner) / `pharma-user` (customer) and paste the tenant id. Development mode only: dev sign-in, documents on local disk, emails land in Mailpit (http://localhost:8025).
+
 ## Verify
 ```bash
 npm run check:boundaries && npm run typecheck && npm test      # 60+ tests; API/worker suites hit real PostgreSQL (and Redis)

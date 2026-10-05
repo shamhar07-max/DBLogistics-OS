@@ -32,12 +32,12 @@ wait_http() { for _ in $(seq 1 90); do curl -s -o /dev/null "$1" && return 0; sl
 
 say "API :3001"
 ( cd apps/api && DEV_AUTH_SECRET=$DEV_AUTH_SECRET bg api npx tsx src/main.ts ); wait_http http://localhost:3001/api/v1/health || true
-SEED_SLUG=${SEED_SLUG:-demo-freight}
+SEED_SLUG=${SEED_SLUG:-local-demo}
 if [ ! -f "$L/seeded" ]; then
   say "Demo data (tenant '$SEED_SLUG')"
   ( cd apps/api && SEED_SLUG=$SEED_SLUG npx tsx scripts/seed-dev.ts > "$L/seed.json" 2> "$L/logs/seed.err" ) && touch "$L/seeded" || { say "seed skipped (already seeded or failed: see $L/logs/seed.err)"; }
 fi
-TENANT=$(sed -n 's/.*"tenantId": "\([0-9a-f-]*\)".*/\1/p' $L/seed.json 2>/dev/null | head -1 || true)
+TENANT=$(npx tsx scripts/local-db.ts tenant "$SEED_SLUG" 2>/dev/null | tail -1 || true)
 
 if [ -z "$(redis-cli ping 2>/dev/null || true)" ] && ! docker info >/dev/null 2>&1; then :; else
   say "Worker"
@@ -53,7 +53,7 @@ cat <<EOF
   Logistics OS is running locally.
     Staff dashboard   http://localhost:3000    sign in with subject  layla (owner) — or omar sales, nadia pricing, faisal finance, sana accountant, rami freight_ops, cem customs…
     Partner portal    http://localhost:3002    pharma-user / foods-user (customers), agent-user, haulier-user
-    Tenant id         ${TENANT:-see $L/seed.json}   (paste it into the login form's tenant field)
+    Tenant id         ${TENANT:-unknown}   (paste it into the login form's tenant field)
     Mail catcher      http://localhost:8025    API http://localhost:3001/api/v1   logs in $L/logs
   Stop everything:    bash scripts/local-down.sh
 EOF
