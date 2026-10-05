@@ -1,0 +1,3426 @@
+[
+ {
+  "no": 1,
+  "name": "Logistics & freight",
+  "firstService": "Shipment quotations and job profitability",
+  "buyer": "Owner / operations manager",
+  "workflow": "Enquiry, rate comparison, quote, shipment, delivery proof, invoice, collection",
+  "alignment": "Logistics & Freight",
+  "types": [
+   {
+    "name": "Freight forwarder",
+    "directory": false
+   },
+   {
+    "name": "Air cargo agent",
+    "directory": false
+   },
+   {
+    "name": "Sea freight agent",
+    "directory": false
+   },
+   {
+    "name": "Road freight broker",
+    "directory": false
+   },
+   {
+    "name": "Customs clearing agency",
+    "directory": false
+   },
+   {
+    "name": "3PL & logistics",
+    "directory": true
+   },
+   {
+    "name": "Contract warehouse operator",
+    "directory": false
+   },
+   {
+    "name": "E-commerce fulfilment warehouse",
+    "directory": false
+   },
+   {
+    "name": "Cold-chain logistics provider",
+    "directory": false
+   },
+   {
+    "name": "Project cargo specialist",
+    "directory": false
+   },
+   {
+    "name": "Dangerous-goods logistics provider",
+    "directory": false
+   },
+   {
+    "name": "Courier company",
+    "directory": false
+   },
+   {
+    "name": "Last-mile delivery company",
+    "directory": false
+   },
+   {
+    "name": "International parcel consolidator",
+    "directory": false
+   },
+   {
+    "name": "Relocation company",
+    "directory": false
+   },
+   {
+    "name": "Household moving company",
+    "directory": false
+   },
+   {
+    "name": "Cargo packing company",
+    "directory": false
+   },
+   {
+    "name": "Freight consolidation company",
+    "directory": false
+   }
+  ],
+  "requirements": "Carrier, customs, tracking and warehouse connections are scoped per customer."
+ },
+ {
+  "no": 2,
+  "name": "Transport & mobility",
+  "firstService": "Fleet jobs, driver assignments and billing",
+  "buyer": "Owner / fleet manager",
+  "workflow": "Booking, vehicle allocation, driver assignment, trip, expense, invoice",
+  "alignment": "Logistics & Freight",
+  "types": [
+   {
+    "name": "Trucking company",
+    "directory": false
+   },
+   {
+    "name": "Container haulage company",
+    "directory": false
+   },
+   {
+    "name": "Refrigerated truck operator",
+    "directory": false
+   },
+   {
+    "name": "Tipper truck operator",
+    "directory": false
+   },
+   {
+    "name": "Water tanker operator",
+    "directory": false
+   },
+   {
+    "name": "Fuel tanker operator",
+    "directory": false
+   },
+   {
+    "name": "Staff transport company",
+    "directory": false
+   },
+   {
+    "name": "School transport operator",
+    "directory": false
+   },
+   {
+    "name": "Passenger shuttle operator",
+    "directory": false
+   },
+   {
+    "name": "Bus and coach hire company",
+    "directory": false
+   },
+   {
+    "name": "Chauffeur company",
+    "directory": false
+   },
+   {
+    "name": "Limousine company",
+    "directory": false
+   },
+   {
+    "name": "Taxi fleet operator",
+    "directory": false
+   },
+   {
+    "name": "Accessible transport provider",
+    "directory": false
+   },
+   {
+    "name": "Motorcycle delivery fleet",
+    "directory": false
+   },
+   {
+    "name": "Vehicle recovery transport company",
+    "directory": false
+   }
+  ],
+  "requirements": "Dispatch, GPS, telematics and transport booking extensions may be required."
+ },
+ {
+  "no": 3,
+  "name": "Travel & tourism",
+  "firstService": "Travel enquiry CRM and booking margin",
+  "buyer": "Agency owner / reservations manager",
+  "workflow": "Enquiry, itinerary, supplier quote, customer booking, payment, refund",
+  "alignment": "Travel & Tourism",
+  "types": [
+   {
+    "name": "Travel agency",
+    "directory": false
+   },
+   {
+    "name": "Tour operator",
+    "directory": false
+   },
+   {
+    "name": "Destination management company",
+    "directory": false
+   },
+   {
+    "name": "Corporate travel agency",
+    "directory": false
+   },
+   {
+    "name": "Inbound tourism company",
+    "directory": false
+   },
+   {
+    "name": "Outbound holiday agency",
+    "directory": false
+   },
+   {
+    "name": "Visa assistance agency",
+    "directory": false
+   },
+   {
+    "name": "Guided tours",
+    "directory": true
+   },
+   {
+    "name": "Desert safari operator",
+    "directory": false
+   },
+   {
+    "name": "Adventure tour operator",
+    "directory": false
+   },
+   {
+    "name": "Attraction ticket reseller",
+    "directory": false
+   },
+   {
+    "name": "Airport transfer agency",
+    "directory": false
+   },
+   {
+    "name": "Cruise booking agency",
+    "directory": false
+   },
+   {
+    "name": "Pilgrimage travel agency",
+    "directory": false
+   },
+   {
+    "name": "Educational travel organiser",
+    "directory": false
+   },
+   {
+    "name": "MICE travel organiser",
+    "directory": false
+   },
+   {
+    "name": "Travel concierge company",
+    "directory": false
+   },
+   {
+    "name": "Excursion booking company",
+    "directory": false
+   }
+  ],
+  "requirements": "Supplier booking, ticketing and destination systems are separate integration scopes."
+ },
+ {
+  "no": 4,
+  "name": "Real estate & property",
+  "firstService": "Property CRM, viewings and commissions",
+  "buyer": "Agency owner / property manager",
+  "workflow": "Listing, lead, viewing, offer, lease or sale, commission, renewal",
+  "alignment": "Real Estate",
+  "types": [
+   {
+    "name": "Real estate agency",
+    "directory": true
+   },
+   {
+    "name": "Property management",
+    "directory": true
+   },
+   {
+    "name": "Property developer",
+    "directory": true
+   },
+   {
+    "name": "Commercial property brokerage",
+    "directory": false
+   },
+   {
+    "name": "Residential leasing agency",
+    "directory": false
+   },
+   {
+    "name": "Off-plan property sales agency",
+    "directory": false
+   },
+   {
+    "name": "Real estate investment advisory firm",
+    "directory": false
+   },
+   {
+    "name": "Holiday-home management company",
+    "directory": false
+   },
+   {
+    "name": "Serviced-apartment manager",
+    "directory": false
+   },
+   {
+    "name": "Land brokerage",
+    "directory": false
+   },
+   {
+    "name": "Property valuation firm",
+    "directory": false
+   },
+   {
+    "name": "Property inspection company",
+    "directory": false
+   },
+   {
+    "name": "Lease administration provider",
+    "directory": false
+   },
+   {
+    "name": "Tenant relocation consultancy",
+    "directory": false
+   },
+   {
+    "name": "Property owner association",
+    "directory": true
+   },
+   {
+    "name": "Real estate asset manager",
+    "directory": false
+   }
+  ],
+  "requirements": "Property portals, booking channels and local property systems need scoped connections."
+ },
+ {
+  "no": 5,
+  "name": "Construction & contracting",
+  "firstService": "Estimates, site procurement and project costing",
+  "buyer": "Owner / project director",
+  "workflow": "Tender, estimate, contract, site task, procurement, variation, progress invoice",
+  "alignment": "Construction & Contracting",
+  "types": [
+   {
+    "name": "General contractor",
+    "directory": true
+   },
+   {
+    "name": "Civil works contractor",
+    "directory": false
+   },
+   {
+    "name": "Building renovation contractor",
+    "directory": false
+   },
+   {
+    "name": "Roadworks contractor",
+    "directory": false
+   },
+   {
+    "name": "Earthworks contractor",
+    "directory": false
+   },
+   {
+    "name": "Demolition contractor",
+    "directory": false
+   },
+   {
+    "name": "MEP contractor",
+    "directory": false
+   },
+   {
+    "name": "Electrical installation contractor",
+    "directory": false
+   },
+   {
+    "name": "Plumbing installation contractor",
+    "directory": false
+   },
+   {
+    "name": "Fire-system installation contractor",
+    "directory": false
+   },
+   {
+    "name": "Waterproofing contractor",
+    "directory": false
+   },
+   {
+    "name": "Roofing contractor",
+    "directory": false
+   },
+   {
+    "name": "Concrete works contractor",
+    "directory": false
+   },
+   {
+    "name": "Steel erection contractor",
+    "directory": false
+   },
+   {
+    "name": "Scaffolding contractor",
+    "directory": false
+   },
+   {
+    "name": "Piling contractor",
+    "directory": false
+   },
+   {
+    "name": "Facade installation contractor",
+    "directory": false
+   },
+   {
+    "name": "Swimming-pool construction contractor",
+    "directory": false
+   },
+   {
+    "name": "Flooring installation contractor",
+    "directory": false
+   },
+   {
+    "name": "Tiling contractor",
+    "directory": false
+   }
+  ],
+  "requirements": "BOQ, measurement, retention, site and subcontractor workflows need sector configuration."
+ },
+ {
+  "no": 6,
+  "name": "Interiors & fit-out",
+  "firstService": "Design-to-installation project management",
+  "buyer": "Owner / design or project manager",
+  "workflow": "Design enquiry, estimate, drawing approval, materials, installation, handover",
+  "alignment": "Construction & Contracting",
+  "types": [
+   {
+    "name": "Interior design",
+    "directory": true
+   },
+   {
+    "name": "Office fit-out company",
+    "directory": false
+   },
+   {
+    "name": "Retail fit-out company",
+    "directory": false
+   },
+   {
+    "name": "Restaurant fit-out company",
+    "directory": false
+   },
+   {
+    "name": "Residential fit-out company",
+    "directory": false
+   },
+   {
+    "name": "Kitchen installation company",
+    "directory": false
+   },
+   {
+    "name": "Bathroom renovation company",
+    "directory": false
+   },
+   {
+    "name": "Wardrobe installation company",
+    "directory": false
+   },
+   {
+    "name": "Ceiling and partition company",
+    "directory": false
+   },
+   {
+    "name": "Carpenter",
+    "directory": true
+   },
+   {
+    "name": "Decorative wall-finishing company",
+    "directory": false
+   },
+   {
+    "name": "Window furnishing installer",
+    "directory": false
+   },
+   {
+    "name": "Acoustic treatment installer",
+    "directory": false
+   },
+   {
+    "name": "Exhibition stand builder",
+    "directory": false
+   },
+   {
+    "name": "Furniture installation company",
+    "directory": false
+   },
+   {
+    "name": "Home staging company",
+    "directory": false
+   }
+  ],
+  "requirements": "Design approvals, material schedules and installation planning extend core projects."
+ },
+ {
+  "no": 7,
+  "name": "Facilities & maintenance",
+  "firstService": "Maintenance contracts and technician work orders",
+  "buyer": "Owner / service manager",
+  "workflow": "Contract, site asset, planned visit, work order, parts, completion, billing",
+  "alignment": "Facility Management",
+  "types": [
+   {
+    "name": "Facility management company",
+    "directory": false
+   },
+   {
+    "name": "Building maintenance company",
+    "directory": false
+   },
+   {
+    "name": "HVAC services",
+    "directory": true
+   },
+   {
+    "name": "Lift maintenance company",
+    "directory": false
+   },
+   {
+    "name": "Fire-system maintenance company",
+    "directory": false
+   },
+   {
+    "name": "Generator maintenance company",
+    "directory": false
+   },
+   {
+    "name": "Water-pump maintenance company",
+    "directory": false
+   },
+   {
+    "name": "Swimming-pool maintenance company",
+    "directory": false
+   },
+   {
+    "name": "Electrical maintenance company",
+    "directory": false
+   },
+   {
+    "name": "Plumbing maintenance company",
+    "directory": false
+   },
+   {
+    "name": "Refrigeration maintenance company",
+    "directory": false
+   },
+   {
+    "name": "Building management system contractor",
+    "directory": false
+   },
+   {
+    "name": "Water filtration maintenance company",
+    "directory": false
+   },
+   {
+    "name": "Automatic door maintenance company",
+    "directory": false
+   },
+   {
+    "name": "Commercial kitchen equipment maintenance company",
+    "directory": false
+   },
+   {
+    "name": "Energy-efficiency retrofit company",
+    "directory": false
+   }
+  ],
+  "requirements": "Asset history, maintenance plans, field apps and SLA reporting extend the core."
+ },
+ {
+  "no": 8,
+  "name": "Cleaning & laundry",
+  "firstService": "Recurring bookings, team schedules and invoices",
+  "buyer": "Owner / operations supervisor",
+  "workflow": "Customer enquiry, site estimate, recurring schedule, crew assignment, completion, billing",
+  "alignment": "Facility Management",
+  "types": [
+   {
+    "name": "Cleaning services",
+    "directory": true
+   },
+   {
+    "name": "Residential cleaning company",
+    "directory": false
+   },
+   {
+    "name": "Commercial cleaning company",
+    "directory": false
+   },
+   {
+    "name": "Deep-cleaning specialist",
+    "directory": false
+   },
+   {
+    "name": "Post-construction cleaning company",
+    "directory": false
+   },
+   {
+    "name": "Window and facade cleaning company",
+    "directory": false
+   },
+   {
+    "name": "Carpet and upholstery cleaning company",
+    "directory": false
+   },
+   {
+    "name": "Water tank cleaning company",
+    "directory": false
+   },
+   {
+    "name": "Kitchen duct cleaning company",
+    "directory": false
+   },
+   {
+    "name": "Disinfection services company",
+    "directory": false
+   },
+   {
+    "name": "Pest control company",
+    "directory": false
+   },
+   {
+    "name": "Laundry",
+    "directory": false
+   },
+   {
+    "name": "Dry cleaner",
+    "directory": false
+   },
+   {
+    "name": "Linen rental laundry",
+    "directory": false
+   },
+   {
+    "name": "Shoe and bag cleaning company",
+    "directory": false
+   },
+   {
+    "name": "Waste-bin cleaning company",
+    "directory": false
+   }
+  ],
+  "requirements": "Recurring routes, consumables, service checklists and proof of work need configuration."
+ },
+ {
+  "no": 9,
+  "name": "Trading & distribution",
+  "firstService": "Quotations, stock, purchasing and collections",
+  "buyer": "Owner / sales or finance manager",
+  "workflow": "Supplier purchase, stock receipt, customer order, delivery, invoice, collection",
+  "alignment": "Trading & Distribution",
+  "types": [
+   {
+    "name": "General trading company",
+    "directory": false
+   },
+   {
+    "name": "Import-export company",
+    "directory": false
+   },
+   {
+    "name": "FMCG distributor",
+    "directory": false
+   },
+   {
+    "name": "Food distribution",
+    "directory": true
+   },
+   {
+    "name": "Beverage distributor",
+    "directory": true
+   },
+   {
+    "name": "Fruit and vegetable wholesaler",
+    "directory": false
+   },
+   {
+    "name": "Meat and poultry wholesaler",
+    "directory": false
+   },
+   {
+    "name": "Seafood wholesaler",
+    "directory": false
+   },
+   {
+    "name": "Pharmaceutical distributor",
+    "directory": false
+   },
+   {
+    "name": "Medical consumables distributor",
+    "directory": false
+   },
+   {
+    "name": "Electronics distributor",
+    "directory": false
+   },
+   {
+    "name": "IT hardware distributor",
+    "directory": false
+   },
+   {
+    "name": "Cosmetics distributor",
+    "directory": false
+   },
+   {
+    "name": "Perfume distributor",
+    "directory": false
+   },
+   {
+    "name": "Clothing wholesaler",
+    "directory": false
+   },
+   {
+    "name": "Textile wholesaler",
+    "directory": false
+   },
+   {
+    "name": "Stationery distributor",
+    "directory": false
+   },
+   {
+    "name": "Hotel supplies distributor",
+    "directory": false
+   },
+   {
+    "name": "Cleaning chemicals distributor",
+    "directory": false
+   },
+   {
+    "name": "Packaging materials distributor",
+    "directory": false
+   },
+   {
+    "name": "Agricultural inputs distributor",
+    "directory": false
+   },
+   {
+    "name": "Tobacco products distributor",
+    "directory": false
+   }
+  ],
+  "requirements": "Channel, pricing, landed cost and warehouse rules are configured per distributor."
+ },
+ {
+  "no": 10,
+  "name": "Industrial & building supplies",
+  "firstService": "B2B order processing and inventory control",
+  "buyer": "Owner / commercial manager",
+  "workflow": "Technical enquiry, specification, quote, purchase, stock, delivery, receivable",
+  "alignment": "Trading & Distribution",
+  "types": [
+   {
+    "name": "Industrial equipment",
+    "directory": true
+   },
+   {
+    "name": "Building materials supplier",
+    "directory": false
+   },
+   {
+    "name": "Cement and aggregates supplier",
+    "directory": false
+   },
+   {
+    "name": "Steel and metal stockist",
+    "directory": false
+   },
+   {
+    "name": "Timber supplier",
+    "directory": false
+   },
+   {
+    "name": "Electrical supplies wholesaler",
+    "directory": false
+   },
+   {
+    "name": "Plumbing supplies wholesaler",
+    "directory": false
+   },
+   {
+    "name": "HVAC equipment supplier",
+    "directory": false
+   },
+   {
+    "name": "Tools and fasteners supplier",
+    "directory": false
+   },
+   {
+    "name": "Paint and coatings supplier",
+    "directory": false
+   },
+   {
+    "name": "Safety equipment supplier",
+    "directory": false
+   },
+   {
+    "name": "Fire equipment supplier",
+    "directory": false
+   },
+   {
+    "name": "Solar equipment distributor",
+    "directory": false
+   },
+   {
+    "name": "Industrial spare-parts supplier",
+    "directory": false
+   },
+   {
+    "name": "Lubricants distributor",
+    "directory": false
+   },
+   {
+    "name": "Laboratory equipment supplier",
+    "directory": false
+   },
+   {
+    "name": "Office furniture supplier",
+    "directory": false
+   },
+   {
+    "name": "Commercial kitchen equipment supplier",
+    "directory": false
+   }
+  ],
+  "requirements": "Technical item attributes and serial, warranty or service tracking may be needed."
+ },
+ {
+  "no": 11,
+  "name": "Everyday retail",
+  "firstService": "POS, purchasing and store inventory",
+  "buyer": "Store owner / retail manager",
+  "workflow": "Purchase, receive, price, sell, reconcile, reorder",
+  "alignment": "Retail",
+  "types": [
+   {
+    "name": "Grocery store",
+    "directory": true
+   },
+   {
+    "name": "Supermarket",
+    "directory": false
+   },
+   {
+    "name": "Convenience store",
+    "directory": false
+   },
+   {
+    "name": "Mini-mart",
+    "directory": false
+   },
+   {
+    "name": "Clothing store",
+    "directory": true
+   },
+   {
+    "name": "Footwear store",
+    "directory": false
+   },
+   {
+    "name": "Electronics store",
+    "directory": true
+   },
+   {
+    "name": "Mobile phone store",
+    "directory": false
+   },
+   {
+    "name": "Furniture store",
+    "directory": true
+   },
+   {
+    "name": "Hardware store",
+    "directory": true
+   },
+   {
+    "name": "Bookstore",
+    "directory": true
+   },
+   {
+    "name": "Stationery shop",
+    "directory": false
+   },
+   {
+    "name": "Cosmetics store",
+    "directory": true
+   },
+   {
+    "name": "Toy store",
+    "directory": true
+   },
+   {
+    "name": "Florist",
+    "directory": true
+   },
+   {
+    "name": "Pet supply store",
+    "directory": false
+   },
+   {
+    "name": "Sports goods store",
+    "directory": false
+   },
+   {
+    "name": "Gift shop",
+    "directory": false
+   },
+   {
+    "name": "Household goods store",
+    "directory": false
+   },
+   {
+    "name": "Agricultural store",
+    "directory": true
+   },
+   {
+    "name": "Thrift store",
+    "directory": true
+   },
+   {
+    "name": "Candy shop",
+    "directory": true
+   }
+  ],
+  "requirements": "POS, payment terminals, loyalty and multi-store stock need verified connections."
+ },
+ {
+  "no": 12,
+  "name": "Specialist & luxury retail",
+  "firstService": "Customer CRM, stock and after-sales service",
+  "buyer": "Store owner / showroom manager",
+  "workflow": "Customer enquiry, product selection, sale, service, loyalty, stock replenishment",
+  "alignment": "Retail",
+  "types": [
+   {
+    "name": "Jewellery store",
+    "directory": false
+   },
+   {
+    "name": "Watch retailer",
+    "directory": false
+   },
+   {
+    "name": "Luxury accessories boutique",
+    "directory": false
+   },
+   {
+    "name": "Perfume shop",
+    "directory": false
+   },
+   {
+    "name": "Eyewear store",
+    "directory": true
+   },
+   {
+    "name": "Musical instrument store",
+    "directory": false
+   },
+   {
+    "name": "Camera shop",
+    "directory": false
+   },
+   {
+    "name": "Gaming equipment store",
+    "directory": false
+   },
+   {
+    "name": "Kitchen appliance showroom",
+    "directory": false
+   },
+   {
+    "name": "Lighting showroom",
+    "directory": false
+   },
+   {
+    "name": "Sanitaryware showroom",
+    "directory": false
+   },
+   {
+    "name": "Tile and stone showroom",
+    "directory": false
+   },
+   {
+    "name": "Baby products store",
+    "directory": false
+   },
+   {
+    "name": "Health supplement store",
+    "directory": false
+   },
+   {
+    "name": "Organic grocery store",
+    "directory": false
+   },
+   {
+    "name": "Wine shop",
+    "directory": true
+   },
+   {
+    "name": "Auto spare parts",
+    "directory": true
+   },
+   {
+    "name": "Motorcycle accessories shop",
+    "directory": false
+   },
+   {
+    "name": "Bike shop",
+    "directory": true
+   },
+   {
+    "name": "Collectibles and memorabilia dealer",
+    "directory": false
+   }
+  ],
+  "requirements": "Appointments, authentication, serials and specialist after-sales workflows may be required."
+ },
+ {
+  "no": 13,
+  "name": "E-commerce & online brands",
+  "firstService": "Online orders connected to stock and finance",
+  "buyer": "Brand owner / e-commerce manager",
+  "workflow": "Catalogue, checkout, payment, picking, shipping, return, refund",
+  "alignment": "E-commerce",
+  "types": [
+   {
+    "name": "Direct-to-consumer brand",
+    "directory": false
+   },
+   {
+    "name": "Marketplace seller",
+    "directory": false
+   },
+   {
+    "name": "Dropshipping",
+    "directory": true
+   },
+   {
+    "name": "Online fashion store",
+    "directory": false
+   },
+   {
+    "name": "Online electronics store",
+    "directory": false
+   },
+   {
+    "name": "Online beauty store",
+    "directory": false
+   },
+   {
+    "name": "Online grocery business",
+    "directory": false
+   },
+   {
+    "name": "Subscription box business",
+    "directory": false
+   },
+   {
+    "name": "Print-on-demand store",
+    "directory": false
+   },
+   {
+    "name": "Digital products store",
+    "directory": false
+   },
+   {
+    "name": "Online gift delivery brand",
+    "directory": false
+   },
+   {
+    "name": "Online furniture store",
+    "directory": false
+   },
+   {
+    "name": "Online jewellery brand",
+    "directory": false
+   },
+   {
+    "name": "Social commerce seller",
+    "directory": false
+   },
+   {
+    "name": "B2B e-commerce distributor",
+    "directory": false
+   },
+   {
+    "name": "Cross-border e-commerce seller",
+    "directory": false
+   },
+   {
+    "name": "Second-hand online retailer",
+    "directory": false
+   },
+   {
+    "name": "Multi-vendor marketplace operator",
+    "directory": false
+   }
+  ],
+  "requirements": "Storefront, marketplace, gateway and courier integrations are scoped per channel."
+ },
+ {
+  "no": 14,
+  "name": "Restaurants & food service",
+  "firstService": "POS, ingredient purchasing and daily sales",
+  "buyer": "Owner / restaurant manager",
+  "workflow": "Order, preparation, service or delivery, payment, ingredient replenishment",
+  "alignment": "Hospitality",
+  "types": [
+   {
+    "name": "Restaurant",
+    "directory": true
+   },
+   {
+    "name": "Fast food",
+    "directory": true
+   },
+   {
+    "name": "Cafe",
+    "directory": false
+   },
+   {
+    "name": "Specialty coffee shop",
+    "directory": false
+   },
+   {
+    "name": "Bakery",
+    "directory": true
+   },
+   {
+    "name": "Patisserie",
+    "directory": false
+   },
+   {
+    "name": "Dessert shop",
+    "directory": false
+   },
+   {
+    "name": "Ice cream shop",
+    "directory": false
+   },
+   {
+    "name": "Juice bar",
+    "directory": false
+   },
+   {
+    "name": "Tea shop",
+    "directory": false
+   },
+   {
+    "name": "Catering",
+    "directory": true
+   },
+   {
+    "name": "Corporate meal provider",
+    "directory": false
+   },
+   {
+    "name": "Event caterer",
+    "directory": false
+   },
+   {
+    "name": "Food trucks",
+    "directory": true
+   },
+   {
+    "name": "Takeaway",
+    "directory": true
+   },
+   {
+    "name": "Cloud kitchen",
+    "directory": false
+   },
+   {
+    "name": "Meal subscription company",
+    "directory": false
+   },
+   {
+    "name": "Home-based food business",
+    "directory": false
+   },
+   {
+    "name": "Bar & pub",
+    "directory": true
+   },
+   {
+    "name": "Shisha lounge",
+    "directory": false
+   },
+   {
+    "name": "Restaurant franchise operator",
+    "directory": false
+   },
+   {
+    "name": "Food court operator",
+    "directory": false
+   }
+  ],
+  "requirements": "Kitchen, table, recipe, wastage and delivery-platform workflows require extensions."
+ },
+ {
+  "no": 15,
+  "name": "Accommodation & hospitality",
+  "firstService": "Reservations, guests, housekeeping and billing",
+  "buyer": "Owner / general manager",
+  "workflow": "Reservation, deposit, arrival, stay, housekeeping, checkout, settlement",
+  "alignment": "Hospitality",
+  "types": [
+   {
+    "name": "Hotel",
+    "directory": true
+   },
+   {
+    "name": "Boutique hotel",
+    "directory": false
+   },
+   {
+    "name": "Guest house",
+    "directory": true
+   },
+   {
+    "name": "Holiday house",
+    "directory": true
+   },
+   {
+    "name": "Serviced apartment operator",
+    "directory": false
+   },
+   {
+    "name": "Hostel",
+    "directory": false
+   },
+   {
+    "name": "Campsite",
+    "directory": true
+   },
+   {
+    "name": "Glamping operator",
+    "directory": false
+   },
+   {
+    "name": "Spa resort",
+    "directory": true
+   },
+   {
+    "name": "Beach resort",
+    "directory": false
+   },
+   {
+    "name": "Farmstay operator",
+    "directory": false
+   },
+   {
+    "name": "Corporate accommodation provider",
+    "directory": false
+   },
+   {
+    "name": "Staff accommodation operator",
+    "directory": false
+   },
+   {
+    "name": "Hospitality management company",
+    "directory": false
+   },
+   {
+    "name": "Hotel reservations outsourcing company",
+    "directory": false
+   },
+   {
+    "name": "Private chalet rental operator",
+    "directory": false
+   }
+  ],
+  "requirements": "PMS, channel manager, room access and reservation connectors need separate scoping."
+ },
+ {
+  "no": 16,
+  "name": "Automotive & vehicle services",
+  "firstService": "Vehicle service jobs, parts and invoices",
+  "buyer": "Owner / workshop or fleet manager",
+  "workflow": "Vehicle enquiry, inspection, estimate, approval, repair, handover, payment",
+  "alignment": "Automotive",
+  "types": [
+   {
+    "name": "Auto repair workshop",
+    "directory": false
+   },
+   {
+    "name": "Car dealership",
+    "directory": false
+   },
+   {
+    "name": "Used-car dealer",
+    "directory": false
+   },
+   {
+    "name": "Car rental company",
+    "directory": false
+   },
+   {
+    "name": "Motorcycle dealer",
+    "directory": false
+   },
+   {
+    "name": "Motorcycle repair workshop",
+    "directory": false
+   },
+   {
+    "name": "Tyre service centre",
+    "directory": false
+   },
+   {
+    "name": "Battery replacement service",
+    "directory": false
+   },
+   {
+    "name": "Auto electrical workshop",
+    "directory": false
+   },
+   {
+    "name": "Car AC repair workshop",
+    "directory": false
+   },
+   {
+    "name": "Vehicle body repair shop",
+    "directory": false
+   },
+   {
+    "name": "Car painting workshop",
+    "directory": false
+   },
+   {
+    "name": "Vehicle detailing studio",
+    "directory": false
+   },
+   {
+    "name": "Car wash",
+    "directory": false
+   },
+   {
+    "name": "Mobile car wash",
+    "directory": false
+   },
+   {
+    "name": "Vehicle inspection centre",
+    "directory": false
+   },
+   {
+    "name": "Vehicle accessories installer",
+    "directory": false
+   },
+   {
+    "name": "EV servicing workshop",
+    "directory": false
+   },
+   {
+    "name": "Vehicle warranty administrator",
+    "directory": false
+   },
+   {
+    "name": "Bike leasing",
+    "directory": true
+   },
+   {
+    "name": "Bicycle repair workshop",
+    "directory": false
+   }
+  ],
+  "requirements": "Workshop, vehicle history, rental, inspection and warranty workflows extend the core."
+ },
+ {
+  "no": 17,
+  "name": "Beauty & grooming",
+  "firstService": "Appointments, staff schedules and customer retention",
+  "buyer": "Owner / salon manager",
+  "workflow": "Appointment, service, product use, payment, rebooking",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "Hair salon",
+    "directory": true
+   },
+   {
+    "name": "Barber shop",
+    "directory": false
+   },
+   {
+    "name": "Beauty parlour",
+    "directory": true
+   },
+   {
+    "name": "Nail salon",
+    "directory": false
+   },
+   {
+    "name": "Lash and brow studio",
+    "directory": false
+   },
+   {
+    "name": "Makeup studio",
+    "directory": false
+   },
+   {
+    "name": "Bridal beauty business",
+    "directory": false
+   },
+   {
+    "name": "Day spa",
+    "directory": false
+   },
+   {
+    "name": "Massage centre",
+    "directory": false
+   },
+   {
+    "name": "Hammam business",
+    "directory": false
+   },
+   {
+    "name": "Mobile beauty service",
+    "directory": false
+   },
+   {
+    "name": "Tattoo shop",
+    "directory": true
+   },
+   {
+    "name": "Piercing studio",
+    "directory": false
+   },
+   {
+    "name": "Hair replacement studio",
+    "directory": false
+   },
+   {
+    "name": "Beauty product training studio",
+    "directory": false
+   },
+   {
+    "name": "Beauty membership business",
+    "directory": false
+   },
+   {
+    "name": "Men's grooming lounge",
+    "directory": false
+   }
+  ],
+  "requirements": "Beauty service menus, room allocation, packages and consent workflows need configuration."
+ },
+ {
+  "no": 18,
+  "name": "Fitness, sport & recreation",
+  "firstService": "Memberships, bookings and renewal reminders",
+  "buyer": "Owner / club manager",
+  "workflow": "Trial enquiry, membership, session booking, attendance, payment, renewal",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "Fitness centre",
+    "directory": true
+   },
+   {
+    "name": "Yoga & pilates",
+    "directory": true
+   },
+   {
+    "name": "Personal trainer",
+    "directory": true
+   },
+   {
+    "name": "CrossFit gym",
+    "directory": false
+   },
+   {
+    "name": "Martial arts academy",
+    "directory": false
+   },
+   {
+    "name": "Dance fitness studio",
+    "directory": false
+   },
+   {
+    "name": "Swimming school",
+    "directory": false
+   },
+   {
+    "name": "Sports facilities",
+    "directory": true
+   },
+   {
+    "name": "Team sports club",
+    "directory": true
+   },
+   {
+    "name": "Football academy",
+    "directory": false
+   },
+   {
+    "name": "Cricket academy",
+    "directory": false
+   },
+   {
+    "name": "Racket sports academy",
+    "directory": false
+   },
+   {
+    "name": "Golf coaching business",
+    "directory": false
+   },
+   {
+    "name": "Indoor climbing centre",
+    "directory": false
+   },
+   {
+    "name": "Trampoline park",
+    "directory": false
+   },
+   {
+    "name": "Bowling alleys",
+    "directory": true
+   },
+   {
+    "name": "Escape rooms",
+    "directory": true
+   },
+   {
+    "name": "Outdoor activities",
+    "directory": true
+   },
+   {
+    "name": "Sports coaching agency",
+    "directory": false
+   },
+   {
+    "name": "Sports tournament organiser",
+    "directory": false
+   }
+  ],
+  "requirements": "Membership rules, class capacity, facility access and coach allocation extend the core."
+ },
+ {
+  "no": 19,
+  "name": "Education & training",
+  "firstService": "Admissions CRM, class schedules and fees",
+  "buyer": "Owner / principal / centre director",
+  "workflow": "Enquiry, admission, enrolment, class, attendance, fees, completion",
+  "alignment": "Education",
+  "types": [
+   {
+    "name": "School",
+    "directory": true
+   },
+   {
+    "name": "Nursery",
+    "directory": false
+   },
+   {
+    "name": "Preschool",
+    "directory": false
+   },
+   {
+    "name": "Training centre",
+    "directory": true
+   },
+   {
+    "name": "Tuition centre",
+    "directory": false
+   },
+   {
+    "name": "Language school",
+    "directory": false
+   },
+   {
+    "name": "Test preparation centre",
+    "directory": false
+   },
+   {
+    "name": "Coding academy",
+    "directory": false
+   },
+   {
+    "name": "Vocational training institute",
+    "directory": false
+   },
+   {
+    "name": "Driving school",
+    "directory": true
+   },
+   {
+    "name": "Music school",
+    "directory": false
+   },
+   {
+    "name": "Dance school",
+    "directory": false
+   },
+   {
+    "name": "Art school",
+    "directory": false
+   },
+   {
+    "name": "DIY workshops",
+    "directory": true
+   },
+   {
+    "name": "eLearning platform",
+    "directory": true
+   },
+   {
+    "name": "Corporate training provider",
+    "directory": false
+   },
+   {
+    "name": "Safety training institute",
+    "directory": false
+   },
+   {
+    "name": "Hospitality training centre",
+    "directory": false
+   },
+   {
+    "name": "Logistics training centre",
+    "directory": false
+   },
+   {
+    "name": "Tutoring agency",
+    "directory": false
+   },
+   {
+    "name": "Education consultancy",
+    "directory": false
+   },
+   {
+    "name": "Summer camps",
+    "directory": true
+   },
+   {
+    "name": "Special education centre",
+    "directory": false
+   }
+  ],
+  "requirements": "Learning content, assessment, student records and parent portals need education workflows."
+ },
+ {
+  "no": 20,
+  "name": "Healthcare administration",
+  "firstService": "Appointments, billing and stock administration",
+  "buyer": "Practice owner / clinic administrator",
+  "workflow": "Enquiry, appointment, arrival, administrative billing, stock and staff management",
+  "alignment": "Healthcare Administration",
+  "types": [
+   {
+    "name": "Clinic",
+    "directory": true
+   },
+   {
+    "name": "Dental clinic",
+    "directory": false
+   },
+   {
+    "name": "Specialist outpatient clinic",
+    "directory": false
+   },
+   {
+    "name": "Diagnostic centre",
+    "directory": false
+   },
+   {
+    "name": "Medical laboratory",
+    "directory": false
+   },
+   {
+    "name": "Radiology centre",
+    "directory": false
+   },
+   {
+    "name": "Physical therapy",
+    "directory": true
+   },
+   {
+    "name": "Mental therapy",
+    "directory": true
+   },
+   {
+    "name": "Home healthcare provider",
+    "directory": false
+   },
+   {
+    "name": "Nursing services agency",
+    "directory": false
+   },
+   {
+    "name": "Occupational health clinic",
+    "directory": false
+   },
+   {
+    "name": "Rehabilitation centre",
+    "directory": false
+   },
+   {
+    "name": "Speech therapy centre",
+    "directory": false
+   },
+   {
+    "name": "Dietitian practice",
+    "directory": false
+   },
+   {
+    "name": "Aesthetic medical clinic",
+    "directory": false
+   },
+   {
+    "name": "Pharmacy",
+    "directory": true
+   },
+   {
+    "name": "Medical equipment rental provider",
+    "directory": false
+   },
+   {
+    "name": "Ambulance company",
+    "directory": false
+   },
+   {
+    "name": "Patient concierge company",
+    "directory": false
+   },
+   {
+    "name": "Medical tourism facilitator",
+    "directory": false
+   },
+   {
+    "name": "Healthcare staffing bureau",
+    "directory": false
+   },
+   {
+    "name": "Medical supply retailer",
+    "directory": false
+   }
+  ],
+  "requirements": "Administration only. Clinical records and decisions stay in clinical systems. Scope integrations per provider."
+ },
+ {
+  "no": 21,
+  "name": "Professional consulting",
+  "firstService": "Lead-to-project CRM, timesheets and billing",
+  "buyer": "Partner / practice owner",
+  "workflow": "Lead, proposal, contract, milestone, time entry, invoice, collection",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "Management consultancy",
+    "directory": false
+   },
+   {
+    "name": "Operations consultancy",
+    "directory": false
+   },
+   {
+    "name": "HR consultancy",
+    "directory": false
+   },
+   {
+    "name": "Marketing consultancy",
+    "directory": false
+   },
+   {
+    "name": "Business strategy consultancy",
+    "directory": false
+   },
+   {
+    "name": "Procurement consultancy",
+    "directory": false
+   },
+   {
+    "name": "Supply chain consultancy",
+    "directory": false
+   },
+   {
+    "name": "Quality management consultancy",
+    "directory": false
+   },
+   {
+    "name": "ISO certification consultancy",
+    "directory": false
+   },
+   {
+    "name": "Sustainability consultancy",
+    "directory": false
+   },
+   {
+    "name": "Architecture firm",
+    "directory": true
+   },
+   {
+    "name": "Engineering consultancy",
+    "directory": false
+   },
+   {
+    "name": "Quantity surveying consultancy",
+    "directory": false
+   },
+   {
+    "name": "Surveying & mapping",
+    "directory": true
+   },
+   {
+    "name": "Project management consultancy",
+    "directory": false
+   },
+   {
+    "name": "Market research firm",
+    "directory": false
+   },
+   {
+    "name": "Economic research consultancy",
+    "directory": false
+   },
+   {
+    "name": "Business valuation consultancy",
+    "directory": false
+   },
+   {
+    "name": "Brand strategy consultancy",
+    "directory": false
+   },
+   {
+    "name": "Independent consultancy practice",
+    "directory": false
+   }
+  ],
+  "requirements": "Specialist assessments and advice stay with qualified staff. Configure client and document permissions."
+ },
+ {
+  "no": 22,
+  "name": "Accounting & financial intermediaries",
+  "firstService": "Client onboarding, documents, recurring jobs and billing",
+  "buyer": "Partner / operations manager",
+  "workflow": "Lead, onboarding, document request, recurring engagement, review, invoice",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "Accounting firm",
+    "directory": true
+   },
+   {
+    "name": "Bookkeeping practice",
+    "directory": false
+   },
+   {
+    "name": "Audit & certification",
+    "directory": true
+   },
+   {
+    "name": "Tax consultancy",
+    "directory": false
+   },
+   {
+    "name": "Outsourced CFO firm",
+    "directory": false
+   },
+   {
+    "name": "Payroll bureau",
+    "directory": false
+   },
+   {
+    "name": "Financial planning consultancy",
+    "directory": false
+   },
+   {
+    "name": "Insurance brokerage",
+    "directory": false
+   },
+   {
+    "name": "Insurance agency",
+    "directory": false
+   },
+   {
+    "name": "Mortgage brokerage",
+    "directory": false
+   },
+   {
+    "name": "Loan brokerage",
+    "directory": false
+   },
+   {
+    "name": "Claims administration provider",
+    "directory": false
+   },
+   {
+    "name": "Credit management agency",
+    "directory": false
+   },
+   {
+    "name": "Debt collection agency",
+    "directory": false
+   },
+   {
+    "name": "Trade finance advisory firm",
+    "directory": false
+   },
+   {
+    "name": "Payment services provider",
+    "directory": false
+   },
+   {
+    "name": "Fintech startup",
+    "directory": false
+   },
+   {
+    "name": "Money exchange business",
+    "directory": false
+   }
+  ],
+  "requirements": "Back-office administration only for financial intermediaries. Banking, lending, trading and insurance core systems require specialist integrations."
+ },
+ {
+  "no": 23,
+  "name": "Legal, documents & business setup",
+  "firstService": "Case or application tracking and document follow-ups",
+  "buyer": "Partner / owner / operations manager",
+  "workflow": "Client enquiry, engagement, document collection, task, review, filing, invoice",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "Law firm",
+    "directory": true
+   },
+   {
+    "name": "Legal consultancy",
+    "directory": false
+   },
+   {
+    "name": "Corporate secretarial firm",
+    "directory": false
+   },
+   {
+    "name": "Business setup consultancy",
+    "directory": false
+   },
+   {
+    "name": "Free-zone setup consultancy",
+    "directory": false
+   },
+   {
+    "name": "PRO services company",
+    "directory": false
+   },
+   {
+    "name": "Typing and document centre",
+    "directory": false
+   },
+   {
+    "name": "Attestation agency",
+    "directory": false
+   },
+   {
+    "name": "Translation agency",
+    "directory": false
+   },
+   {
+    "name": "Immigration consultancy",
+    "directory": false
+   },
+   {
+    "name": "Intellectual property agency",
+    "directory": false
+   },
+   {
+    "name": "Trademark services firm",
+    "directory": false
+   },
+   {
+    "name": "Document clearing agency",
+    "directory": false
+   },
+   {
+    "name": "Company formation agent",
+    "directory": false
+   },
+   {
+    "name": "Contract administration firm",
+    "directory": false
+   },
+   {
+    "name": "Legal process outsourcing firm",
+    "directory": false
+   }
+  ],
+  "requirements": "Matter-specific confidentiality, approvals, filing and external authority connections require configuration."
+ },
+ {
+  "no": 24,
+  "name": "Recruitment & outsourced staffing",
+  "firstService": "Client jobs, candidates and placement billing",
+  "buyer": "Agency owner / recruitment manager",
+  "workflow": "Client request, vacancy, shortlist, interview, placement, invoice",
+  "alignment": "Recruitment",
+  "types": [
+   {
+    "name": "Talent acquisition",
+    "directory": true
+   },
+   {
+    "name": "Permanent recruitment agency",
+    "directory": false
+   },
+   {
+    "name": "Temporary staffing agency",
+    "directory": false
+   },
+   {
+    "name": "Executive search firm",
+    "directory": false
+   },
+   {
+    "name": "Domestic worker agency",
+    "directory": false
+   },
+   {
+    "name": "Construction manpower supplier",
+    "directory": false
+   },
+   {
+    "name": "Hospitality staffing agency",
+    "directory": false
+   },
+   {
+    "name": "Industrial staffing agency",
+    "directory": false
+   },
+   {
+    "name": "Healthcare recruitment agency",
+    "directory": false
+   },
+   {
+    "name": "IT staffing agency",
+    "directory": false
+   },
+   {
+    "name": "Remote staffing agency",
+    "directory": false
+   },
+   {
+    "name": "HR outsourcing provider",
+    "directory": false
+   },
+   {
+    "name": "Call centre outsourcing company",
+    "directory": false
+   },
+   {
+    "name": "Back-office outsourcing company",
+    "directory": false
+   },
+   {
+    "name": "Payroll employee outsourcing provider",
+    "directory": false
+   },
+   {
+    "name": "Internship placement service",
+    "directory": false
+   }
+  ],
+  "requirements": "ATS, staffing rosters, client timesheets and payroll extensions are scoped per model."
+ },
+ {
+  "no": 25,
+  "name": "Technology, IT & telecom",
+  "firstService": "Service contracts, tickets and recurring invoices",
+  "buyer": "Founder / service delivery manager",
+  "workflow": "Lead, technical scope, contract, ticket or project, fulfilment, invoice",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "IT hardware & support",
+    "directory": true
+   },
+   {
+    "name": "Software reseller",
+    "directory": true
+   },
+   {
+    "name": "Software development company",
+    "directory": false
+   },
+   {
+    "name": "Web development agency",
+    "directory": false
+   },
+   {
+    "name": "Mobile app agency",
+    "directory": false
+   },
+   {
+    "name": "Managed IT services provider",
+    "directory": false
+   },
+   {
+    "name": "IT support company",
+    "directory": false
+   },
+   {
+    "name": "Cybersecurity consultancy",
+    "directory": false
+   },
+   {
+    "name": "Cloud services reseller",
+    "directory": false
+   },
+   {
+    "name": "Hosting provider",
+    "directory": false
+   },
+   {
+    "name": "SaaS company",
+    "directory": false
+   },
+   {
+    "name": "ERP implementation partner",
+    "directory": false
+   },
+   {
+    "name": "AI automation agency",
+    "directory": false
+   },
+   {
+    "name": "Data analytics consultancy",
+    "directory": false
+   },
+   {
+    "name": "Network cabling company",
+    "directory": false
+   },
+   {
+    "name": "Telecom reseller",
+    "directory": false
+   },
+   {
+    "name": "VoIP provider",
+    "directory": false
+   },
+   {
+    "name": "AV integration company",
+    "directory": false
+   },
+   {
+    "name": "Smart-home integrator",
+    "directory": false
+   },
+   {
+    "name": "IoT solutions company",
+    "directory": false
+   },
+   {
+    "name": "Computer refurbishment company",
+    "directory": false
+   }
+  ],
+  "requirements": "Helpdesk, SLA, subscriptions, infrastructure monitoring and vendor connections extend the core."
+ },
+ {
+  "no": 26,
+  "name": "Media, marketing & creative services",
+  "firstService": "Client campaigns, approvals and project profitability",
+  "buyer": "Agency owner / creative director",
+  "workflow": "Lead, brief, proposal, creative work, client approval, delivery, invoice",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "Marketing agency",
+    "directory": true
+   },
+   {
+    "name": "Advertising agency",
+    "directory": false
+   },
+   {
+    "name": "Social media agency",
+    "directory": false
+   },
+   {
+    "name": "SEO agency",
+    "directory": false
+   },
+   {
+    "name": "Performance marketing agency",
+    "directory": false
+   },
+   {
+    "name": "Branding studio",
+    "directory": false
+   },
+   {
+    "name": "Graphic design studio",
+    "directory": false
+   },
+   {
+    "name": "Photography",
+    "directory": true
+   },
+   {
+    "name": "Videography company",
+    "directory": false
+   },
+   {
+    "name": "Film production company",
+    "directory": false
+   },
+   {
+    "name": "Animation studio",
+    "directory": false
+   },
+   {
+    "name": "Podcast studio",
+    "directory": false
+   },
+   {
+    "name": "Audio production studio",
+    "directory": false
+   },
+   {
+    "name": "Content writing agency",
+    "directory": false
+   },
+   {
+    "name": "Translation content studio",
+    "directory": false
+   },
+   {
+    "name": "Public relations agency",
+    "directory": false
+   },
+   {
+    "name": "Influencer management agency",
+    "directory": false
+   },
+   {
+    "name": "Talent management company",
+    "directory": false
+   },
+   {
+    "name": "Digital media publisher",
+    "directory": false
+   },
+   {
+    "name": "Commercial photography studio",
+    "directory": false
+   },
+   {
+    "name": "Virtual production studio",
+    "directory": false
+   },
+   {
+    "name": "Stock media creator business",
+    "directory": false
+   }
+  ],
+  "requirements": "Creative assets, approval versions, retainers and channel connectors need configuration."
+ },
+ {
+  "no": 27,
+  "name": "Events & entertainment",
+  "firstService": "Event enquiries, vendors, crew and job costing",
+  "buyer": "Owner / event director",
+  "workflow": "Enquiry, event proposal, budget, booking, vendor task, event delivery, settlement",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "Event management",
+    "directory": true
+   },
+   {
+    "name": "Wedding planner",
+    "directory": true
+   },
+   {
+    "name": "Exhibition organiser",
+    "directory": false
+   },
+   {
+    "name": "Conference organiser",
+    "directory": false
+   },
+   {
+    "name": "Corporate event agency",
+    "directory": false
+   },
+   {
+    "name": "Festival organiser",
+    "directory": false
+   },
+   {
+    "name": "Birthday party organiser",
+    "directory": false
+   },
+   {
+    "name": "Venue management company",
+    "directory": false
+   },
+   {
+    "name": "Concert promoter",
+    "directory": false
+   },
+   {
+    "name": "Concert halls",
+    "directory": true
+   },
+   {
+    "name": "Theater",
+    "directory": true
+   },
+   {
+    "name": "Night clubs",
+    "directory": true
+   },
+   {
+    "name": "Entertainment booking agency",
+    "directory": false
+   },
+   {
+    "name": "Artist booking agency",
+    "directory": false
+   },
+   {
+    "name": "Children's entertainment company",
+    "directory": false
+   },
+   {
+    "name": "DJ services company",
+    "directory": false
+   },
+   {
+    "name": "Live music production company",
+    "directory": false
+   },
+   {
+    "name": "Event decor company",
+    "directory": false
+   },
+   {
+    "name": "Balloon decoration business",
+    "directory": false
+   },
+   {
+    "name": "Event registration services provider",
+    "directory": false
+   }
+  ],
+  "requirements": "Ticketing, venue capacity, resource booking and event-specific workflows extend the core."
+ },
+ {
+  "no": 28,
+  "name": "Manufacturing & fabrication",
+  "firstService": "Production orders, materials and job costing",
+  "buyer": "Owner / production manager",
+  "workflow": "Sales order, material plan, work order, production, quality, dispatch, costing",
+  "alignment": "Manufacturing",
+  "types": [
+   {
+    "name": "Metal fabricator",
+    "directory": true
+   },
+   {
+    "name": "Steel fabrication workshop",
+    "directory": false
+   },
+   {
+    "name": "Aluminium fabrication company",
+    "directory": false
+   },
+   {
+    "name": "Glass processing company",
+    "directory": false
+   },
+   {
+    "name": "Custom furniture",
+    "directory": true
+   },
+   {
+    "name": "Joinery manufacturing workshop",
+    "directory": false
+   },
+   {
+    "name": "Plastic products manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Rubber products manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Concrete products manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Precast manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Electrical panel manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Cable assembly business",
+    "directory": false
+   },
+   {
+    "name": "Machinery manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Industrial component manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Chemical blending company",
+    "directory": false
+   },
+   {
+    "name": "Detergent manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Cosmetics manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Perfume manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Candle manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Ceramics manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Stone cutting company",
+    "directory": false
+   },
+   {
+    "name": "Packaging products manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Additive manufacturing studio",
+    "directory": false
+   },
+   {
+    "name": "Electronics assembly company",
+    "directory": false
+   }
+  ],
+  "requirements": "BOM, routing, shop-floor, batch, quality and traceability extensions need production-specific scoping."
+ },
+ {
+  "no": 29,
+  "name": "Printing, packaging & signage",
+  "firstService": "Print job estimates, materials and delivery",
+  "buyer": "Owner / production supervisor",
+  "workflow": "Artwork brief, estimate, proof approval, production, finishing, delivery, payment",
+  "alignment": "Manufacturing",
+  "types": [
+   {
+    "name": "Commercial printing company",
+    "directory": false
+   },
+   {
+    "name": "Digital printing shop",
+    "directory": false
+   },
+   {
+    "name": "Offset printing company",
+    "directory": false
+   },
+   {
+    "name": "Large-format printing company",
+    "directory": false
+   },
+   {
+    "name": "Label printing company",
+    "directory": false
+   },
+   {
+    "name": "Sticker printing company",
+    "directory": false
+   },
+   {
+    "name": "Screen printing company",
+    "directory": false
+   },
+   {
+    "name": "Corporate gifts",
+    "directory": true
+   },
+   {
+    "name": "Promotional merchandise supplier",
+    "directory": false
+   },
+   {
+    "name": "Signage company",
+    "directory": false
+   },
+   {
+    "name": "Vehicle branding company",
+    "directory": false
+   },
+   {
+    "name": "Neon sign maker",
+    "directory": false
+   },
+   {
+    "name": "Billboard rental",
+    "directory": true
+   },
+   {
+    "name": "Packaging design studio",
+    "directory": false
+   },
+   {
+    "name": "Carton manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Flexible packaging converter",
+    "directory": false
+   },
+   {
+    "name": "Bookbinding business",
+    "directory": false
+   },
+   {
+    "name": "Stamp making business",
+    "directory": false
+   }
+  ],
+  "requirements": "Production specifications, proofs, machine scheduling and material consumption extend core jobs."
+ },
+ {
+  "no": 30,
+  "name": "Fashion, textiles & artisan products",
+  "firstService": "Custom orders, material stock and production",
+  "buyer": "Owner / studio manager",
+  "workflow": "Design or customer order, measurements, materials, production, quality, delivery",
+  "alignment": "Manufacturing",
+  "types": [
+   {
+    "name": "Textile manufacturing",
+    "directory": true
+   },
+   {
+    "name": "Garment manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Uniform manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Tailoring shop",
+    "directory": false
+   },
+   {
+    "name": "Bespoke suit maker",
+    "directory": false
+   },
+   {
+    "name": "Abaya manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Embroidery business",
+    "directory": false
+   },
+   {
+    "name": "Fabric printing business",
+    "directory": false
+   },
+   {
+    "name": "Leather goods maker",
+    "directory": false
+   },
+   {
+    "name": "Footwear manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Handmade jewellery maker",
+    "directory": false
+   },
+   {
+    "name": "Arts & crafts",
+    "directory": true
+   },
+   {
+    "name": "Pottery studio",
+    "directory": false
+   },
+   {
+    "name": "Handwoven products business",
+    "directory": false
+   },
+   {
+    "name": "Carpet manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Soft furnishings manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Fashion design house",
+    "directory": false
+   },
+   {
+    "name": "Bridalwear studio",
+    "directory": false
+   }
+  ],
+  "requirements": "Sizing, measurements, design versions and batch or made-to-order workflows need configuration."
+ },
+ {
+  "no": 31,
+  "name": "Equipment & asset rental",
+  "firstService": "Availability, rental contracts and asset returns",
+  "buyer": "Owner / rental operations manager",
+  "workflow": "Enquiry, availability, quote, deposit, dispatch, rental, return, damage, invoice",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "Machine & tool rental",
+    "directory": true
+   },
+   {
+    "name": "Agri-equipment rental",
+    "directory": true
+   },
+   {
+    "name": "Heavy equipment rental",
+    "directory": false
+   },
+   {
+    "name": "Generator rental",
+    "directory": false
+   },
+   {
+    "name": "Forklift rental",
+    "directory": false
+   },
+   {
+    "name": "Scaffolding rental",
+    "directory": false
+   },
+   {
+    "name": "AV equipment rental",
+    "directory": false
+   },
+   {
+    "name": "Camera equipment rental",
+    "directory": false
+   },
+   {
+    "name": "Event furniture rental",
+    "directory": false
+   },
+   {
+    "name": "Party equipment rental",
+    "directory": false
+   },
+   {
+    "name": "Office equipment rental",
+    "directory": false
+   },
+   {
+    "name": "Furniture rental",
+    "directory": false
+   },
+   {
+    "name": "Portable cabin rental",
+    "directory": false
+   },
+   {
+    "name": "Portable toilet rental",
+    "directory": false
+   },
+   {
+    "name": "Storage unit operator",
+    "directory": false
+   },
+   {
+    "name": "Container rental",
+    "directory": false
+   },
+   {
+    "name": "Power tools rental",
+    "directory": false
+   }
+  ],
+  "requirements": "Rental availability, deposits, inspection, utilization and damage workflows need configuration."
+ },
+ {
+  "no": 32,
+  "name": "Agriculture, gardening & landscaping",
+  "firstService": "Project quotes, field schedules and supplies",
+  "buyer": "Owner / farm or landscape manager",
+  "workflow": "Site enquiry, plan, estimate, materials, field work, recurring upkeep, billing",
+  "alignment": "Facility Management",
+  "types": [
+   {
+    "name": "Gardening",
+    "directory": true
+   },
+   {
+    "name": "Landscape design company",
+    "directory": false
+   },
+   {
+    "name": "Landscaping contractor",
+    "directory": false
+   },
+   {
+    "name": "Garden maintenance company",
+    "directory": false
+   },
+   {
+    "name": "Plant nursery",
+    "directory": false
+   },
+   {
+    "name": "Tree care company",
+    "directory": false
+   },
+   {
+    "name": "Irrigation installer",
+    "directory": false
+   },
+   {
+    "name": "Irrigation maintenance company",
+    "directory": false
+   },
+   {
+    "name": "Indoor plant rental business",
+    "directory": false
+   },
+   {
+    "name": "Vertical garden company",
+    "directory": false
+   },
+   {
+    "name": "Hydroponic farm",
+    "directory": false
+   },
+   {
+    "name": "Greenhouse operator",
+    "directory": false
+   },
+   {
+    "name": "Vegetable farm",
+    "directory": false
+   },
+   {
+    "name": "Fruit orchard",
+    "directory": false
+   },
+   {
+    "name": "Date farm",
+    "directory": false
+   },
+   {
+    "name": "Flower farm",
+    "directory": false
+   },
+   {
+    "name": "Seedling producer",
+    "directory": false
+   },
+   {
+    "name": "Agricultural contracting company",
+    "directory": false
+   },
+   {
+    "name": "Agronomy consultancy",
+    "directory": false
+   },
+   {
+    "name": "Vineyard",
+    "directory": true
+   }
+  ],
+  "requirements": "Growing schedules, irrigation assets, field records and project workflows are scoped by niche."
+ },
+ {
+  "no": 33,
+  "name": "Food processing & agricultural production",
+  "firstService": "Batch production, expiry stock and distribution",
+  "buyer": "Owner / production or farm manager",
+  "workflow": "Purchase, batch preparation, production, quality check, storage, dispatch, invoice",
+  "alignment": "Manufacturing",
+  "types": [
+   {
+    "name": "Food manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Frozen foods processor",
+    "directory": false
+   },
+   {
+    "name": "Dairy processor",
+    "directory": false
+   },
+   {
+    "name": "Meat processor",
+    "directory": false
+   },
+   {
+    "name": "Seafood processor",
+    "directory": false
+   },
+   {
+    "name": "Fruit and vegetable processor",
+    "directory": false
+   },
+   {
+    "name": "Spice blending company",
+    "directory": false
+   },
+   {
+    "name": "Coffee roaster",
+    "directory": false
+   },
+   {
+    "name": "Tea blending company",
+    "directory": false
+   },
+   {
+    "name": "Bottled water producer",
+    "directory": false
+   },
+   {
+    "name": "Juice manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Snack manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Confectionery manufacturer",
+    "directory": false
+   },
+   {
+    "name": "Microbrewery",
+    "directory": true
+   },
+   {
+    "name": "Poultry farm",
+    "directory": false
+   },
+   {
+    "name": "Dairy farm",
+    "directory": false
+   },
+   {
+    "name": "Fish farm",
+    "directory": false
+   },
+   {
+    "name": "Beekeeping business",
+    "directory": false
+   },
+   {
+    "name": "Animal feed producer",
+    "directory": false
+   },
+   {
+    "name": "Commercial hatchery",
+    "directory": false
+   }
+  ],
+  "requirements": "Food traceability, expiry, cold chain and quality workflows need specialist configuration."
+ },
+ {
+  "no": 34,
+  "name": "Pets & animal services",
+  "firstService": "Appointments, recurring bookings and customer records",
+  "buyer": "Owner / practice or centre manager",
+  "workflow": "Owner enquiry, animal profile, appointment, service, payment, reminder",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "Veterinary clinic",
+    "directory": true
+   },
+   {
+    "name": "Pet groomer",
+    "directory": true
+   },
+   {
+    "name": "Mobile pet grooming company",
+    "directory": false
+   },
+   {
+    "name": "Pet boarding facility",
+    "directory": false
+   },
+   {
+    "name": "Dog daycare",
+    "directory": false
+   },
+   {
+    "name": "Dog training school",
+    "directory": false
+   },
+   {
+    "name": "Pet sitting business",
+    "directory": false
+   },
+   {
+    "name": "Pet walking service",
+    "directory": false
+   },
+   {
+    "name": "Pet relocation agency",
+    "directory": false
+   },
+   {
+    "name": "Pet taxi service",
+    "directory": false
+   },
+   {
+    "name": "Equestrian centre",
+    "directory": false
+   },
+   {
+    "name": "Horse training stable",
+    "directory": false
+   },
+   {
+    "name": "Kennel operator",
+    "directory": false
+   },
+   {
+    "name": "Animal-care consultancy",
+    "directory": false
+   }
+  ],
+  "requirements": "Veterinary clinical records remain in specialist systems. Booking and animal-care workflows require configuration."
+ },
+ {
+  "no": 35,
+  "name": "Energy, water & utility services",
+  "firstService": "Installation projects, assets and maintenance contracts",
+  "buyer": "Owner / technical operations manager",
+  "workflow": "Site survey, quote, procurement, installation, service visit, billing",
+  "alignment": "Facility Management",
+  "types": [
+   {
+    "name": "Solar energy",
+    "directory": true
+   },
+   {
+    "name": "Solar panel installer",
+    "directory": false
+   },
+   {
+    "name": "Solar maintenance provider",
+    "directory": false
+   },
+   {
+    "name": "EV charger installer",
+    "directory": false
+   },
+   {
+    "name": "EV charging network operator",
+    "directory": false
+   },
+   {
+    "name": "Energy auditing company",
+    "directory": false
+   },
+   {
+    "name": "Energy management consultancy",
+    "directory": false
+   },
+   {
+    "name": "Water treatment company",
+    "directory": false
+   },
+   {
+    "name": "Water filtration installer",
+    "directory": false
+   },
+   {
+    "name": "Desalination service contractor",
+    "directory": false
+   },
+   {
+    "name": "Borewell service contractor",
+    "directory": false
+   },
+   {
+    "name": "Industrial gas supplier",
+    "directory": false
+   },
+   {
+    "name": "LPG supplier",
+    "directory": false
+   },
+   {
+    "name": "Fuel distribution company",
+    "directory": false
+   },
+   {
+    "name": "Battery storage installer",
+    "directory": false
+   },
+   {
+    "name": "Power equipment service company",
+    "directory": false
+   },
+   {
+    "name": "Utility billing administrator",
+    "directory": false
+   },
+   {
+    "name": "District cooling service contractor",
+    "directory": false
+   }
+  ],
+  "requirements": "Metering, utility settlement and equipment controls require specialist connections. Start with administration."
+ },
+ {
+  "no": 36,
+  "name": "Environmental & sustainability services",
+  "firstService": "Contracts, collection jobs, assets and reporting tasks",
+  "buyer": "Owner / environmental operations manager",
+  "workflow": "Client request, assessment or collection plan, work assignment, completion, invoice",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "Environmental agency",
+    "directory": true
+   },
+   {
+    "name": "Waste collection company",
+    "directory": false
+   },
+   {
+    "name": "Recycling company",
+    "directory": false
+   },
+   {
+    "name": "E-waste recycler",
+    "directory": false
+   },
+   {
+    "name": "Scrap metal dealer",
+    "directory": false
+   },
+   {
+    "name": "Paper recycling company",
+    "directory": false
+   },
+   {
+    "name": "Plastic recycling company",
+    "directory": false
+   },
+   {
+    "name": "Used cooking oil collector",
+    "directory": false
+   },
+   {
+    "name": "Composting company",
+    "directory": false
+   },
+   {
+    "name": "Waste management consultancy",
+    "directory": false
+   },
+   {
+    "name": "Environmental testing laboratory",
+    "directory": false
+   },
+   {
+    "name": "Water testing laboratory",
+    "directory": false
+   },
+   {
+    "name": "Air quality testing company",
+    "directory": false
+   },
+   {
+    "name": "Noise assessment company",
+    "directory": false
+   },
+   {
+    "name": "Carbon accounting consultancy",
+    "directory": false
+   },
+   {
+    "name": "Sustainability reporting consultancy",
+    "directory": false
+   },
+   {
+    "name": "Remediation contractor",
+    "directory": false
+   }
+  ],
+  "requirements": "Waste, chain-of-custody, route, environmental reporting and asset workflows need extensions."
+ },
+ {
+  "no": 37,
+  "name": "Security, safety & inspection services",
+  "firstService": "Client contracts, rosters and inspection jobs",
+  "buyer": "Owner / compliance or operations manager",
+  "workflow": "Client enquiry, assessment, contract, schedule, service or inspection, report, invoice",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "Security guard company",
+    "directory": false
+   },
+   {
+    "name": "Security systems installer",
+    "directory": false
+   },
+   {
+    "name": "CCTV service company",
+    "directory": false
+   },
+   {
+    "name": "Access-control installer",
+    "directory": false
+   },
+   {
+    "name": "Alarm system provider",
+    "directory": false
+   },
+   {
+    "name": "Fire safety consultancy",
+    "directory": false
+   },
+   {
+    "name": "Health and safety consultancy",
+    "directory": false
+   },
+   {
+    "name": "Safety training provider",
+    "directory": false
+   },
+   {
+    "name": "Equipment inspection company",
+    "directory": false
+   },
+   {
+    "name": "Lifting equipment inspection company",
+    "directory": false
+   },
+   {
+    "name": "Non-destructive testing company",
+    "directory": false
+   },
+   {
+    "name": "Quality inspection company",
+    "directory": false
+   },
+   {
+    "name": "Calibration laboratory",
+    "directory": false
+   },
+   {
+    "name": "Product testing laboratory",
+    "directory": false
+   },
+   {
+    "name": "Food safety consultancy",
+    "directory": false
+   },
+   {
+    "name": "Building safety inspection company",
+    "directory": false
+   },
+   {
+    "name": "Occupational hygiene consultancy",
+    "directory": false
+   }
+  ],
+  "requirements": "Guard schedules, inspections and certifications need sector workflows. Safety decisions remain with qualified staff."
+ },
+ {
+  "no": 38,
+  "name": "Marine & aviation support",
+  "firstService": "Service jobs, spare parts and customer billing",
+  "buyer": "Owner / commercial or operations manager",
+  "workflow": "Vessel or aircraft enquiry, work scope, quote, resources, job, documents, invoice",
+  "alignment": "Logistics & Freight",
+  "types": [
+   {
+    "name": "Ship chandlery",
+    "directory": false
+   },
+   {
+    "name": "Marine spare-parts supplier",
+    "directory": false
+   },
+   {
+    "name": "Marine maintenance contractor",
+    "directory": false
+   },
+   {
+    "name": "Boat repair workshop",
+    "directory": false
+   },
+   {
+    "name": "Yacht management company",
+    "directory": false
+   },
+   {
+    "name": "Yacht charter operator",
+    "directory": false
+   },
+   {
+    "name": "Marina services company",
+    "directory": false
+   },
+   {
+    "name": "Ship agency",
+    "directory": false
+   },
+   {
+    "name": "Marine surveying company",
+    "directory": false
+   },
+   {
+    "name": "Bunker brokerage",
+    "directory": false
+   },
+   {
+    "name": "Offshore supply services company",
+    "directory": false
+   },
+   {
+    "name": "Aircraft parts supplier",
+    "directory": false
+   },
+   {
+    "name": "Aviation maintenance support firm",
+    "directory": false
+   },
+   {
+    "name": "Aircraft charter brokerage",
+    "directory": false
+   },
+   {
+    "name": "Ground handling subcontractor",
+    "directory": false
+   },
+   {
+    "name": "Drone services company",
+    "directory": false
+   }
+  ],
+  "requirements": "Port, airport and technical records need specialist integrations. Begin with commercial administration."
+ },
+ {
+  "no": 39,
+  "name": "Home, personal & repair services",
+  "firstService": "Customer bookings, repair jobs and invoices",
+  "buyer": "Owner / service supervisor",
+  "workflow": "Enquiry, visit or diagnosis, estimate, approval, job completion, collection",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "Electrician",
+    "directory": true
+   },
+   {
+    "name": "Handyman",
+    "directory": true
+   },
+   {
+    "name": "Home plumbing service",
+    "directory": false
+   },
+   {
+    "name": "Appliance repair company",
+    "directory": false
+   },
+   {
+    "name": "Mobile phone repair shop",
+    "directory": false
+   },
+   {
+    "name": "Computer repair shop",
+    "directory": false
+   },
+   {
+    "name": "Watch repair business",
+    "directory": false
+   },
+   {
+    "name": "Shoe repair business",
+    "directory": false
+   },
+   {
+    "name": "Bag repair business",
+    "directory": false
+   },
+   {
+    "name": "Furniture restoration company",
+    "directory": false
+   },
+   {
+    "name": "Locksmith",
+    "directory": false
+   },
+   {
+    "name": "Key cutting shop",
+    "directory": false
+   },
+   {
+    "name": "Personal concierge business",
+    "directory": false
+   },
+   {
+    "name": "Home organisation service",
+    "directory": false
+   },
+   {
+    "name": "Errand services business",
+    "directory": false
+   },
+   {
+    "name": "Alterations shop",
+    "directory": false
+   },
+   {
+    "name": "House sitting service",
+    "directory": false
+   }
+  ],
+  "requirements": "Route, inspection, estimate and service checklists are configured per trade."
+ },
+ {
+  "no": 40,
+  "name": "Culture, workspace & community organisations",
+  "firstService": "Memberships, bookings, programmes and administration",
+  "buyer": "Owner / centre director / administrator",
+  "workflow": "Enquiry, registration or membership, booking, activity, payment, renewal",
+  "alignment": "Professional Services",
+  "types": [
+   {
+    "name": "Gallery",
+    "directory": true
+   },
+   {
+    "name": "Museum",
+    "directory": true
+   },
+   {
+    "name": "Library",
+    "directory": true
+   },
+   {
+    "name": "Coworking",
+    "directory": true
+   },
+   {
+    "name": "Members club",
+    "directory": true
+   },
+   {
+    "name": "Community arts centre",
+    "directory": false
+   },
+   {
+    "name": "Craft workshop business",
+    "directory": false
+   },
+   {
+    "name": "Artist studio business",
+    "directory": false
+   },
+   {
+    "name": "Heritage experience operator",
+    "directory": false
+   },
+   {
+    "name": "Cultural tour company",
+    "directory": false
+   },
+   {
+    "name": "Creative studio rental",
+    "directory": false
+   },
+   {
+    "name": "Makerspace",
+    "directory": false
+   },
+   {
+    "name": "Business incubator",
+    "directory": false
+   },
+   {
+    "name": "Student organisation",
+    "directory": true
+   },
+   {
+    "name": "Nonprofit",
+    "directory": true
+   },
+   {
+    "name": "Public institution",
+    "directory": true
+   },
+   {
+    "name": "Community care",
+    "directory": true
+   },
+   {
+    "name": "Charitable foundation",
+    "directory": false
+   },
+   {
+    "name": "Professional association",
+    "directory": false
+   },
+   {
+    "name": "Trade association",
+    "directory": false
+   }
+  ],
+  "requirements": "Includes non-SME organisations. Membership, grant, programme and donation workflows may require extensions."
+ }
+]
