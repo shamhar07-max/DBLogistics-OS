@@ -4,7 +4,7 @@ import * as S from './schemas';
 
 export interface RouteDef {
   method: 'GET' | 'POST'; path: string; operationId: string; tag: string; summary: string;
-  permission: Permission | null; idempotent?: boolean; ifMatch?: boolean; body?: ZodTypeAny; public?: boolean; status?: number;
+  permission: Permission | null; idempotent?: boolean; ifMatch?: boolean; body?: ZodTypeAny; query?: ZodTypeAny; public?: boolean; status?: number;
 }
 const r = <const T extends RouteDef>(d: T): T => d;
 
@@ -13,6 +13,7 @@ export const ROUTE_TABLE = [
   r({ method: 'GET', path: '/me', operationId: 'getMe', tag: 'Session', summary: 'Current user, tenant and effective permissions', permission: null }),
   r({ method: 'GET', path: '/me/memberships', operationId: 'listMemberships', tag: 'Session', summary: 'Tenants the user belongs to', permission: null }),
   r({ method: 'GET', path: '/legal-entities', operationId: 'listLegalEntities', tag: 'Organization', summary: 'Legal entities', permission: 'parties.view' }),
+  r({ method: 'GET', path: '/facilities', operationId: 'listFacilities', tag: 'Organization', summary: 'Facilities (warehouses, yards, offices) and their locations', permission: 'parties.view' }),
   r({ method: 'GET', path: '/parties', operationId: 'listParties', tag: 'Parties', summary: 'List parties', permission: 'parties.view' }),
   r({ method: 'POST', path: '/parties', operationId: 'createParty', tag: 'Parties', summary: 'Create party', permission: 'parties.create', body: S.CreatePartyBody, status: 201 }),
   r({ method: 'POST', path: '/parties/:id/bank-detail-changes', operationId: 'proposeBankChange', tag: 'Parties', summary: 'Propose bank-detail change (maker)', permission: 'bank-details.change.propose', body: S.BankChangeBody, status: 201 }),
@@ -65,6 +66,50 @@ export const ROUTE_TABLE = [
   r({ method: 'POST', path: '/workflows/:id/activate', operationId: 'activateWorkflow', tag: 'Automation', summary: 'Activate workflow version', permission: 'automation.manage' }),
   r({ method: 'POST', path: '/ai/tools/:name/invoke', operationId: 'invokeAiTool', tag: 'Intelligence', summary: 'Invoke a controlled AI tool as the calling user', permission: 'ai.use', body: S.AiToolInvokeBody }),
   r({ method: 'GET', path: '/reports/owner-overview', operationId: 'getOwnerOverview', tag: 'Intelligence', summary: 'Owner overview KPIs (live, drill-down ready)', permission: 'reports.owner.view' }),
+  // ---- breadth release: remaining staff areas ----
+  r({ method: 'GET', path: '/parties/:id', operationId: 'getParty', tag: 'Parties', summary: 'Party 360: roles, bank details, open work', permission: 'parties.view' }),
+  r({ method: 'GET', path: '/bank-detail-changes', operationId: 'listBankChanges', tag: 'Parties', summary: 'Bank-detail change requests', permission: 'bank-details.change.propose' }),
+  r({ method: 'GET', path: '/shipments', operationId: 'listShipments', tag: 'Logistics', summary: 'Shipments (optionally by job)', permission: 'shipments.view', query: S.JobQuery }),
+  r({ method: 'GET', path: '/shipments/:id', operationId: 'getShipment', tag: 'Logistics', summary: 'Shipment with legs, cargo, bookings', permission: 'shipments.view' }),
+  r({ method: 'GET', path: '/trips', operationId: 'listTrips', tag: 'Transport', summary: 'Trips with stops and POD state', permission: 'transport.view' }),
+  r({ method: 'POST', path: '/trips', operationId: 'createTrip', tag: 'Transport', summary: 'Plan a trip', permission: 'transport.dispatch', body: S.CreateTripBody, status: 201 }),
+  r({ method: 'POST', path: '/trips/:id/dispatch', operationId: 'dispatchTrip', tag: 'Transport', summary: 'Dispatch trip (driver must hold a valid driving qualification)', permission: 'transport.dispatch', idempotent: true }),
+  r({ method: 'GET', path: '/customs-cases', operationId: 'listCustomsCases', tag: 'Trade', summary: 'Customs cases: authority vs internal status', permission: 'customs.view' }),
+  r({ method: 'GET', path: '/documents', operationId: 'listDocuments', tag: 'Documents', summary: 'Document library', permission: 'documents.view', query: S.DocumentQuery }),
+  r({ method: 'GET', path: '/documents/:id/download-url', operationId: 'getDocumentDownloadUrl', tag: 'Documents', summary: 'Short-lived signed download URL (clean documents only)', permission: 'documents.view' }),
+  r({ method: 'GET', path: '/tasks', operationId: 'listTasks', tag: 'Collaboration', summary: 'Tasks', permission: 'tasks.view', query: S.RelatedQuery }),
+  r({ method: 'POST', path: '/tasks', operationId: 'createTask', tag: 'Collaboration', summary: 'Create task', permission: 'tasks.manage', body: S.CreateTaskBody, status: 201 }),
+  r({ method: 'POST', path: '/tasks/:id/complete', operationId: 'completeTask', tag: 'Collaboration', summary: 'Complete task', permission: 'tasks.manage' }),
+  r({ method: 'GET', path: '/messages', operationId: 'listMessages', tag: 'Collaboration', summary: 'Conversation log for a record (append-only)', permission: 'conversations.view', query: S.RelatedQuery }),
+  r({ method: 'POST', path: '/messages', operationId: 'postMessage', tag: 'Collaboration', summary: 'Log a message / call note against a record', permission: 'conversations.post', body: S.PostMessageBody, status: 201 }),
+  r({ method: 'GET', path: '/employees', operationId: 'listEmployees', tag: 'People', summary: 'Employees', permission: 'people.view' }),
+  r({ method: 'POST', path: '/employees', operationId: 'createEmployee', tag: 'People', summary: 'Create employee', permission: 'people.manage', body: S.CreateEmployeeBody, status: 201 }),
+  r({ method: 'POST', path: '/employees/:id/qualifications', operationId: 'addQualification', tag: 'People', summary: 'Record a qualification with validity', permission: 'people.manage', body: S.AddQualificationBody, status: 201 }),
+  r({ method: 'GET', path: '/qualifications', operationId: 'listQualifications', tag: 'People', summary: 'Qualifications (filter: expiring within N days)', permission: 'people.view', query: S.ExpiringQuery }),
+  r({ method: 'GET', path: '/assets', operationId: 'listAssets', tag: 'People', summary: 'Operating assets with service / calibration due', permission: 'people.view' }),
+  r({ method: 'POST', path: '/assets', operationId: 'createAsset', tag: 'People', summary: 'Register asset', permission: 'people.manage', body: S.CreateAssetBody, status: 201 }),
+  r({ method: 'GET', path: '/incidents', operationId: 'listIncidents', tag: 'Quality', summary: 'Incidents', permission: 'quality.view', query: S.RelatedQuery }),
+  r({ method: 'POST', path: '/incidents', operationId: 'createIncident', tag: 'Quality', summary: 'Report incident (optionally placing a hold on a lot)', permission: 'quality.manage', body: S.CreateIncidentBody, status: 201 }),
+  r({ method: 'POST', path: '/incidents/:id/investigate', operationId: 'investigateIncident', tag: 'Quality', summary: 'Start investigation', permission: 'quality.manage' }),
+  r({ method: 'POST', path: '/incidents/:id/resolve', operationId: 'resolveIncident', tag: 'Quality', summary: 'Resolve incident — never auto-releases holds', permission: 'quality.manage', body: S.ResolveIncidentBody }),
+  r({ method: 'GET', path: '/claims', operationId: 'listClaims', tag: 'Quality', summary: 'Claims', permission: 'quality.view' }),
+  r({ method: 'POST', path: '/claims', operationId: 'createClaim', tag: 'Quality', summary: 'Open claim against an incident', permission: 'quality.manage', body: S.CreateClaimBody, status: 201 }),
+  r({ method: 'GET', path: '/warehouse/holds', operationId: 'listHolds', tag: 'Warehouse', summary: 'Holds (active and released)', permission: 'warehouse.view' }),
+  r({ method: 'POST', path: '/warehouse/holds/:id/release', operationId: 'releaseHold', tag: 'Warehouse', summary: 'Release hold (quality role, not the person who placed it)', permission: 'quality.hold.release', body: S.ReleaseHoldBody, idempotent: true }),
+  r({ method: 'GET', path: '/release-orders', operationId: 'listReleaseOrders', tag: 'Warehouse', summary: 'Release orders', permission: 'warehouse.view' }),
+  r({ method: 'GET', path: '/charges', operationId: 'listCharges', tag: 'Finance', summary: 'Charges for a job (cost data → margin permission)', permission: 'jobs.margin.view', query: S.JobQuery }),
+  r({ method: 'GET', path: '/payments', operationId: 'listPayments', tag: 'Finance', summary: 'Customer receipts', permission: 'invoices.view' }),
+  r({ method: 'GET', path: '/supplier-bills', operationId: 'listSupplierBills', tag: 'Finance', summary: 'Supplier bills', permission: 'bills.record' }),
+  r({ method: 'GET', path: '/reports/receivables-ageing', operationId: 'getReceivablesAgeing', tag: 'Intelligence', summary: 'Receivables ageing by due date', permission: 'reports.finance.view' }),
+  r({ method: 'GET', path: '/reports/job-profitability', operationId: 'getJobProfitability', tag: 'Intelligence', summary: 'Per-job expected vs accounting margin', permission: 'reports.finance.view' }),
+  r({ method: 'GET', path: '/ai/tools', operationId: 'listAiTools', tag: 'Intelligence', summary: 'Controlled AI tools and whether the caller may use them', permission: 'ai.use' }),
+  r({ method: 'GET', path: '/workflows', operationId: 'listWorkflows', tag: 'Automation', summary: 'Workflow definitions (versioned)', permission: 'automation.manage' }),
+  r({ method: 'GET', path: '/workflow-runs', operationId: 'listWorkflowRuns', tag: 'Automation', summary: 'Workflow executions', permission: 'automation.manage' }),
+  r({ method: 'GET', path: '/integrations', operationId: 'listIntegrations', tag: 'Integrations', summary: 'Connections and health (no secrets)', permission: 'integrations.manage' }),
+  r({ method: 'GET', path: '/admin/members', operationId: 'listMembers', tag: 'Administration', summary: 'Tenant members and roles', permission: 'admin.tenant' }),
+  r({ method: 'POST', path: '/admin/members', operationId: 'addMember', tag: 'Administration', summary: 'Add member with a role template', permission: 'admin.tenant', body: S.AddMemberBody, status: 201 }),
+  r({ method: 'GET', path: '/admin/roles', operationId: 'listRoles', tag: 'Administration', summary: 'Roles and their permissions', permission: 'admin.tenant' }),
+  r({ method: 'GET', path: '/audit-events', operationId: 'listAuditEvents', tag: 'Administration', summary: 'Append-only audit log', permission: 'audit.view', query: S.AuditQuery }),
 ];
 
 export const ROUTES: readonly RouteDef[] = ROUTE_TABLE;

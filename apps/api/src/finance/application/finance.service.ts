@@ -182,6 +182,34 @@ export class FinanceService {
     });
   }
 
+  // ---------------------------------------------------------------- lists & reports
+  listCharges(ctx: RequestContext, jobId?: string) {
+    return this.db.run(ctx, (tx) => tx.q(`SELECT c.id, c.job_id, c.kind, c.description, c.quantity, c.unit_amount, c.amount, c.currency, c.tax_code, c.status, c.source_event_key, p.legal_name AS party FROM finance.charges c LEFT JOIN parties.parties p ON p.id = c.party_id
+      ${jobId ? 'WHERE c.job_id = $1' : ''} ORDER BY c.created_at DESC LIMIT 500`, jobId ? [jobId] : []));
+  }
+  listPayments(ctx: RequestContext) {
+    return this.db.run(ctx, (tx) => tx.q(`SELECT p.id, p.amount, p.amount_allocated, p.amount - p.amount_allocated AS available, p.currency, p.received_on, p.bank_reference, p.version, pa.legal_name AS party FROM finance.payments p JOIN parties.parties pa ON pa.id = p.party_id ORDER BY p.received_on DESC LIMIT 300`));
+  }
+  listSupplierBills(ctx: RequestContext) {
+    return this.db.run(ctx, (tx) => tx.q(`SELECT b.id, b.supplier_invoice_no, b.amount, b.variance, b.currency, b.status, b.created_at, p.legal_name AS supplier, j.ref AS job_ref FROM finance.supplier_bills b JOIN parties.parties p ON p.id = b.supplier_party_id JOIN logistics.jobs j ON j.id = b.job_id ORDER BY b.created_at DESC LIMIT 300`));
+  }
+  /** Ageing by DUE date over outstanding posted invoices (outstanding = total − allocated). */
+  receivablesAgeing(ctx: RequestContext) {
+    return this.db.run(ctx, async (tx) => {
+      const rows = await tx.q(`SELECT currency, CASE WHEN due_date >= current_date THEN 'current' WHEN current_date - due_date <= 30 THEN '1-30' WHEN current_date - due_date <= 60 THEN '31-60' WHEN current_date - due_date <= 90 THEN '61-90' ELSE '90+' END AS bucket,
+        count(*)::int AS invoices, sum(total - amount_allocated) AS outstanding FROM finance.invoices WHERE status='posted' AND total > amount_allocated GROUP BY 1,2`);
+      const order = ['current', '1-30', '31-60', '61-90', '90+']; const currencies = [...new Set(rows.map((r: any) => r.currency))];
+      return { asOf: new Date().toISOString().slice(0, 10), currencies: currencies.map((c) => ({ currency: c, buckets: order.map((b) => { const r = rows.find((x: any) => x.currency === c && x.bucket === b); return { bucket: b, invoices: r?.invoices ?? 0, outstanding: money(r?.outstanding ?? 0) }; }) })) };
+    });
+  }
+  jobProfitability(ctx: RequestContext) {
+    return this.db.run(ctx, (tx) => tx.q(`SELECT j.id, j.ref, j.status, j.finance_status, j.currency,
+        COALESCE(sum(c.amount) FILTER (WHERE c.kind='revenue' AND c.status<>'cancelled'),0) AS revenue, COALESCE(sum(c.amount) FILTER (WHERE c.kind='cost' AND c.status<>'cancelled'),0) AS cost,
+        COALESCE((SELECT sum(jl.credit - jl.debit) FROM finance.journal_lines jl JOIN finance.accounts a ON a.id = jl.account_id WHERE jl.job_id = j.id AND a.system_key='REVENUE'),0) AS posted_revenue,
+        COALESCE((SELECT sum(jl.debit - jl.credit) FROM finance.journal_lines jl JOIN finance.accounts a ON a.id = jl.account_id WHERE jl.job_id = j.id AND a.system_key='COST'),0) AS posted_cost
+        FROM logistics.jobs j LEFT JOIN finance.charges c ON c.job_id = j.id GROUP BY j.id ORDER BY j.created_at DESC LIMIT 200`));
+  }
+
   // ---------------------------------------------------------------- margins & closure
   async jobMargin(ctx: RequestContext, jobId: string) {
     return this.db.run(ctx, async (tx) => {

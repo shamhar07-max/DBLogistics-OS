@@ -31,6 +31,7 @@ export class IntelligenceService {
     await this.db.run(aiCtx, (tx) => audit(tx, aiCtx, 'ai.tool.invoked', 'ai_tool', ctx.userId, { tool: name, risk: tool.risk, args: a }));
     return { tool: name, risk: tool.risk, result, evidence: { actor: 'ai-on-behalf-of-user', userId: ctx.userId, at: new Date().toISOString() } };
   }
+  listTools(ctx: RequestContext) { return AI_TOOLS.map((t) => ({ name: t.name, description: t.description, permission: t.permission, risk: t.risk, allowed: can(ctx, t.permission) })); }
   /** Live owner overview. Each figure is a plain query so it can be drilled into. */
   ownerOverview(ctx: RequestContext) {
     return this.db.run(ctx, async (tx: Tx) => {
@@ -49,6 +50,7 @@ export class IntelligenceService {
 export class IntelligenceController {
   constructor(@Inject(IntelligenceService) private s: IntelligenceService) {}
   @Op('invokeAiTool') ai(@Ctx() c: RequestContext, @Param('name') n: string, @Body() b: any) { return this.s.invokeTool(c, n, b.args); }
+  @Op('listAiTools') lt(@Ctx() c: RequestContext) { return this.s.listTools(c); }
   @Op('getOwnerOverview') ov(@Ctx() c: RequestContext) { return this.s.ownerOverview(c); }
 }
 @Module({ imports: [FinanceModule], providers: [IntelligenceService], controllers: [IntelligenceController] }) export class IntelligenceModule {}

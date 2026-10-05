@@ -11,7 +11,6 @@ const NAV = [
   ['Warehouses', '/warehouse', Warehouse], ['Customs & Trade', '/customs', Stamp], ['Documents', '/documents', Briefcase], ['Money', '/finance', Wallet], ['People & Assets', '/people', Contact],
   ['Service & Quality', '/quality', ShieldCheck], ['Intelligence', '/intelligence', Sparkles], ['Automation', '/automation', Zap], ['Administration', '/admin', Settings2],
 ] as const;
-const LIVE = new Set(['/', '/enquiries', '/jobs', '/warehouse', '/finance', '/approvals']);
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname(); const [paused, setPaused] = useState(false); const [env, setEnv] = useState<Environment>('owner');
@@ -24,9 +23,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <div className="relative w-full overflow-hidden" style={{ aspectRatio: '1760/480' }}><img src="/logo.png" alt="DigitalBurj Logistics OS — One system. Every operation." className="absolute max-w-none" style={{ width: '112.67%', left: '-7.67%', top: '-29.17%' }} /></div>
         </div>
         <nav className="flex-1 space-y-0.5 overflow-auto px-2.5" aria-label="Primary">
-          {NAV.map(([label, href, Icon]) => { const active = href === '/' ? path === '/' : path.startsWith(href); const live = LIVE.has(href);
-            return <Link key={href} href={live ? href : '#'} aria-disabled={!live} title={live ? undefined : 'Interface arrives in a later release — API area available as noted in specifications'}
-              className={clsx('relative flex items-center gap-3 rounded-sm px-2.5 py-2 text-[13.5px] transition hover:translate-x-0.5 hover:bg-white/5', active && 'bg-gradient-to-r from-signal/25 to-transparent text-white', !live && 'opacity-50')}>
+          {NAV.map(([label, href, Icon]) => { const active = href === '/' ? path === '/' : href === '/enquiries' ? ['/enquiries', '/quotes'].some((x) => path.startsWith(x)) : path.startsWith(href); return <Link key={href} href={href} aria-current={active ? 'page' : undefined}
+              className={clsx('relative flex items-center gap-3 rounded-sm px-2.5 py-2 text-[13.5px] transition hover:translate-x-0.5 hover:bg-white/5', active && 'bg-gradient-to-r from-signal/25 to-transparent text-white')}>
               {active && <i className="absolute -left-2.5 top-1.5 bottom-1.5 w-1 rounded-r bg-signal" />}<Icon size={17} className={active ? 'text-white' : 'text-[#7FA79C]'} />{label}</Link>; })}
         </nav>
         <div className="border-t border-white/10 p-3.5 text-xs text-[#8FB0A7]"><Link href="/api/auth/logout" prefetch={false} className="underline">Sign out</Link></div>

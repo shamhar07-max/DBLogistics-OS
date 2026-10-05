@@ -1,7 +1,7 @@
-import { Controller, Inject, Injectable, Module, Post, Param, Req, HttpCode, Headers, SetMetadata } from '@nestjs/common';
+import { Controller, Get, Inject, Injectable, Module, Post, Param, Req, HttpCode, Headers, SetMetadata } from '@nestjs/common';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { ROUTES } from '@dbl/contracts';
-import { Db, DomainError, emit, type RequestContext } from '../platform';
+import { Ctx, Db, DomainError, emit, type RequestContext } from '../platform';
 
 const SYSTEM_USER = '00000000-0000-0000-0000-000000000000';
 /** Resolves a connection's webhook secret from the secrets manager (env in dev). Tenant rows hold only a REFERENCE. */
@@ -11,6 +11,12 @@ export const envSecretResolver = (ref: string) => process.env[`SECRET_${ref.repl
 @Injectable()
 export class IntegrationsService {
   constructor(@Inject(Db) private db: Db, @Inject(SECRET_RESOLVER) private secrets: (ref: string) => string | undefined) {}
+  list(ctx: RequestContext) {
+    return this.db.run(ctx, async (tx) => ({
+      connections: await tx.q(`SELECT id, provider, capability, status, external_account, mapping_version, last_success_at, last_error FROM integ.connections ORDER BY provider`),            // credential references are never returned
+      inbox: await tx.q(`SELECT provider, status, count(*)::int AS n, max(received_at) AS last_received FROM integ.inbox_events GROUP BY provider, status ORDER BY provider, status`),
+    }));
+  }
   /**
    * Inbound webhook: verify provider signature → record external event id (dedupe) → store payload → acknowledge; business
    * processing happens asynchronously in the worker from the outbox. A duplicate delivery has NO additional effect.
@@ -35,9 +41,11 @@ export class IntegrationsService {
   }
 }
 const route = ROUTES.find((r) => r.operationId === 'receiveWebhook')!;
+const listRoute = ROUTES.find((r) => r.operationId === 'listIntegrations')!;
 @Controller()
 export class IntegrationsController {
   constructor(@Inject(IntegrationsService) private s: IntegrationsService) {}
+  @Get(listRoute.path) @SetMetadata('dbl:route', listRoute) listIntegrations(@Ctx() ctx: RequestContext) { return this.s.list(ctx); }
   @Post(route.path) @HttpCode(202) @SetMetadata('dbl:route', route)
   hook(@Param('provider') provider: string, @Headers('x-tenant-id') tenant: string, @Headers('x-dbl-signature') sig: string, @Req() req: any) {
     return this.s.receive(provider, tenant, req.rawBody ?? Buffer.from(JSON.stringify(req.body)), sig, req.body);

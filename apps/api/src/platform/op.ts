@@ -15,6 +15,7 @@ export const Op = (operationId: string) => {
   return applyDecorators(route.method === 'GET' ? Get(route.path) : Post(route.path), HttpCode(route.status ?? 200), SetMetadata(META, route));
 };
 export const Ctx = createParamDecorator((_d, ec: ExecutionContext): RequestContext => ec.switchToHttp().getRequest().ctx);
+export const Qry = createParamDecorator((_d, ec: ExecutionContext) => ec.switchToHttp().getRequest().parsedQuery ?? {});
 export const RawReq = createParamDecorator((_d, ec: ExecutionContext) => ec.switchToHttp().getRequest());
 
 @Injectable()
@@ -65,6 +66,11 @@ export class OpGuard implements CanActivate {
       const parsed = route.body.safeParse(req.body ?? {});
       if (!parsed.success) throw new DomainError('VALIDATION_FAILED', 'Request body is invalid.', { issues: parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })) });
       req.body = parsed.data;
+    }
+    if (route.query) {
+      const pq = route.query.safeParse(req.query ?? {});
+      if (!pq.success) throw new DomainError('VALIDATION_FAILED', 'Query string is invalid.', { issues: pq.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })) });
+      req.parsedQuery = pq.data;
     }
     req.ctx = ctx;
     return true;

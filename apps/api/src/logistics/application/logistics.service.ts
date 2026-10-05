@@ -31,6 +31,20 @@ export class LogisticsService {
     });
   }
 
+  async listShipments(ctx: RequestContext, jobId?: string) {
+    return this.db.run(ctx, (tx) => tx.q(`SELECT s.id, s.ref, s.mode, s.origin, s.destination, s.status, s.documents_status, s.delivered_at, s.job_id, j.ref AS job_ref FROM logistics.shipments s JOIN logistics.jobs j ON j.id = s.job_id
+      WHERE true ${jobId ? 'AND s.job_id = $1' : ''} ${isExternal(ctx) ? `AND j.customer_party_id = $${jobId ? 2 : 1}` : ''} ORDER BY s.created_at DESC LIMIT 300`, [...(jobId ? [jobId] : []), ...(isExternal(ctx) ? [ctx.partyId] : [])]));
+  }
+  async getShipment(ctx: RequestContext, id: string) {
+    return this.db.run(ctx, async (tx) => {
+      const s = await tx.maybe(`SELECT s.*, j.ref AS job_ref, j.customer_party_id, j.legal_entity_id FROM logistics.shipments s JOIN logistics.jobs j ON j.id = s.job_id WHERE s.id=$1`, [id]);
+      if (!s || (isExternal(ctx) && s.customer_party_id !== ctx.partyId)) throw new DomainError('NOT_FOUND', 'Shipment not found.');
+      const legs = await tx.q(`SELECT l.id, l.seq, l.mode, l.origin, l.destination, l.planned_departure, l.planned_arrival, l.estimated_arrival, l.actual_arrival, p.legal_name AS operator FROM logistics.legs l LEFT JOIN parties.parties p ON p.id = l.operator_party_id WHERE l.shipment_id=$1 ORDER BY l.seq`, [id]);
+      const cargo = await tx.q(`SELECT c.id, c.kind, c.description, c.quantity, c.gross_weight_kg, c.volume_cbm, c.hs_code, c.batch, p.legal_name AS owner FROM logistics.cargo_units c JOIN parties.parties p ON p.id = c.owner_party_id WHERE c.shipment_id=$1`, [id]);
+      const bookings = await tx.q(`SELECT b.id, b.status, b.external_ref, b.outcome_unknown, b.version, b.created_at, p.legal_name AS carrier FROM logistics.bookings b JOIN parties.parties p ON p.id = b.carrier_party_id WHERE b.shipment_id=$1 ORDER BY b.created_at`, [id]);
+      return { ...s, legs, cargo, bookings };
+    });
+  }
   async createShipment(ctx: RequestContext, b: any) {
     return this.db.run(ctx, async (tx) => {
       const job = await tx.maybe(`SELECT * FROM logistics.jobs WHERE id=$1 FOR UPDATE`, [b.jobId]);

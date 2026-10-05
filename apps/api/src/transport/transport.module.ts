@@ -1,10 +1,38 @@
-import { Body, Controller, Inject, Injectable, Module } from '@nestjs/common';
-import { Ctx, Db, DomainError, Op, type RequestContext, type Tx } from '../platform';
+import { Body, Controller, Inject, Injectable, Module, Param } from '@nestjs/common';
+import { audit, assertScope, Ctx, Db, DomainError, emit, Op, type RequestContext, type Tx } from '../platform';
+import { PeopleModule, PeopleService } from '../people';
 
 /** Offline-first device sync: each command carries commandId/device/actor/observed version/device time; server receipt time is stored separately. */
 @Injectable()
 export class TransportService {
-  constructor(@Inject(Db) private db: Db) {}
+  constructor(@Inject(Db) private db: Db, @Inject(PeopleService) private people: PeopleService) {}
+  listTrips(ctx: RequestContext) {
+    return this.db.run(ctx, (tx) => tx.q(`SELECT t.id, t.ref, t.status, t.vehicle_ref, t.version, p.legal_name AS transporter, e.full_name AS driver, t.driver_employee_id,
+      COALESCE((SELECT json_agg(json_build_object('id', s.id, 'seq', s.seq, 'kind', s.kind, 'address', s.address, 'status', s.status, 'shipmentId', s.shipment_id, 'shipmentRef', sh.ref, 'pod', pod.signed_by IS NOT NULL, 'signedBy', pod.signed_by) ORDER BY s.seq)
+        FROM transport.trip_stops s LEFT JOIN logistics.shipments sh ON sh.id = s.shipment_id LEFT JOIN transport.proofs_of_delivery pod ON pod.trip_stop_id = s.id WHERE s.trip_id = t.id), '[]') AS stops
+      FROM transport.trips t JOIN parties.parties p ON p.id = t.transporter_party_id LEFT JOIN people.employees e ON e.id = t.driver_employee_id ORDER BY t.created_at DESC LIMIT 200`));
+  }
+  createTrip(ctx: RequestContext, b: any) {
+    return this.db.run(ctx, async (tx) => {
+      const tp = await tx.maybe(`SELECT 1 FROM parties.party_roles WHERE party_id=$1 AND role='transporter'`, [b.transporterPartyId]); if (!tp) throw new DomainError('VALIDATION_FAILED', 'Party is not a transporter.');
+      const ref = (await tx.one<{ r: string }>(`SELECT platform.next_ref('trip','TRP') r`)).r;
+      const t = await tx.one(`INSERT INTO transport.trips(tenant_id, ref, transporter_party_id, driver_employee_id, vehicle_ref) VALUES ($1,$2,$3,$4,$5) RETURNING id, ref, status, version`, [ctx.tenantId, ref, b.transporterPartyId, b.driverEmployeeId ?? null, b.vehicleRef ?? null]);
+      let seq = 1; for (const s of b.stops) await tx.q(`INSERT INTO transport.trip_stops(tenant_id, trip_id, seq, kind, shipment_id, address) VALUES ($1,$2,$3,$4,$5,$6)`, [ctx.tenantId, t.id, seq++, s.kind, s.shipmentId ?? null, s.address]);
+      await audit(tx, ctx, 'trip.planned', 'trip', t.id); return t;
+    });
+  }
+  /** Dispatch is blocked when the assigned driver has no valid driving qualification on the dispatch date. */
+  dispatchTrip(ctx: RequestContext, id: string) {
+    return this.db.run(ctx, async (tx) => {
+      const t = await tx.maybe(`SELECT * FROM transport.trips WHERE id=$1 FOR UPDATE`, [id]); if (!t) throw new DomainError('NOT_FOUND', 'Trip not found.');
+      if (t.status !== 'planned') throw new DomainError('INVALID_STATE_TRANSITION', `Trip is ${t.status}.`);
+      if (t.driver_employee_id) await this.people.assertQualified(tx, t.driver_employee_id, 'driving', new Date().toISOString().slice(0, 10));
+      await tx.q(`UPDATE transport.trips SET status='dispatched' WHERE id=$1`, [id]);
+      await audit(tx, ctx, 'trip.dispatched', 'trip', id); await emit(tx, ctx, 'TripDispatched', 'trip', id, {});
+      return { id, status: 'dispatched' };
+    });
+  }
+
   async sync(ctx: RequestContext, b: any) {
     const results: any[] = [];
     for (const cmd of b.commands) {
@@ -38,5 +66,6 @@ export class TransportService {
     return { evidence: cmd.type };
   }
 }
-@Controller() export class TransportController { constructor(@Inject(TransportService) private s: TransportService) {} @Op('syncDeviceCommands') sync(@Ctx() c: RequestContext, @Body() b: any) { return this.s.sync(c, b); } }
-@Module({ providers: [TransportService], controllers: [TransportController] }) export class TransportModule {}
+@Controller() export class TransportController { constructor(@Inject(TransportService) private s: TransportService) {} @Op('syncDeviceCommands') sync(@Ctx() c: RequestContext, @Body() b: any) { return this.s.sync(c, b); }
+  @Op('listTrips') lt(@Ctx() c: RequestContext) { return this.s.listTrips(c); } @Op('createTrip') ct(@Ctx() c: RequestContext, @Body() b: any) { return this.s.createTrip(c, b); } @Op('dispatchTrip') dt(@Ctx() c: RequestContext, @Param('id') id: string) { return this.s.dispatchTrip(c, id); } }
+@Module({ imports: [PeopleModule], providers: [TransportService], controllers: [TransportController] }) export class TransportModule {}

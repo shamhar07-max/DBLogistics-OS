@@ -5,6 +5,10 @@ import { audit, Ctx, Db, DomainError, Op, type RequestContext } from '../platfor
 @Injectable()
 export class AutomationService {
   constructor(@Inject(Db) private db: Db) {}
+  list(ctx: RequestContext) { return this.db.run(ctx, (tx) => tx.q(`SELECT id, key, version, trigger_topic, status, definition, created_at FROM automation.workflow_definitions ORDER BY key, version DESC`)); }
+  runs(ctx: RequestContext) {
+    return this.db.run(ctx, (tx) => tx.q(`SELECT r.id, r.status, r.started_at, r.finished_at, r.resume_at, r.attempts, r.last_error, r.state, d.key, d.version, d.trigger_topic FROM automation.workflow_runs r JOIN automation.workflow_definitions d ON d.id = r.definition_id ORDER BY r.started_at DESC LIMIT 200`));
+  }
   create(ctx: RequestContext, b: any) {
     return this.db.run(ctx, async (tx) => {
       if (!(EVENT_TOPICS as readonly string[]).includes(b.triggerTopic)) throw new DomainError('VALIDATION_FAILED', `Unknown trigger topic ${b.triggerTopic}`);
@@ -23,6 +27,8 @@ export class AutomationService {
   }
 }
 @Controller() export class AutomationController { constructor(@Inject(AutomationService) private s: AutomationService) {}
+  @Op('listWorkflows') lw(@Ctx() c: RequestContext) { return this.s.list(c); }
+  @Op('listWorkflowRuns') lwr(@Ctx() c: RequestContext) { return this.s.runs(c); }
   @Op('createWorkflow') c(@Ctx() c: RequestContext, @Body() b: any) { return this.s.create(c, b); }
   @Op('activateWorkflow') a(@Ctx() c: RequestContext, @Param('id') id: string) { return this.s.activate(c, id); } }
 @Module({ providers: [AutomationService], controllers: [AutomationController] }) export class AutomationModule {}

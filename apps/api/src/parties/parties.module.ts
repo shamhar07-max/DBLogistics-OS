@@ -16,6 +16,23 @@ export class PartiesService {
       await audit(tx, ctx, 'party.created', 'party', p.id); return { ...p, roles: b.roles };
     });
   }
+  getParty(ctx: RequestContext, id: string) {
+    return this.db.run(ctx, async (tx) => {
+      const p = await tx.maybe(`SELECT * FROM parties.parties WHERE id=$1`, [id]); if (!p) throw new DomainError('NOT_FOUND', 'Party not found.');
+      const roles = (await tx.q(`SELECT role FROM parties.party_roles WHERE party_id=$1 ORDER BY role`, [id])).map((r: any) => r.role);
+      const contacts = await tx.q(`SELECT id, name, email, phone, preferred_channel FROM parties.contacts WHERE party_id=$1`, [id]);
+      const bank = await tx.q(`SELECT id, account_name, iban, swift, currency, active_from, active_to FROM parties.bank_details WHERE party_id=$1 ORDER BY active_from DESC`, [id]);
+      const changes = await tx.q(`SELECT id, status, proposed, proposed_at FROM parties.bank_detail_changes WHERE party_id=$1 ORDER BY proposed_at DESC LIMIT 20`, [id]);
+      const work = await tx.one(`SELECT (SELECT count(*)::int FROM commercial.quotes WHERE customer_party_id=$1 AND status IN ('draft','approved','sent')) open_quotes,
+        (SELECT count(*)::int FROM logistics.jobs WHERE customer_party_id=$1) jobs, (SELECT count(*)::int FROM logistics.jobs WHERE customer_party_id=$1 AND status NOT IN ('closed','cancelled')) active_jobs,
+        COALESCE((SELECT sum(total - amount_allocated) FROM finance.invoices WHERE customer_party_id=$1 AND status='posted'),0) outstanding,
+        COALESCE((SELECT sum(total - amount_allocated) FROM finance.invoices WHERE customer_party_id=$1 AND status='posted' AND due_date < current_date),0) overdue`, [id]);
+      return { ...p, roles, contacts, bankDetails: bank, bankChanges: changes, work };
+    });
+  }
+  listBankChanges(ctx: RequestContext) {
+    return this.db.run(ctx, (tx) => tx.q(`SELECT c.id, c.status, c.proposed, c.proposed_at, c.proposed_by, c.decided_by, c.callback_verified, p.legal_name AS party, c.party_id FROM parties.bank_detail_changes c JOIN parties.parties p ON p.id = c.party_id ORDER BY (c.status='proposed') DESC, c.proposed_at DESC LIMIT 200`));
+  }
   proposeBankChange(ctx: RequestContext, partyId: string, b: any) {
     return this.db.run(ctx, async (tx) => {
       const c = await tx.one(`INSERT INTO parties.bank_detail_changes(tenant_id, party_id, proposed, proposed_by) VALUES ($1,$2,$3::jsonb,$4) RETURNING id, status`, [ctx.tenantId, partyId, JSON.stringify(b), ctx.userId]);
@@ -40,6 +57,8 @@ export class PartiesService {
 @Controller()
 export class PartiesController {
   constructor(@Inject(PartiesService) private s: PartiesService) {}
+  @Op('getParty') gp(@Ctx() c: RequestContext, @Param('id') id: string) { return this.s.getParty(c, id); }
+  @Op('listBankChanges') lbc(@Ctx() c: RequestContext) { return this.s.listBankChanges(c); }
   @Op('listParties') l(@Ctx() c: RequestContext) { return this.s.list(c); }
   @Op('createParty') cr(@Ctx() c: RequestContext, @Body() b: any) { return this.s.create(c, b); }
   @Op('proposeBankChange') pb(@Ctx() c: RequestContext, @Param('id') id: string, @Body() b: any) { return this.s.proposeBankChange(c, id, b); }

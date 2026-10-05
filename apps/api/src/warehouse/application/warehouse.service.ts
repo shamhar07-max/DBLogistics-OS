@@ -31,11 +31,10 @@ export class WarehouseService {
   }
   placeHold(ctx: RequestContext, lotId: string, b: any) {
     return this.db.run(ctx, async (tx) => {
-      const lot = await tx.maybe(`SELECT * FROM warehouse.stock_lots WHERE id=$1 FOR UPDATE`, [lotId]); if (!lot) throw new DomainError('NOT_FOUND', 'Lot not found.');
-      await this.facilityScope(tx, ctx, 'warehouse.hold.place', lot.facility_id);
-      const h = await tx.one(`INSERT INTO warehouse.holds(tenant_id, lot_id, reason, kind, placed_by) VALUES ($1,$2,$3,$4,$5) RETURNING id`, [ctx.tenantId, lotId, b.reason, b.kind, ctx.userId]);
-      if (b.kind === 'quarantine') await tx.q(`UPDATE warehouse.stock_lots SET condition='quarantined' WHERE id=$1`, [lotId]);
-      await audit(tx, ctx, 'stock.hold_placed', 'stock_lot', lotId, { reason: b.reason, kind: b.kind }); return { holdId: h.id, lotId, condition: b.kind === 'quarantine' ? 'quarantined' : lot.condition };
+      const pre = await tx.maybe(`SELECT facility_id FROM warehouse.stock_lots WHERE id=$1`, [lotId]); if (!pre) throw new DomainError('NOT_FOUND', 'Lot not found.');
+      await this.facilityScope(tx, ctx, 'warehouse.hold.place', pre.facility_id);
+      const h = await this.placeHoldInTx(tx, ctx, lotId, b.reason, b.kind);
+      return { holdId: h.holdId, lotId, condition: b.kind === 'quarantine' ? 'quarantined' : 'good' };
     });
   }
   /** Reserve: the lot row lock serialises competing requests for the same stock. */
@@ -72,5 +71,33 @@ export class WarehouseService {
       await audit(tx, ctx, 'release.executed', 'release_order', id, { qty: o.qty }); await emit(tx, ctx, 'CargoReleased', 'release_order', id, { lotId: lot.id, qty: o.qty });
       return { id, status: 'released', remainingOnHand: D(lot.qty_on_hand).minus(o.qty).toFixed(4) };
     });
+  }
+
+  /** Shared by the warehouse API and the quality module (incident → hold) so every hold is created the same way. */
+  async placeHoldInTx(tx: any, ctx: RequestContext, lotId: string, reason: string, kind: string) {
+    const lot = await tx.maybe(`SELECT * FROM warehouse.stock_lots WHERE id=$1 FOR UPDATE`, [lotId]); if (!lot) throw new DomainError('NOT_FOUND', 'Lot not found.');
+    const h = await tx.one(`INSERT INTO warehouse.holds(tenant_id, lot_id, reason, kind, placed_by) VALUES ($1,$2,$3,$4,$5) RETURNING id`, [ctx.tenantId, lotId, reason, kind, ctx.userId]);
+    if (kind === 'quarantine' || kind === 'quality') await tx.q(`UPDATE warehouse.stock_lots SET condition='quarantined' WHERE id=$1`, [lotId]);
+    await audit(tx, ctx, 'stock.hold_placed', 'stock_lot', lotId, { reason, kind, holdId: h.id });
+    return { holdId: h.id as string, facilityId: lot.facility_id as string };
+  }
+  /** A hold is released explicitly by a different person with the quality release permission — never because a sensor "went back in range". */
+  releaseHold(ctx: RequestContext, holdId: string, note: string) {
+    return this.db.run(ctx, async (tx) => {
+      const h = await tx.maybe(`SELECT * FROM warehouse.holds WHERE id=$1 FOR UPDATE`, [holdId]); if (!h) throw new DomainError('NOT_FOUND', 'Hold not found.');
+      if (h.released_at) throw new DomainError('INVALID_STATE_TRANSITION', 'Hold already released.');
+      if (h.placed_by === ctx.userId) throw new DomainError('SEPARATION_OF_DUTIES', 'A hold cannot be released by the person who placed it.');
+      await tx.q(`UPDATE warehouse.holds SET released_at=now(), released_by=$2, release_note=$3 WHERE id=$1`, [holdId, ctx.userId, note]);
+      const left = await tx.maybe(`SELECT 1 FROM warehouse.holds WHERE lot_id=$1 AND released_at IS NULL`, [h.lot_id]);
+      if (!left) await tx.q(`UPDATE warehouse.stock_lots SET condition='good' WHERE id=$1 AND condition='quarantined'`, [h.lot_id]);
+      await audit(tx, ctx, 'stock.hold_released', 'stock_lot', h.lot_id, { holdId, note }); await emit(tx, ctx, 'HoldReleased', 'hold', holdId, { lotId: h.lot_id });
+      return { id: holdId, released: true, lotAvailable: !left };
+    });
+  }
+  listHolds(ctx: RequestContext) {
+    return this.db.run(ctx, (tx) => tx.q(`SELECT h.id, h.lot_id, l.description AS lot, h.kind, h.reason, h.placed_at, h.released_at, h.release_note, (h.released_at IS NULL) AS active FROM warehouse.holds h JOIN warehouse.stock_lots l ON l.id = h.lot_id ORDER BY (h.released_at IS NULL) DESC, h.placed_at DESC LIMIT 300`));
+  }
+  listReleaseOrders(ctx: RequestContext) {
+    return this.db.run(ctx, (tx) => tx.q(`SELECT o.id, o.ref, o.status, o.qty, o.consignee, o.customs_case_id, o.requested_by, o.authorized_by, o.released_at, l.description AS lot, l.customs_status FROM warehouse.release_orders o JOIN warehouse.stock_lots l ON l.id = o.lot_id ORDER BY o.created_at DESC LIMIT 300`));
   }
 }

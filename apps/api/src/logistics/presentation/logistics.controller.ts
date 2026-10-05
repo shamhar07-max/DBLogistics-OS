@@ -1,5 +1,5 @@
 import { Body, Controller, Inject, Param } from '@nestjs/common';
-import { Ctx, Op, type RequestContext } from '../../platform';
+import { Ctx, Op, Qry, type RequestContext } from '../../platform';
 import { LogisticsService } from '../application/logistics.service';
 import { FinanceService } from '../../finance';
 @Controller()
@@ -9,6 +9,8 @@ export class LogisticsController {
   @Op('getJob') gj(@Ctx() c: RequestContext, @Param('id') id: string) { return this.s.getJob(c, id); }
   @Op('getJobMargin') gm(@Ctx() c: RequestContext, @Param('id') id: string) { return this.fin.jobMargin(c, id); }
   @Op('closeJob') cj(@Ctx() c: RequestContext, @Param('id') id: string, @Body() b: any) { return this.s.closeJob(c, id, b.acknowledgedExceptions); }
+  @Op('listShipments') lsh(@Ctx() c: RequestContext, @Qry() q: any) { return this.s.listShipments(c, q.jobId); }
+  @Op('getShipment') gsh(@Ctx() c: RequestContext, @Param('id') id: string) { return this.s.getShipment(c, id); }
   @Op('createShipment') cs(@Ctx() c: RequestContext, @Body() b: any) { return this.s.createShipment(c, b); }
   @Op('getShipmentTimeline') tl(@Ctx() c: RequestContext, @Param('id') id: string) { return this.s.timeline(c, id); }
   @Op('recordTrackingEvent') ev(@Ctx() c: RequestContext, @Param('id') id: string, @Body() b: any) { return this.s.recordEvent(c, id, b); }

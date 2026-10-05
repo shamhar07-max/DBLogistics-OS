@@ -28,6 +28,10 @@ export class TradeService {
       return { id, internalStatus: 'release_recorded', authorityStatus: 'released', duplicate: false };
     });
   }
+  listCases(ctx: RequestContext) {
+    return this.db.run(ctx, (tx) => tx.q(`SELECT c.id, c.ref, c.procedure, c.internal_status, c.authority_status, c.authority_reference, c.job_id, j.ref AS job_ref, p.legal_name AS importer, c.created_at, c.version,
+      EXISTS (SELECT 1 FROM trade.release_evidence e WHERE e.case_id = c.id) AS has_evidence FROM trade.customs_cases c JOIN logistics.jobs j ON j.id = c.job_id JOIN parties.parties p ON p.id = c.importer_party_id ORDER BY c.created_at DESC LIMIT 300`));
+  }
   /** Used by warehouse (public API of this module). */
   async assertReleaseEvidence(tx: Tx, caseId: string | null) {
     if (!caseId) throw new DomainError('RELEASE_EVIDENCE_REQUIRED', 'Bonded stock needs a customs case with recorded release evidence.');
@@ -38,6 +42,7 @@ export class TradeService {
 @Controller()
 export class TradeController {
   constructor(@Inject(TradeService) private s: TradeService) {}
+  @Op('listCustomsCases') lc(@Ctx() c: RequestContext) { return this.s.listCases(c); }
   @Op('createCustomsCase') c(@Ctx() c: RequestContext, @Body() b: any) { return this.s.createCase(c, b); }
   @Op('recordCustomsRelease') r(@Ctx() c: RequestContext, @Param('id') id: string, @Body() b: any) { return this.s.recordRelease(c, id, b); }
 }

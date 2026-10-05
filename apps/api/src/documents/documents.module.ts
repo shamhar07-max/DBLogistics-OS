@@ -1,6 +1,6 @@
 import { Body, Controller, Inject, Injectable, Module, Param } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { audit, Ctx, Db, DomainError, emit, expectVersion, Op, STORAGE, type RequestContext, type StoragePort } from '../platform';
+import { audit, Ctx, Db, DomainError, emit, expectVersion, Op, Qry, STORAGE, type RequestContext, type StoragePort } from '../platform';
 
 @Injectable()
 export class DocumentsService {
@@ -31,6 +31,22 @@ export class DocumentsService {
       return { id: d.id, versionId: v.id, version: d.version, scanStatus: 'pending' };
     });
   }
+  list(ctx: RequestContext, q: { relatedType?: string; relatedId?: string; docType?: string }) {
+    const w: string[] = []; const a: unknown[] = []; const add = (c: string, v: unknown) => { a.push(v); w.push(c.replace('?', `$${a.length}`)); };
+    if (q.relatedType) add('d.related_type = ?', q.relatedType); if (q.relatedId) add('d.related_id = ?', q.relatedId); if (q.docType) add('d.doc_type = ?', q.docType);
+    return this.db.run(ctx, (tx) => tx.q(`SELECT d.id, d.doc_type, d.issuer_kind, d.issuer_name, d.external_reference, d.related_type, d.related_id, d.status, d.version, d.created_at, d.approved_at, v.scan_status, v.size_bytes, v.content_type, v.sha256
+      FROM platform.documents d JOIN LATERAL (SELECT * FROM platform.document_versions WHERE document_id = d.id ORDER BY version_no DESC LIMIT 1) v ON true ${w.length ? 'WHERE ' + w.join(' AND ') : ''} ORDER BY d.created_at DESC LIMIT 300`, a));
+  }
+  /** Signed, short-lived download — only for versions that passed the scan. */
+  downloadUrl(ctx: RequestContext, id: string) {
+    return this.db.run(ctx, async (tx) => {
+      const v = await tx.maybe(`SELECT v.storage_key, v.scan_status, v.sha256 FROM platform.document_versions v WHERE v.document_id=$1 ORDER BY v.version_no DESC LIMIT 1`, [id]);
+      if (!v) throw new DomainError('NOT_FOUND', 'Document not found.');
+      if (v.scan_status !== 'clean') throw new DomainError('DOCUMENT_NOT_CLEAN', 'The document has not passed the malware scan.', { scanStatus: v.scan_status });
+      await audit(tx, ctx, 'document.downloaded', 'document', id);
+      return { url: await this.storage.presignDownload(v.storage_key, 300), expiresInSeconds: 300, sha256: v.sha256 };
+    });
+  }
   approve(ctx: RequestContext, id: string) {
     return this.db.run(ctx, async (tx) => {
       const d = await tx.maybe(`SELECT * FROM platform.documents WHERE id=$1 FOR UPDATE`, [id]);
@@ -48,6 +64,8 @@ export class DocumentsController {
   constructor(@Inject(DocumentsService) private s: DocumentsService) {}
   @Op('createUploadIntent') ui(@Ctx() c: RequestContext, @Body() b: any) { return this.s.createUploadIntent(c, b); }
   @Op('registerDocument') rd(@Ctx() c: RequestContext, @Body() b: any) { return this.s.register(c, b); }
+  @Op('listDocuments') ld(@Ctx() c: RequestContext, @Qry() q: any) { return this.s.list(c, q); }
+  @Op('getDocumentDownloadUrl') dl(@Ctx() c: RequestContext, @Param('id') id: string) { return this.s.downloadUrl(c, id); }
   @Op('approveDocument') ad(@Ctx() c: RequestContext, @Param('id') id: string) { return this.s.approve(c, id); }
 }
 @Module({ providers: [DocumentsService], controllers: [DocumentsController], exports: [DocumentsService] }) export class DocumentsModule {}

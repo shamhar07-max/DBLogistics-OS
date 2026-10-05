@@ -18,6 +18,7 @@ for (const r of ROUTES) {
     description: `Permission: ${r.permission ?? (r.public ? 'public (signature verified)' : 'authenticated')}`,
     security: r.public ? [] : [{ bearer: [] }],
     request: {
+      query: r.query as never,
       params: params.length ? z.object(Object.fromEntries(params.map((p) => [p, z.string().uuid().or(z.string())]))) : undefined,
       headers: r.public ? undefined : z.object(headers).partial({ 'X-Tenant-Id': r.path.startsWith('/me') ? true : undefined } as never),
       body: r.body ? { content: { 'application/json': { schema: r.body } } } : undefined,

@@ -5,10 +5,10 @@ import { Card, Chip, QueryBoundary, RouteLane, SourceBadge, Tabs, TabsContent, T
 import { useCmd, useOp, errView, money } from '@/lib/hooks';
 import { ErrorNote, Field, PageTitle, StatusChip, inputCls } from '@/components/bits';
 import { UploadDocument } from '@/components/UploadDocument';
+import { AuditTab, BookingsTab, CargoTab, ConversationsTab, IncidentsTab, PlanTab, TasksTab, TrackingForms } from '@/components/JobTabs';
 
 const TABS = ['overview', 'plan', 'bookings', 'cargo', 'documents', 'customs', 'tracking', 'tasks', 'conversations', 'costs', 'billing', 'incidents', 'audit'] as const;
 const TAB_LABEL: Record<string, string> = { costs: 'Costs & Revenue' };
-const NOT_YET = new Set(['plan', 'bookings', 'cargo', 'tasks', 'conversations', 'incidents', 'audit']);
 
 export default function JobWorkspace() {
   const { id } = useParams<{ id: string }>(); const job = useOp('getJob', { params: { id } });
@@ -18,12 +18,18 @@ export default function JobWorkspace() {
     <QueryBoundary status={job.status} error={errView(job.error)}>
       {j && <Tabs defaultValue="overview"><TabsList className="mb-4 flex flex-wrap gap-0.5 border-b border-line">{TABS.map((t) => <TabsTrigger key={t} value={t} className="relative px-3.5 py-2.5 font-display text-[13px] font-semibold capitalize text-steel data-[state=active]:text-ink data-[state=active]:after:absolute data-[state=active]:after:inset-x-2.5 data-[state=active]:after:-bottom-px data-[state=active]:after:h-[3px] data-[state=active]:after:bg-signal">{TAB_LABEL[t] ?? t}</TabsTrigger>)}</TabsList>
         <TabsContent value="overview"><Overview j={j} /></TabsContent>
-        <TabsContent value="tracking"><Tracking shipmentId={first?.id} /></TabsContent>
+        <TabsContent value="tracking"><div className="grid gap-5"><Tracking shipmentId={first?.id} />{first && <TrackingForms shipmentId={first.id} jobId={id} />}</div></TabsContent>
         <TabsContent value="documents"><Card title="Documents"><p className="mb-3 text-sm text-steel">Upload goes direct to private storage; the file becomes an immutable version once scanned. Authority documents and internal forms are tagged by issuer.</p>{first ? <UploadDocument relatedType="shipment" relatedId={first.id} /> : <p className="text-sm text-steel">Create a shipment first.</p>}</Card></TabsContent>
         <TabsContent value="customs"><Customs jobId={id} /></TabsContent>
         <TabsContent value="costs"><Margin jobId={id} /></TabsContent>
         <TabsContent value="billing"><Billing jobId={id} /></TabsContent>
-        {[...NOT_YET].map((t) => <TabsContent key={t} value={t}><div data-testid="not-in-release" className="rounded-md border border-dashed border-line-strong p-8 text-center text-sm text-steel"><b className="capitalize">{t}</b> — the API supports this area in the specification; its screen ships in a later release.</div></TabsContent>)}
+        <TabsContent value="plan"><PlanTab jobId={id} /></TabsContent>
+        <TabsContent value="bookings"><BookingsTab jobId={id} /></TabsContent>
+        <TabsContent value="cargo"><CargoTab jobId={id} /></TabsContent>
+        <TabsContent value="tasks"><TasksTab jobId={id} /></TabsContent>
+        <TabsContent value="conversations"><ConversationsTab jobId={id} /></TabsContent>
+        <TabsContent value="incidents"><IncidentsTab jobId={id} /></TabsContent>
+        <TabsContent value="audit"><AuditTab jobId={id} /></TabsContent>
       </Tabs>}
     </QueryBoundary></>);
 }

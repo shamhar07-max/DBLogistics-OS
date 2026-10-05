@@ -93,3 +93,33 @@ export const DeviceCommandBatchBody = z.object({
 });
 export const AiToolInvokeBody = z.object({ args: z.record(z.unknown()).default({}) });
 export const WorkflowBody = z.object({ key: z.string(), triggerTopic: z.string(), definition: z.record(z.unknown()) });
+
+// ---- Transport
+export const CreateTripBody = z.object({
+  transporterPartyId: Uuid, driverEmployeeId: Uuid.optional(), vehicleRef: z.string().optional(),
+  stops: z.array(z.object({ kind: z.enum(['pickup', 'delivery', 'return_empty']), address: z.string().min(3), shipmentId: Uuid.optional() })).min(1),
+});
+// ---- Collaboration
+export const CreateTaskBody = z.object({ title: z.string().min(3), relatedType: z.string().optional(), relatedId: Uuid.optional(), assigneeUserId: Uuid.optional(), dueAt: IsoDateTime.optional() });
+export const PostMessageBody = z.object({ relatedType: z.string(), relatedId: Uuid, channel: z.enum(['internal', 'email', 'whatsapp', 'call']).default('internal'), direction: z.enum(['inbound', 'outbound', 'internal']).default('internal'), body: z.string().min(1).max(4000) });
+// ---- People & assets
+export const CreateEmployeeBody = z.object({ legalEntityId: Uuid, fullName: z.string().min(2), jobTitle: z.string().optional(), department: z.string().optional(), hiredOn: IsoDate.optional() });
+export const AddQualificationBody = z.object({ kind: z.enum(['forklift', 'dg_handling', 'driving', 'customs_broker', 'first_aid', 'reefer_handling']), reference: z.string().optional(), issuedOn: IsoDate, validTo: IsoDate });
+export const CreateAssetBody = z.object({ facilityId: Uuid.optional(), kind: z.enum(['forklift', 'scanner', 'reefer_unit', 'vehicle', 'temperature_logger']), code: z.string().min(2), nextServiceDue: IsoDate.optional(), calibrationDue: IsoDate.optional() });
+// ---- Quality
+export const CreateIncidentBody = z.object({
+  kind: z.enum(['damage', 'shortage', 'temperature_excursion', 'delay', 'document_error', 'other']), severity: z.enum(['low', 'medium', 'high']).default('medium'),
+  description: z.string().min(5), jobId: Uuid.optional(), shipmentId: Uuid.optional(), lotId: Uuid.optional(), placeHold: z.boolean().default(false),
+});
+export const ResolveIncidentBody = z.object({ resolutionNote: z.string().min(5) });
+export const CreateClaimBody = z.object({ incidentId: Uuid, claimantPartyId: Uuid.optional(), insurerPartyId: Uuid.optional(), amount: MoneyString, currency: CurrencyCode });
+export const ReleaseHoldBody = z.object({ note: z.string().min(5) });
+// ---- Admin
+export const AddMemberBody = z.object({ subject: z.string().min(3), email: z.string().email().optional(), role: z.string(), workspace: z.enum(['staff', 'customer', 'agent', 'transporter', 'driver', 'warehouse']).default('staff'), partyId: Uuid.optional(), legalEntityId: Uuid.optional() });
+
+// ---- Query strings
+export const JobQuery = z.object({ jobId: Uuid.optional() });
+export const RelatedQuery = z.object({ relatedType: z.string().optional(), relatedId: Uuid.optional(), jobId: Uuid.optional(), status: z.string().optional() });
+export const DocumentQuery = z.object({ relatedType: z.string().optional(), relatedId: Uuid.optional(), docType: z.string().optional() });
+export const ExpiringQuery = z.object({ withinDays: z.coerce.number().int().min(0).max(3650).optional() });
+export const AuditQuery = z.object({ entityType: z.string().optional(), entityId: Uuid.optional(), limit: z.coerce.number().int().min(1).max(500).default(100) });
