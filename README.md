@@ -6,8 +6,9 @@
 |---|---|
 | `brand/brand-guidelines.html` | Full brand & design-system guide (logo rules, colour, type, shape, components, sector environments, motion, icons) |
 | `brand/brand-board.png` | Full-page image of the guide |
-| `design/dashboard.html` | Interactive Owner dashboard covering all 14 product areas (animated) |
-| `design/dashboard.png` | Full-page image of the dashboard |
+| `design/dashboard-v2.html` | **Current** Owner dashboard — soft bento + frosted glass, map hero, all 14 product areas (animated) |
+| `design/dashboard-v2.png` | Full-page image of dashboard v2 |
+| `design/dashboard.html` / `.png` | v1 (dark-sidebar, dense operations layout) |
 
 ## Brand kit
 ```
