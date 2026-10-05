@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable, type ColumnDef, type SortingState } from '@tanstack/react-table';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
-import { Chip, QueryBoundary, type Tone } from './primitives';
+import { Button, Chip, QueryBoundary, type Tone } from './primitives';
 
 /** Shared page-level building blocks: identical in the staff app and the partner portal, so both look and behave the same. */
 export const statusTone = (s: string): Tone => (['delivered', 'closed', 'posted', 'approved', 'accepted', 'released', 'settled', 'clean', 'confirmed', 'completed', 'active', 'resolved'].includes(s) ? 'ok' : ['executing', 'in_transit', 'in_progress', 'billed', 'sent', 'open', 'requested', 'qualified', 'dispatched', 'running', 'waiting', 'investigating'].includes(s) ? 'info' : ['draft', 'new', 'planned', 'pending', 'partially_billed', 'proposed', 'received'].includes(s) ? 'hold' : ['cancelled', 'rejected', 'expired', 'quarantined', 'failed', 'infected', 'credited'].includes(s) ? 'stop' : 'idle');
@@ -68,4 +68,29 @@ export function Modal({ open, onOpenChange, title, children }: { open: boolean; 
   return (<Dialog.Root open={open} onOpenChange={onOpenChange}><Dialog.Portal><Dialog.Overlay className="fixed inset-0 z-50 bg-ink/50" />
     <Dialog.Content aria-describedby={undefined} className="fixed inset-x-0 bottom-0 top-10 z-50 overflow-y-auto rounded-t-lg bg-white p-5 shadow-raised sm:inset-auto sm:left-1/2 sm:top-1/2 sm:max-h-[90vh] sm:w-[min(760px,94vw)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-lg">
       <div className="mb-4 flex items-center gap-3"><Dialog.Title className="font-display text-lg font-bold">{title}</Dialog.Title><span className="flex-1" /><Dialog.Close className="rounded-sm px-2 py-1 text-sm text-steel underline" aria-label="Close">Close</Dialog.Close></div>{children}</Dialog.Content></Dialog.Portal></Dialog.Root>);
+}
+
+/** Link styled as a ghost button for binary downloads (PDFs). `href` is the proxied API path; opens in a new tab so the browser's viewer handles print/save. */
+export function PdfLink({ href, children = 'Download PDF', testId }: { href: string; children?: React.ReactNode; testId?: string }) {
+  return <a href={href} target="_blank" rel="noopener" data-testid={testId ?? 'pdf-link'} className="inline-flex h-8 items-center gap-2 bg-surface px-3 font-display text-[13px] font-semibold text-ink ring-1 ring-inset ring-line-strong transition hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>{children}</a>;
+}
+
+export interface ConversationItem { id: string | number; body: string; author?: string | null; channel?: string; direction?: string; visibility?: string; created_at: string }
+/** Conversation thread + composer. `mine` marks which messages were written by the viewer (right-aligned). Presentational: the app supplies data and the send handler. */
+export function ConversationView({ items, onSend, pending, error, mine, shareToggle, placeholder = 'Write a message…', fmt }: {
+  items: ConversationItem[]; onSend: (body: string, shared: boolean) => void; pending?: boolean; error?: React.ReactNode; mine: (m: ConversationItem) => boolean;
+  shareToggle?: boolean; placeholder?: string; fmt: (iso: string) => string;
+}) {
+  const [text, setText] = React.useState(''); const [shared, setShared] = React.useState(false);
+  const ordered = [...items].reverse();
+  return (<div className="grid gap-4" data-testid="conversation">
+    <ol className="grid max-h-[28rem] gap-2.5 overflow-y-auto" aria-label="Conversation thread">{ordered.length === 0 && <li className="text-sm text-steel">No messages yet.</li>}
+      {ordered.map((m) => { const me = mine(m); return (<li key={m.id} data-testid="message" className={clsx('max-w-[85%] rounded-sm border p-3 text-sm', me ? 'ml-auto border-brand-200 bg-brand-50' : 'border-line bg-surface', m.visibility === 'internal' && 'border-dashed')}>
+        <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-steel"><b className="text-ink">{me ? 'You' : m.author ?? 'Team'}</b>{m.channel && m.channel !== 'portal' && <Chip tone="idle">{m.channel}</Chip>}{m.visibility === 'internal' && <Chip tone="hold">internal</Chip>}<span className="ml-auto">{fmt(m.created_at)}</span></div>
+        <p className="whitespace-pre-wrap">{m.body}</p></li>); })}</ol>
+    <form className="grid gap-2" onSubmit={(e) => { e.preventDefault(); const b = text.trim(); if (!b) return; onSend(b, shared); setText(''); setShared(false); }}>
+      <label className="grid gap-1.5"><span className="font-label text-[11px] font-semibold uppercase tracking-[.09em] text-steel">Message</span>
+        <textarea value={text} onChange={(e) => setText(e.target.value)} maxLength={4000} rows={3} placeholder={placeholder} aria-label="Message" className="rounded-sm border border-line-strong bg-surface p-2.5 text-sm outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-200" /></label>
+      {shareToggle && <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={shared} onChange={(e) => setShared(e.target.checked)} /> Share with the customer <span className="text-xs text-steel">(they are notified by email / WhatsApp if they agreed)</span></label>}
+      <div className="flex items-center gap-3"><Button type="submit" disabled={pending || !text.trim()}>{shareToggle && !shared ? 'Add internal note' : 'Send'}</Button>{error}</div></form></div>);
 }

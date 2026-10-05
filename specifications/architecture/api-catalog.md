@@ -7,6 +7,7 @@ Base path `/api/v1`. Full schemas: [`openapi.json`](./openapi.json). Money is a 
 | `getMe` | GET `/api/v1/me` | authenticated | Current user, tenant and effective permissions |
 | `listMemberships` | GET `/api/v1/me/memberships` | authenticated | Tenants the user belongs to |
 | `listLegalEntities` | GET `/api/v1/legal-entities` | `parties.view` | Legal entities |
+| `updateLegalEntity` | POST `/api/v1/legal-entities/:id` | `admin.tenant` | Update the issuer profile printed on documents (address, contacts, bank details) |
 | `listFacilities` | GET `/api/v1/facilities` | `parties.view` | Facilities (warehouses, yards, offices) and their locations |
 | `createFacility` | POST `/api/v1/facilities` | `admin.tenant` | Create a facility |
 | `createLocation` | POST `/api/v1/facilities/:id/locations` | `admin.tenant` | Add a storage location to a facility |
@@ -19,6 +20,7 @@ Base path `/api/v1`. Full schemas: [`openapi.json`](./openapi.json). Money is a 
 | `qualifyEnquiry` | POST `/api/v1/enquiries/:id/qualify` | `enquiries.qualify` | 🔁 Qualify enquiry; missing data becomes tasks |
 | `listQuotes` | GET `/api/v1/quotes` | `quotes.view` | List quotes |
 | `getQuote` | GET `/api/v1/quotes/:id` | `quotes.view` | Quote with lines and margin (if permitted) |
+| `getQuotePdf` | GET `/api/v1/quotes/:id/pdf` | `quotes.view` | Quotation as a branded PDF (never includes internal cost or margin) |
 | `createQuote` | POST `/api/v1/quotes` | `quotes.create` | Create draft quote |
 | `approveQuote` | POST `/api/v1/quotes/:id/approve` | `quotes.approve` | 🔁 🏷 Approve quote (not by its author) |
 | `acceptQuote` | POST `/api/v1/quotes/:id/accept` | `quotes.accept` | 🔁 🏷 Accept quote → opens job |
@@ -50,6 +52,7 @@ Base path `/api/v1`. Full schemas: [`openapi.json`](./openapi.json). Money is a 
 | `postInvoice` | POST `/api/v1/invoices/:id/post` | `invoices.post` | 🔁 🏷 Post invoice: one transaction, balanced journal, number allocation |
 | `listInvoices` | GET `/api/v1/invoices` | `invoices.view` | List invoices |
 | `getInvoice` | GET `/api/v1/invoices/:id` | `invoices.view` | Invoice with lines, tax and settlement |
+| `getInvoicePdf` | GET `/api/v1/invoices/:id/pdf` | `invoices.view` | Invoice as a branded PDF (customers: posted invoices of their own company) |
 | `recordSupplierBill` | POST `/api/v1/supplier-bills` | `bills.record` | 🔁 Record supplier bill; clears accrual; duplicate detection |
 | `recordPayment` | POST `/api/v1/payments` | `payments.record` | Record customer receipt |
 | `allocatePayment` | POST `/api/v1/payments/:id/allocate` | `payments.allocate` | 🔁 Allocate payment to invoice (never beyond available) |
@@ -59,20 +62,27 @@ Base path `/api/v1`. Full schemas: [`openapi.json`](./openapi.json). Money is a 
 | `rejectRequest` | POST `/api/v1/approval-requests/:id/reject` | `approvals.decide` | Reject |
 | `syncDeviceCommands` | POST `/api/v1/device/commands` | `transport.pod.capture` | Offline command sync — one effect per commandId |
 | `receiveWebhook` | POST `/api/v1/webhooks/:provider` | public (HMAC) | Signed provider webhook; dedupes by external event id |
+| `verifyWhatsappWebhook` | GET `/api/v1/webhooks/whatsapp/:tenantId` | public (HMAC) | WhatsApp Cloud API webhook verification handshake |
+| `receiveWhatsappWebhook` | POST `/api/v1/webhooks/whatsapp/:tenantId` | public (HMAC) | WhatsApp Cloud API delivery statuses and inbound messages (X-Hub-Signature-256) |
 | `createWorkflow` | POST `/api/v1/workflows` | `automation.manage` | Create workflow definition (draft) |
 | `activateWorkflow` | POST `/api/v1/workflows/:id/activate` | `automation.manage` | Activate workflow version |
 | `retireWorkflow` | POST `/api/v1/workflows/:id/retire` | `automation.manage` | Retire an active workflow version (running instances finish) |
 | `invokeAiTool` | POST `/api/v1/ai/tools/:name/invoke` | `ai.use` | Invoke a controlled AI tool as the calling user |
 | `getOwnerOverview` | GET `/api/v1/reports/owner-overview` | `reports.owner.view` | Owner overview KPIs (live, drill-down ready) |
 | `getParty` | GET `/api/v1/parties/:id` | `parties.view` | Party 360: roles, bank details, open work |
+| `updateParty` | POST `/api/v1/parties/:id` | `parties.create` | Update a party profile (trading name, TRN, country, address) |
+| `addContact` | POST `/api/v1/parties/:id/contacts` | `parties.create` | Add a contact with consent flags for email / WhatsApp |
+| `updateContact` | POST `/api/v1/contacts/:id` | `parties.create` | Update contact details and consent |
 | `listBankChanges` | GET `/api/v1/bank-detail-changes` | `bank-details.change.propose` | Bank-detail change requests |
 | `listShipments` | GET `/api/v1/shipments` | `shipments.view` | Shipments (optionally by job) |
 | `getShipment` | GET `/api/v1/shipments/:id` | `shipments.view` | Shipment with legs, cargo, bookings |
+| `getShipmentReportPdf` | GET `/api/v1/shipments/:id/report` | `shipments.view` | Shipment status report as a branded PDF |
 | `listTrips` | GET `/api/v1/trips` | `transport.view` | Trips with stops and POD state |
 | `createTrip` | POST `/api/v1/trips` | `transport.dispatch` | Plan a trip |
 | `dispatchTrip` | POST `/api/v1/trips/:id/dispatch` | `transport.dispatch` | 🔁 Dispatch trip (driver must hold a valid driving qualification) |
 | `listCustomsCases` | GET `/api/v1/customs-cases` | `customs.view` | Customs cases: authority vs internal status |
 | `listDocuments` | GET `/api/v1/documents` | `documents.view` | Document library |
+| `getDocumentExtraction` | GET `/api/v1/documents/:id/extraction` | `documents.approve` | Text and fields extracted from the latest version (OCR / text layer); staff only |
 | `getDocumentDownloadUrl` | GET `/api/v1/documents/:id/download-url` | `documents.view` | Short-lived signed download URL (clean documents only) |
 | `listTasks` | GET `/api/v1/tasks` | `tasks.view` | Tasks |
 | `createTask` | POST `/api/v1/tasks` | `tasks.manage` | Create task |
@@ -106,6 +116,9 @@ Base path `/api/v1`. Full schemas: [`openapi.json`](./openapi.json). Money is a 
 | `cancelWorkflowRun` | POST `/api/v1/workflow-runs/:id/cancel` | `automation.manage` | Cancel a running, waiting or failed run |
 | `retryWorkflowRun` | POST `/api/v1/workflow-runs/:id/retry` | `automation.manage` | Retry a failed run from its last durable step |
 | `listIntegrations` | GET `/api/v1/integrations` | `integrations.manage` | Connections and health (no secrets) |
+| `listOutboundMessages` | GET `/api/v1/outbound-messages` | `integrations.manage` | Email and WhatsApp delivery log |
+| `retryOutboundMessage` | POST `/api/v1/outbound-messages/:id/retry` | `integrations.manage` | Re-queue a failed message |
+| `cancelOutboundMessage` | POST `/api/v1/outbound-messages/:id/cancel` | `integrations.manage` | Cancel a queued message |
 | `listMembers` | GET `/api/v1/admin/members` | `admin.tenant` | Tenant members and roles |
 | `addMember` | POST `/api/v1/admin/members` | `admin.tenant` | Add member with a role template |
 | `listRoles` | GET `/api/v1/admin/roles` | `admin.tenant` | Roles and their permissions |

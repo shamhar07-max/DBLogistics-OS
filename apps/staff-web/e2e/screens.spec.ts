@@ -70,7 +70,7 @@ test('warehouse: receive cargo into custody via the form', async ({ page }) => {
 test('job workspace: add a task and a message; both persist', async ({ page }) => {
   const title = `Follow up ${uniq()}`; await login(page, 'layla'); await go(page, '/jobs'); await page.getByRole('link', { name: /^JOB-/ }).first().click();
   await page.getByRole('tab', { name: 'tasks' }).click(); await page.getByLabel('Title').fill(title); await page.getByRole('button', { name: 'Add task' }).click(); await expect(page.getByText(title)).toBeVisible();
-  await page.getByRole('tab', { name: 'conversations' }).click(); await page.getByLabel('Message').fill(`Note ${title}`); await page.getByRole('button', { name: 'Post' }).click(); await expect(page.getByText(`Note ${title}`)).toBeVisible(); await shot(page, '17-job-conversations');
+  await page.getByRole('tab', { name: 'conversations' }).click(); await page.getByLabel('Message').fill(`Note ${title}`); await page.getByRole('button', { name: 'Add internal note' }).click(); await expect(page.getByText(`Note ${title}`)).toBeVisible(); await shot(page, '17-job-conversations');
   await page.getByRole('tab', { name: 'cargo' }).click(); await expect(page.getByText('Palletised cargo')).toBeVisible(); await page.getByRole('tab', { name: 'bookings' }).click(); await expect(page.getByRole('heading', { name: 'Request booking' })).toBeVisible();
 });
 test('finance: tabs for invoices, receipts, supplier bills and charges', async ({ page }) => {
@@ -124,4 +124,37 @@ test.describe('phone layout', () => {
     for (const [href] of SCREENS) { await go(page, href); await expect(page.getByRole('heading', { level: 1 })).toBeVisible(); await page.waitForTimeout(250); expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), href).toBeLessThanOrEqual(1); }
     await go(page, '/jobs'); await page.getByRole('link', { name: /^JOB-/ }).first().click(); await page.waitForTimeout(400); expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), 'job workspace').toBeLessThanOrEqual(1); await shot(page, '24-phone-job');
   });
+});
+
+/** Fetches a PDF through the browser session (cookies + proxy) and returns its type and first bytes. */
+const pdfOf = (page: Page, href: string) => page.evaluate(async (h) => { const r = await fetch(h, { credentials: 'same-origin' }); const b = new Uint8Array(await r.arrayBuffer()); return { status: r.status, type: r.headers.get('content-type'), head: String.fromCharCode(...b.slice(0, 5)), disposition: r.headers.get('content-disposition') }; }, href);
+test('messaging: staff share a message with the customer (and keep an internal note private)', async ({ page }) => {
+  const shared = `Customs docs received ${uniq()}`; const internal = `Margin is thin ${uniq()}`; await login(page, 'layla'); await go(page, '/jobs'); await page.getByRole('link', { name: /^JOB-/ }).first().click();
+  await page.getByRole('tab', { name: 'conversations' }).click();
+  await page.getByLabel('Message').fill(shared); await page.getByLabel(/Share with the customer/).check(); await page.getByRole('button', { name: 'Send' }).click(); await expect(page.getByText(shared)).toBeVisible();
+  await page.getByLabel('Message').fill(internal); await page.getByRole('button', { name: 'Add internal note' }).click(); await expect(page.getByText(internal)).toBeVisible();
+  expect(sql(`SELECT visibility FROM collab.messages WHERE body='${shared}'`)).toBe('shared'); expect(sql(`SELECT visibility FROM collab.messages WHERE body='${internal}'`)).toBe('internal'); await shot(page, '30-staff-conversation');
+});
+test('documents: PDF downloads for invoices and quotations are branded PDFs', async ({ page }) => {
+  await login(page, 'layla'); await go(page, '/finance'); const inv = await page.getByTestId('invoice-pdf').first().getAttribute('href'); const r = await pdfOf(page, inv!);
+  expect(r.status).toBe(200); expect(r.type).toContain('application/pdf'); expect(r.head).toBe('%PDF-'); expect(r.disposition).toContain('.pdf');
+  await go(page, '/quotes'); const q = await pdfOf(page, (await page.getByTestId('quote-pdf').first().getAttribute('href'))!); expect(q.status).toBe(200); expect(q.head).toBe('%PDF-');
+});
+test('customers: contacts carry explicit WhatsApp consent that can be changed, and the profile is editable', async ({ page }) => {
+  await login(page, 'layla'); await go(page, '/customers'); await page.getByRole('link', { name: 'Al Noor Foods Trading' }).click();
+  const name = `Test Contact ${uniq()}`; await page.getByLabel('Name', { exact: true }).fill(name); await page.getByLabel('Email', { exact: true }).fill(`${uniq()}@example.com`); await page.getByLabel('Mobile (international)').fill('+971501234567'); await page.getByRole('button', { name: 'Add contact' }).click();
+  const row = page.getByTestId('contact').filter({ hasText: name }); await expect(row).toBeVisible(); const optin = row.getByLabel(`${name} WhatsApp opt-in`); await expect(optin).not.toBeChecked();
+  await optin.click(); await expect(optin).toBeChecked(); await expect.poll(() => sql(`SELECT whatsapp_opt_in FROM parties.contacts WHERE name='${name}'`)).toBe('t');
+  await page.getByLabel('Address').fill('Warehouse 4, Al Quoz, Dubai'); await page.getByRole('button', { name: 'Save profile' }).click(); await expect(page.getByRole('status').filter({ hasText: 'Saved' })).toBeVisible(); await shot(page, '31-contacts-consent');
+});
+test('admin: company profile is saved and the delivery log is available', async ({ page }) => {
+  await login(page, 'layla'); await go(page, '/admin'); await page.getByRole('tab', { name: 'Company profile' }).click(); const addr = `Office ${uniq()}, Business Bay, Dubai`;
+  await page.getByLabel('Registered address').first().fill(addr); await page.getByRole('button', { name: 'Save company profile' }).first().click(); await expect(page.getByRole('status').filter({ hasText: 'Saved' }).first()).toBeVisible();
+  expect(sql(`SELECT count(*) FROM org.legal_entities WHERE address='${addr}'`)).toBe('1'); await shot(page, '32-company-profile');
+  await page.getByRole('tab', { name: 'Delivery log' }).click(); await expect(page.getByRole('heading', { name: /Delivery log/ })).toBeVisible(); await expect(page.getByLabel('Channel')).toBeVisible();
+});
+test('automation designer: messaging steps pick from the approved template catalogue', async ({ page }) => {
+  await login(page, 'layla'); await go(page, '/automation'); await page.getByRole('button', { name: /New workflow/ }).click(); const dlg = page.getByRole('dialog');
+  await dlg.getByRole('button', { name: '+ Add step' }).click(); await dlg.getByLabel('Step 2 type').selectOption('notify'); await dlg.getByLabel('Channel').selectOption('email');
+  const sel = dlg.getByLabel('Step 2 template'); await expect(sel.locator('option')).toContainText(['Select…', 'Shipment update', 'Delivery completed', 'Invoice issued', 'Payment reminder', 'Quotation ready', 'Reply from our team']); await sel.selectOption('invoice_posted'); await expect(sel).toHaveValue('invoice_posted');
 });

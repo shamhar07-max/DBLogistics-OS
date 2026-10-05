@@ -65,6 +65,20 @@ test('transporter: sees only its dispatched trip, captures proof of delivery per
 test('account page shows company and plain-language permissions', async ({ page }) => {
   await login(page, 'foods-user'); await go(page, '/account'); await expect(page.getByTestId('account-company')).toHaveText('Al Noor Foods Trading'); await expect(page.getByText('✓ Accept quotations')).toBeVisible();
 });
+test('invoice and shipment report download as branded PDFs; a customer cannot fetch another customer’s', async ({ page }) => {
+  await login(page, 'foods-user'); await go(page, '/invoices'); await page.getByRole('link', { name: /^INV-/ }).click(); const href = await page.getByTestId('pdf-link').getAttribute('href');
+  const get = (h: string) => page.evaluate(async (u) => { const r = await fetch(u, { credentials: 'same-origin' }); const b = new Uint8Array(await r.arrayBuffer()); return { status: r.status, type: r.headers.get('content-type'), head: String.fromCharCode(...b.slice(0, 5)) }; }, h);
+  const r = await get(href!); expect(r.status).toBe(200); expect(r.type).toContain('application/pdf'); expect(r.head).toBe('%PDF-');
+  await go(page, '/shipments'); await rowsOf(page).first().getByRole('link').click(); const rep = await get((await page.getByTestId('pdf-link').getAttribute('href'))!); expect(rep.status).toBe(200); expect(rep.head).toBe('%PDF-');
+  const other = sql(`SELECT id FROM finance.invoices WHERE status='posted' LIMIT 1`); await page.context().clearCookies(); await login(page, 'pharma-user'); expect((await get(`/api/proxy/api/v1/invoices/${other}/pdf`)).status).toBe(404);
+});
+test('customer messaging: a message sent in the portal reaches the team as shared; internal notes never appear', async ({ page }) => {
+  const text = `Please confirm ETA ${uniq()}`; await login(page, 'pharma-user'); await go(page, '/shipments'); await rowsOf(page).first().getByRole('link').click(); await page.getByRole('tab', { name: 'Messages' }).click();
+  await page.getByRole('textbox', { name: 'Message' }).fill(text); await page.getByRole('button', { name: 'Send' }).click(); await expect(page.getByTestId('message').filter({ hasText: text })).toBeVisible();
+  expect(sql(`SELECT visibility || '/' || direction FROM collab.messages WHERE body='${text}'`)).toBe('shared/inbound'); await shot(page, '33-portal-messages');
+  const hidden = `Internal only ${uniq()}`; sql(`INSERT INTO collab.messages(tenant_id, related_type, related_id, channel, direction, body, visibility, author_user_id) SELECT tenant_id, related_type, related_id, 'internal', 'internal', '${hidden}', 'internal', author_user_id FROM collab.messages WHERE body='${text}'`);
+  await page.reload(); await page.getByRole('tab', { name: 'Messages' }).click(); await expect(page.getByText(text)).toBeVisible(); await expect(page.getByText(hidden)).toHaveCount(0);
+});
 test.describe('phone layout', () => {
   test.use({ viewport: { width: 390, height: 844 } });
   test('no screen scrolls sideways on a phone', async ({ page }) => {

@@ -3,13 +3,13 @@ import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useForm } from 'react-hook-form';
-import { Button, Card, Chip, QueryBoundary, RouteLane } from '@dbl/ui';
+import { Button, Card, Chip, PdfLink, QueryBoundary, RouteLane } from '@dbl/ui';
 import { useCmd, useOp, errView, money } from '@/lib/hooks';
 import { ErrorNote, PageTitle, StatusChip } from '@/components/bits';
 import { DataTable, Mono, RefLink, fmtDate } from '@/components/DataTable';
 import { FormGrid, SelectField, TextField } from '@/components/fields';
 import { SectionTabs } from '@/components/SectionTabs';
-import { DocumentsTable, Only, TrackingCard } from '@/components/Common';
+import { Conversation, DocumentsTable, Only, TrackingCard } from '@/components/Common';
 import { useWho } from '@/components/Me';
 import { UploadDocument } from '@/components/UploadDocument';
 
@@ -38,12 +38,13 @@ export default function ShipmentPage() {
   const { id } = useParams<{ id: string }>(); const q = useOp('getShipment', { params: { id } }); const s = q.data as any; const { me } = useWho(); const docs = useOp('listDocuments', { query: { relatedId: id } }); void docs;
   const stepState = (k: 'p' | 't' | 'd') => (k === 'p' ? 'done' : k === 't' ? (s?.status === 'executing' ? 'now' : s?.status === 'planned' ? 'todo' : 'done') : s?.status === 'delivered' ? 'done' : 'todo') as 'done' | 'now' | 'todo';
   return (<Only workspaces={['customer', 'agent', 'transporter', 'driver']}>
-    <PageTitle title={s?.ref ?? 'Shipment'} sub="Shipment">{s && <div className="flex flex-wrap gap-2"><StatusChip s={s.status} /><Chip tone="info">{s.mode.replace('_', ' ')}</Chip></div>}</PageTitle>
+    <PageTitle title={s?.ref ?? 'Shipment'} sub="Shipment">{s && <div className="flex flex-wrap gap-2"><StatusChip s={s.status} /><Chip tone="info">{s.mode.replace('_', ' ')}</Chip><PdfLink href={`/api/proxy/api/v1/shipments/${id}/report`}>Status report PDF</PdfLink></div>}</PageTitle>
     <QueryBoundary status={q.status} error={errView(q.error)}>{s && <>
       <Card><div className="mb-3 text-sm"><b>{s.origin}</b> → <b>{s.destination}</b>{s.incoterm && <span className="ml-2 text-steel">{s.incoterm}</span>}{s.delivered_at && <span className="ml-3 text-steel">delivered {fmtDate(s.delivered_at)}</span>}</div>
         <RouteLane stops={[{ label: 'Planned', state: stepState('p') }, { label: 'In transit', state: stepState('t') }, { label: 'Delivered', sub: s.delivered_at ? fmtDate(s.delivered_at) : undefined, state: stepState('d') }]} /></Card>
       <SectionTabs sections={[{ id: 'tracking', label: 'Tracking', content: <div className="grid gap-5"><TrackingCard shipmentId={id} />{me?.workspace === 'agent' && <ReportMilestone id={id} />}</div> },
         { id: 'details', label: 'Route & cargo', content: <Details s={s} /> },
         { id: 'documents', label: 'Documents', content: <div className="grid gap-5"><Card title="Documents for this shipment"><DocumentsTable relatedId={id} /></Card><Card title="Upload a document"><UploadDocument relatedType="shipment" relatedId={id} defaultType={me?.workspace === 'customer' ? 'Commercial invoice' : 'Proof of delivery'} /></Card></div> },
+        ...(me?.workspace === 'customer' ? [{ id: 'messages', label: 'Messages', content: <Conversation relatedType="shipment" relatedId={id} /> }] : []),
         ...(me?.workspace === 'customer' ? [{ id: 'invoices', label: 'Invoices', content: <JobInvoices jobId={s.job_id} /> }] : [])]} /></>}</QueryBoundary></Only>);
 }

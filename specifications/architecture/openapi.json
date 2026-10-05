@@ -50,6 +50,7 @@
               "AI_BUDGET_EXCEEDED",
               "BOOKING_OUTCOME_UNKNOWN",
               "QUALIFICATION_REQUIRED",
+              "RATE_LIMITED",
               "INTERNAL"
             ]
           },
@@ -588,6 +589,10 @@
                     "type": "string",
                     "minLength": 2,
                     "maxLength": 2
+                  },
+                  "address": {
+                    "type": "string",
+                    "maxLength": 300
                   },
                   "roles": {
                     "type": "array",

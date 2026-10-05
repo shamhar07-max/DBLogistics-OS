@@ -9,11 +9,12 @@ import { DataTable, Mono, fmtDate } from '@/components/DataTable';
 import { SelectField } from '@/components/fields';
 import { UploadDocument } from '@/components/UploadDocument';
 import { call } from '@/lib/api';
+import { ExtractionPanel } from '@/components/Messaging';
 
 type D = { id: string; doc_type: string; issuer_kind: string; issuer_name?: string; external_reference?: string; related_type: string; related_id: string; status: string; version: number; created_at: string; scan_status: string; size_bytes: string; content_type?: string };
 const col = createColumnHelper<D>();
 export default function Documents() {
-  const q = useOp('listDocuments'); const approve = useCmd('approveDocument', { invalidate: ['listDocuments'] }); const jobs = useOp('listJobs'); const [job, setJob] = useState(''); const [err, setErr] = useState<unknown>(); const [prev, setPrev] = useState<{ d: D; url: string } | null>(null);
+  const q = useOp('listDocuments'); const approve = useCmd('approveDocument', { invalidate: ['listDocuments'] }); const jobs = useOp('listJobs'); const [job, setJob] = useState(''); const [err, setErr] = useState<unknown>(); const [prev, setPrev] = useState<{ d: D; url: string } | null>(null); const [ext, setExt] = useState<D | null>(null);
   const preview = async (d: D) => { try { const r: any = await call('getDocumentDownloadUrl', { params: { id: d.id } }); setPrev({ d, url: r.url }); } catch (e) { setErr(e); } };
   const columns = useMemo(() => [
     col.accessor('doc_type', { header: 'Document', cell: (c) => <b className="font-display">{c.getValue()}</b> }),
@@ -24,12 +25,14 @@ export default function Documents() {
     col.display({ id: 'a', header: '', cell: (c) => { const d = c.row.original; return <span className="flex gap-1.5">
       {d.status !== 'approved' && <Button size="sm" variant="ghost" disabled={d.scan_status !== 'clean'} title={d.scan_status !== 'clean' ? 'Awaiting malware scan' : undefined} onClick={() => approve.mutate({ params: { id: d.id }, ifMatch: d.version })}>Approve</Button>}
       <Button size="sm" variant="ghost" disabled={d.scan_status !== 'clean'} onClick={() => preview(d)}>Preview</Button>
+      <Button size="sm" variant="ghost" disabled={d.scan_status !== 'clean'} onClick={() => setExt(d)}>Extracted data</Button>
       <Button size="sm" variant="ghost" disabled={d.scan_status !== 'clean'} onClick={async () => { try { const r: any = await call('getDocumentDownloadUrl', { params: { id: d.id } }); window.open(r.url, '_blank', 'noopener'); } catch (e) { setErr(e); } }}>Download</Button></span>; } }),
   ], [approve]);                                                                                  // eslint-disable-line react-hooks/exhaustive-deps
   return (<>
     <PageTitle title="Documents" sub="Operations · controlled evidence — immutable versions, scan before use" />
     <Card title="Library"><DataTable q={q} columns={columns} empty="No documents yet." label="Filter documents" /><ErrorNote e={approve.error ?? err} />
     <Modal open={!!prev} onOpenChange={(o) => !o && setPrev(null)} title={prev ? `${prev.d.doc_type}${prev.d.external_reference ? ' · ' + prev.d.external_reference : ''}` : ''}>{prev && <FilePreview url={prev.url} contentType={prev.d.content_type} name={prev.d.doc_type} />}</Modal></Card>
+    <Modal open={!!ext} onOpenChange={(o) => !o && setExt(null)} title={ext ? `Extracted data · ${ext.doc_type}` : ''}>{ext && <ExtractionPanel documentId={ext.id} />}</Modal>
     <Card title="Upload"><div className="grid max-w-md gap-3"><SelectField label="Attach to job" value={job} onChange={(e) => setJob(e.target.value)}><option value="">Select…</option>{((jobs.data as any[]) ?? []).map((j) => <option key={j.id} value={j.id}>{j.ref}</option>)}</SelectField>
       {job ? <UploadDocument relatedType="job" relatedId={job} /> : <p className="text-sm text-steel">Choose a job to attach the document to. Shipment-level uploads live in the job workspace.</p>}</div></Card></>);
 }

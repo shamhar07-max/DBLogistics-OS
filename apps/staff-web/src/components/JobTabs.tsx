@@ -1,8 +1,9 @@
 'use client';
+import { RecordConversation } from '@/components/Messaging';
 import { useMemo, useState } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useFieldArray, useForm } from 'react-hook-form';
-import { Button, Card, Chip, QueryBoundary } from '@dbl/ui';
+import { Button, Card, Chip, PdfLink, QueryBoundary } from '@dbl/ui';
 import { useCmd, useOp, errView } from '@/lib/hooks';
 import { ErrorNote, StatusChip } from '@/components/bits';
 import { DataTable, Mono, fmtDate, fmtDateTime } from '@/components/DataTable';
@@ -32,7 +33,7 @@ export function PlanTab({ jobId, onCreated }: { jobId: string; onCreated?: () =>
 }
 function ShipmentPlan({ id }: { id: string }) {
   const q = useOp('getShipment', { params: { id } }); const s = q.data as any; if (!s) return null;
-  return (<div className="mb-5 last:mb-0"><div className="mb-2 flex items-center gap-3 text-sm"><Mono>{s.ref}</Mono><b>{s.origin} → {s.destination}</b><Chip tone="info">{s.mode.replace('_', ' ')}</Chip><StatusChip s={s.status} />{s.incoterm && <span className="text-steel">{s.incoterm}</span>}</div>
+  return (<div className="mb-5 last:mb-0"><div className="mb-2 flex items-center gap-3 text-sm"><Mono>{s.ref}</Mono><b>{s.origin} → {s.destination}</b><Chip tone="info">{s.mode.replace('_', ' ')}</Chip><StatusChip s={s.status} />{s.incoterm && <span className="text-steel">{s.incoterm}</span>}<span className="ml-auto"><PdfLink href={`/api/proxy/api/v1/shipments/${id}/report`} testId="shipment-pdf">Status report PDF</PdfLink></span></div>
     {s.legs.length ? <table className="w-full text-sm"><thead><tr className="text-left font-label text-[11px] uppercase tracking-wider text-steel"><th>#</th><th>Mode</th><th>Route</th><th>Operator</th><th>Planned</th><th>ETA (estimate)</th><th>Arrived (actual)</th></tr></thead><tbody>{s.legs.map((l: any) => <tr key={l.id} className="border-t border-line"><td className="py-1.5 font-mono">{l.seq}</td><td>{l.mode.replace('_', ' ')}</td><td>{l.origin} → {l.destination}</td><td>{l.operator ?? '—'}</td><td>{fmtDate(l.planned_arrival)}</td><td>{fmtDate(l.estimated_arrival)}</td><td>{l.actual_arrival ? fmtDate(l.actual_arrival) : '—'}</td></tr>)}</tbody></table> : <p className="text-sm text-steel">Direct movement — no separate legs.</p>}</div>);
 }
 
@@ -87,15 +88,8 @@ export function TasksTab({ jobId }: { jobId: string }) {
     <Card title="Add task"><form className="grid gap-3" onSubmit={f.handleSubmit((v) => create.mutate({ body: clean({ title: v.title, relatedType: 'job', relatedId: jobId, dueAt: v.dueAt ? new Date(v.dueAt).toISOString() : '' }) as any }, { onSuccess: () => f.reset() } as any))}><TextField label="Title" {...f.register('title', { required: true, minLength: 3 })} /><TextField label="Due" type="datetime-local" {...f.register('dueAt')} /><Button type="submit" disabled={create.isPending}>Add task</Button><ErrorNote e={create.error} /></form></Card></div>);
 }
 
-/** Conversation log: append-only. */
-export function ConversationsTab({ jobId }: { jobId: string }) {
-  const q = useOp('listMessages', { query: { relatedType: 'job', relatedId: jobId } }); const post = useCmd('postMessage', { invalidate: ['listMessages'] }); const f = useForm<any>({ defaultValues: { channel: 'internal', direction: 'internal' } }); const rows = (q.data as any[]) ?? [];
-  return (<div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] items-start gap-5"><Card title="Conversation log · append-only"><QueryBoundary status={q.status} error={errView(q.error)} isEmpty={!rows.length} empty="No messages yet.">
-    <ol className="grid gap-3">{rows.map((m) => <li key={m.id} className="rounded-sm border border-line p-3 text-sm"><div className="mb-1 flex items-center gap-2 text-xs text-steel"><b className="text-ink">{m.author ?? 'system'}</b><Chip tone="idle">{m.channel}</Chip><Chip tone={m.direction === 'inbound' ? 'info' : 'idle'}>{m.direction}</Chip><span className="ml-auto">{fmtDateTime(m.created_at)}</span></div>{m.body}</li>)}</ol></QueryBoundary></Card>
-    <Card title="Post a message"><form className="grid gap-3" onSubmit={f.handleSubmit((v) => post.mutate({ body: { relatedType: 'job', relatedId: jobId, channel: v.channel, direction: v.direction, body: v.body } as any }, { onSuccess: () => f.reset({ channel: 'internal', direction: 'internal' }) } as any))}>
-      <FormGrid><SelectField label="Channel" {...f.register('channel')}>{['internal', 'email', 'whatsapp', 'call'].map((x) => <option key={x}>{x}</option>)}</SelectField><SelectField label="Direction" {...f.register('direction')}>{['internal', 'inbound', 'outbound'].map((x) => <option key={x}>{x}</option>)}</SelectField></FormGrid>
-      <AreaField label="Message" {...f.register('body', { required: true })} /><Button type="submit" disabled={post.isPending}>Post</Button><ErrorNote e={post.error} /><p className="text-xs text-steel">Messages cannot be edited or deleted.</p></form></Card></div>);
-}
+/** Conversation log: append-only; staff choose per message whether the customer sees it. */
+export function ConversationsTab({ jobId }: { jobId: string }) { return <RecordConversation relatedType="job" relatedId={jobId} />; }
 
 /** Incidents and audit for the job. */
 const ic = createColumnHelper<any>();

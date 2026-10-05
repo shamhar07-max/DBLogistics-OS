@@ -17,7 +17,11 @@ npm run db:migrate
 (cd apps/staff-web && SESSION_SECRET=… DEV_AUTH_SECRET=… API_BASE_URL=http://localhost:3001 npm run dev)   # http://localhost:3000 → "Local development login": subject `layla` (owner) — or `omar` sales, `nadia` pricing, `faisal` finance, `sana` accountant, `yusuf`/`hamad` warehouse, `rami` freight ops, `hana` HR, `qadir` quality — tenant id from the seed output
 ```
 Partner portal: `(cd apps/partner-portal && SESSION_SECRET=… DEV_AUTH_SECRET=… API_BASE_URL=http://localhost:3001 npm run dev)` → http://localhost:3002 with the seeded portal users `pharma-user` / `foods-user` (customers of two different companies), `agent-user` (air agent) and `haulier-user` (transporter).
-Without MinIO/S3 (`S3_ENDPOINT` unset) the API stores documents on local disk behind signed, expiring URLs (`DEV_STORAGE_DIR`), so uploads and previews work in development. The worker's scanner marks them clean; in tests you can flip `scan_status` directly.
+Without MinIO/S3 (`S3_ENDPOINT` unset) the API stores documents on local disk behind signed, expiring URLs (`DEV_STORAGE_DIR`), so uploads and previews work in development. The worker's disk scanner checks the EICAR signature and marks them clean; in tests you can flip `scan_status` directly.
+
+**Document safety & extraction (free engines):** the worker scans every upload with ClamAV (`CLAMD_HOST`/`CLAMD_PORT`, run the `clamav` compose service; fails closed without it), then reads text with `pdftotext` or Tesseract OCR (English + Arabic, `OCR_LANGS`) and stores suggested fields for staff. **Customer messaging:** set `SMTP_URL` (Mailpit locally at :8025, Microsoft 365 / any SMTP in production) and, for WhatsApp, `WHATSAPP_TOKEN` + `WHATSAPP_PHONE_NUMBER_ID`; create the approved templates named `dbl_<template>` (see `packages/contracts/src/notifications.ts`) in the Meta console. WhatsApp is only used for contacts who opted in. All variables are in `.env.example`.
+
+**Branded PDFs:** invoices, quotations and shipment reports download from staff and portal screens (`/invoices/:id/pdf`, `/quotes/:id/pdf`, `/shipments/:id/report`).
 
 With Docker: `docker compose up -d postgres redis minio keycloak` (then `--profile apps up --build`).
 
@@ -31,8 +35,8 @@ npm run e2e                                                    # seeds a FRESH t
 ## Layout
 ```
 apps/        api (NestJS) · worker (BullMQ) · staff-web · partner-portal (Next.js) · logistics-mobile (Expo skeleton) · platform-admin (not built)
-packages/    contracts (Zod + route table → OpenAPI) · api-client · gateway (BFF) · ui · design-tokens · localization · offline-sync · configuration
-database/    migrations/001–012 · invariants.sql · reference-data/ · development-seeds/
+packages/    documents (branded PDFs) · contracts (Zod + route table → OpenAPI) · api-client · gateway (BFF) · ui · design-tokens · localization · offline-sync · configuration
+database/    migrations/001–016 · invariants.sql · reference-data/ · development-seeds/
 specifications/  architecture · domains · workflows · permissions · accounting · integrations · acceptance-tests · recovery
 infrastructure/  local (pg-local.sh, keycloak realm) · containers (Dockerfile) · terraform (DRAFT)
 brand/ design/  brand kit, guidelines page, dashboard v1/v2 designs

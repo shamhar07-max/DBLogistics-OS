@@ -29,6 +29,8 @@ RUN npm run build -w @dbl/worker
 FROM node:22-bookworm-slim AS worker
 WORKDIR /app
 ENV NODE_ENV=production
+# Free, local document engines: poppler (PDF text layer / page rendering) and Tesseract OCR (English + Arabic). The malware scanner is a separate clamd service.
+RUN apt-get update && apt-get install -y --no-install-recommends poppler-utils tesseract-ocr tesseract-ocr-eng tesseract-ocr-ara && rm -rf /var/lib/apt/lists/*
 COPY --from=build-worker /repo/apps/worker/dist ./dist
 COPY --from=build-worker /repo/node_modules ./node_modules
 USER node

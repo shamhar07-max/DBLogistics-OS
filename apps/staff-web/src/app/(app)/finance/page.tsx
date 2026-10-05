@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useMemo } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useForm } from 'react-hook-form';
-import { Button, Card, Chip } from '@dbl/ui';
+import { Button, Card, Chip, PdfLink } from '@dbl/ui';
 import { useCmd, useOp, money } from '@/lib/hooks';
 import { ErrorNote, PageTitle, StatusChip } from '@/components/bits';
 import { DataTable, Mono, RefLink, fmtDate } from '@/components/DataTable';
@@ -17,7 +17,7 @@ function Invoices() {
   const q = useOp('listInvoices'); const approve = useCmd('approveInvoice', { invalidate: ['listInvoices'] }); const post = useCmd('postInvoice', { invalidate: ['listInvoices', 'getOwnerOverview'] });
   const columns = useMemo(() => [ic.accessor('ref', { header: 'Invoice', cell: (c) => <Mono>{c.getValue() ?? 'draft'}</Mono> }), ic.accessor('job_id', { header: 'Job', cell: (c) => <RefLink href={`/jobs/${c.getValue()}`}>open</RefLink> }), ic.accessor('status', { header: 'Billing', cell: (c) => <StatusChip s={c.getValue()} /> }), ic.accessor('einvoice_status', { header: 'E-invoice', cell: (c) => <StatusChip s={c.getValue() ?? 'not_submitted'} /> }),
     ic.accessor('total', { header: 'Total', cell: (c) => money(c.getValue(), c.row.original.currency) }), ic.accessor((r) => Number(r.total) - Number(r.amount_allocated), { id: 'open', header: 'Open', cell: (c) => money(c.getValue(), c.row.original.currency) }), ic.accessor('due_date', { header: 'Due', cell: (c) => fmtDate(c.getValue()) }),
-    ic.display({ id: 'a', header: '', cell: (c) => { const i = c.row.original; return i.status === 'draft' ? <Button size="sm" variant="ghost" onClick={() => approve.mutate({ params: { id: i.id }, ifMatch: i.version })}>Approve</Button> : i.status === 'approved' ? <Button size="sm" onClick={() => post.mutate({ params: { id: i.id }, body: { postingDate: today() }, ifMatch: i.version })}>Post to ledger</Button> : null; } })], [approve, post]);
+    ic.display({ id: 'a', header: '', cell: (c) => { const i = c.row.original; return <span className="flex gap-1.5"><PdfLink href={`/api/proxy/api/v1/invoices/${i.id}/pdf`} testId="invoice-pdf">PDF</PdfLink>{i.status === 'draft' ? <Button size="sm" variant="ghost" onClick={() => approve.mutate({ params: { id: i.id }, ifMatch: i.version })}>Approve</Button> : i.status === 'approved' ? <Button size="sm" onClick={() => post.mutate({ params: { id: i.id }, body: { postingDate: today() }, ifMatch: i.version })}>Post to ledger</Button> : null}</span>; } })], [approve, post]);
   return <Card title="Invoices"><DataTable q={q} columns={columns} empty="No invoices yet." label="Filter invoices" /><ErrorNote e={approve.error ?? post.error} /><p className="mt-3 text-xs text-steel">Billing → ledger → e-invoice are separate states. A different person must approve than drafted.</p></Card>;
 }
 function Payments() {

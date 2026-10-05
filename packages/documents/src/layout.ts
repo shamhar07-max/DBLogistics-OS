@@ -1,12 +1,14 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import PDFDocument from 'pdfkit';
 import { D, money } from '@dbl/contracts';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const FONT = (f: string) => join(here, '..', 'fonts', `${f}.ttf`);
-const LOGO = readFileSync(join(here, '..', 'assets', 'logo.png'));   // the master logo, byte-identical to brand/assets/logo
+/** Source layout: <pkg>/src/../{fonts,assets}. Bundled layout (tsup): the build copies both folders next to the bundle, so <dist>/{fonts,assets} (or DOCUMENT_ASSETS_DIR). */
+const asset = (...p: string[]) => [process.env.DOCUMENT_ASSETS_DIR, join(here, '..'), here].filter((d): d is string => !!d).map((d) => join(d, ...p)).find(existsSync) ?? join(here, '..', ...p);
+const FONT = (f: string) => asset('fonts', `${f}.ttf`);
+const LOGO = readFileSync(asset('assets', 'logo.png'));   // the master logo, byte-identical to brand/assets/logo
 
 /** Brand tokens (brand/tokens): container green, signal red, paper. */
 export const C = { green: '#04302A', signal: '#E12509', ink: '#12201D', steel: '#5B6B66', line: '#D9D6CC', paper: '#F3F1EB', ok: '#0C6B3F' } as const;

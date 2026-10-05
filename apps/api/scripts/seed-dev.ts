@@ -28,6 +28,12 @@ async function main() {
   const agent = await party('Rhein-Main Air Agents', ['agent']);
   for (const [sub, role, ws, p] of [['pharma-user', 'customer_portal', 'customer', pharma], ['foods-user', 'customer_portal', 'customer', foods], ['agent-user', 'agent_portal', 'agent', agent], ['haulier-user', 'transporter_portal', 'transporter', haulier]] as const)
     await addMemberToTenant(pool, t.tenantId, { subject: sub, roles: [role], workspace: ws, partyId: p });
+  // issuer profile (printed in every document header/footer), customer registration data and consented contacts
+  for (const le of await owner('GET', '/legal-entities')) await owner('POST', `/legal-entities/${le.id}`, { tradeLicense: 'DED-123456', taxRegistrationNumber: '100123456700003', address: 'Office 1204, Business Bay, Dubai, United Arab Emirates', email: 'accounts@demo-freight.example', phone: '+97144000000', website: 'demo-freight.example', bankName: 'Emirates NBD', bankAccountName: 'Demo Freight LLC', bankIban: 'AE070331234567890123456', bankSwift: 'EBILAEAD' });
+  await owner('POST', `/parties/${pharma}`, { taxRegistrationNumber: '100234567800003', country: 'AE', address: 'Dubai Silicon Oasis, Dubai, UAE' });
+  await owner('POST', `/parties/${foods}`, { taxRegistrationNumber: '100345678900003', country: 'AE', address: 'Al Quoz Industrial 3, Dubai, UAE' });
+  await owner('POST', `/parties/${pharma}/contacts`, { name: 'Mariam Al Suwaidi', email: 'mariam@pharma.example', phone: '+971501110001', preferredChannel: 'email', whatsappOptIn: true });
+  await owner('POST', `/parties/${foods}/contacts`, { name: 'Hassan Qureshi', email: 'hassan@alnoor.example', phone: '+971501110002', whatsappOptIn: false });
   const today = new Date().toISOString().slice(0, 10);
 
   async function wonJob(customer: string, price: string, cost: string, origin: string, destination: string, mode = 'ocean_fcl') {

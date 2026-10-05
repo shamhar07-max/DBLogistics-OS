@@ -1,9 +1,9 @@
 'use client';
 import { useMemo, useState } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Button, Card, Chip, FilePreview, QueryBoundary, SourceBadge } from '@dbl/ui';
+import { Button, Card, Chip, ConversationView, FilePreview, QueryBoundary, SourceBadge } from '@dbl/ui';
 import { call } from '@/lib/api';
-import { errView, useOp } from '@/lib/hooks';
+import { errView, useCmd, useOp } from '@/lib/hooks';
 import { ErrorNote, StatusChip } from '@/components/bits';
 import { DataTable, Mono, RefLink, fmtDate, fmtDateTime } from '@/components/DataTable';
 import { useWho } from '@/components/Me';
@@ -47,4 +47,12 @@ export function DocumentsTable({ relatedId }: { relatedId?: string }) {
       <Button size="sm" variant="ghost" disabled={!ok} onClick={async () => { try { window.open(await url(d), '_blank', 'noopener'); } catch (e) { setErr(e); } }}>Download</Button></span>; } })], []);
   return (<><DataTable q={q} columns={columns as any} empty="No documents yet." label="Filter documents" /><ErrorNote e={err} />
     <Modal open={!!prev} onOpenChange={(o) => !o && setPrev(null)} title={prev?.d.doc_type ?? ''}>{prev && <FilePreview url={prev.url} contentType={prev.d.content_type} name={prev.d.doc_type} />}</Modal></>);
+}
+
+/** Customer ↔ forwarder conversation on one record. Everything the customer sends is shared with the team; they only ever see messages the team chose to share. */
+export function Conversation({ relatedType, relatedId }: { relatedType: 'shipment' | 'job' | 'quote'; relatedId: string }) {
+  const q = useOp('listMessages', { query: { relatedType, relatedId } }); const post = useCmd('postMessage', { invalidate: ['listMessages'] });
+  return (<Card title="Messages with your forwarder"><QueryBoundary status={q.status} error={errView(q.error)}>
+    <ConversationView items={(q.data as any[]) ?? []} fmt={fmtDateTime} mine={(m) => m.direction === 'inbound'} pending={post.isPending} error={<ErrorNote e={post.error} />} placeholder="Ask a question or send an update about this shipment…"
+      onSend={(body) => post.mutate({ body: { relatedType, relatedId, channel: 'portal', direction: 'inbound', body } as any })} /></QueryBoundary></Card>);
 }

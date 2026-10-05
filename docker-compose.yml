@@ -1,5 +1,6 @@
 # Local stack:  docker compose up -d postgres redis minio keycloak   (infrastructure)
 #               docker compose --profile apps up --build              (api, worker, staff-web, partner-portal)
+#               (the worker image bundles Tesseract + poppler; clamav and mailpit are plain services)
 name: dbl
 services:
   postgres:
@@ -18,6 +19,14 @@ services:
     environment: { MINIO_ROOT_USER: minio, MINIO_ROOT_PASSWORD: minio12345 }
     ports: ["9000:9000", "9001:9001"]
     volumes: ["miniodata:/data"]
+  clamav:                      # free production malware scanner: ClamAV clamd (signatures refreshed by freshclam inside the image)
+    image: clamav/clamav:stable
+    ports: ["3310:3310"]
+    volumes: ["clamdb:/var/lib/clamav"]
+    healthcheck: { test: ["CMD", "clamdcheck.sh"], interval: 30s, retries: 20, start_period: 120s }
+  mailpit:                     # local SMTP sink + web UI for outbound email (http://localhost:8025); production uses the company's SMTP / Microsoft 365 relay
+    image: axllent/mailpit
+    ports: ["1025:1025", "8025:8025"]
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
     command: start-dev --import-realm
@@ -45,11 +54,24 @@ services:
   worker:
     profiles: [apps]
     build: { context: ., dockerfile: infrastructure/containers/node.Dockerfile, target: worker }
-    environment: { WORKER_DATABASE_URL: "postgres://dbl_worker:dbl_worker_dev@postgres:5432/dbl", REDIS_URL: "redis://redis:6379" }
-    depends_on: { migrate: { condition: service_completed_successfully } }
+    environment:
+      WORKER_DATABASE_URL: postgres://dbl_worker:dbl_worker_dev@postgres:5432/dbl
+      REDIS_URL: redis://redis:6379
+      CLAMD_HOST: clamav                       # INSTREAM scanning of every uploaded document; unreachable clamd = retry, never "clean"
+      CLAMD_PORT: "3310"
+      DOCUMENT_BUCKET: dbl-documents-dev
+      S3_ENDPOINT: http://minio:9000
+      AWS_ACCESS_KEY_ID: minio
+      AWS_SECRET_ACCESS_KEY: minio12345
+      OCR_LANGS: eng+ara
+      SMTP_URL: smtp://mailpit:1025            # production: smtps://user:pass@smtp.office365.com:587
+      SMTP_FROM: "DigitalBurj Logistics <noreply@digitalburj.example>"
+      PORTAL_BASE_URL: http://localhost:3002
+      # WHATSAPP_TOKEN / WHATSAPP_PHONE_NUMBER_ID / WHATSAPP_TEMPLATE_LANG: set from the secret store to enable WhatsApp (Cloud API)
+    depends_on: { migrate: { condition: service_completed_successfully }, clamav: { condition: service_started } }
   staff-web:
     profiles: [apps]
     build: { context: ., dockerfile: infrastructure/containers/node.Dockerfile, target: staff-web }
     environment: { API_BASE_URL: "http://api:3001", SESSION_SECRET: "change-me-change-me-change-me-change-me", OIDC_ISSUER_URL: "http://localhost:8080/realms/dbl", OIDC_WEB_CLIENT_ID: dbl-staff-web, OIDC_WEB_CLIENT_SECRET: dev-secret, OIDC_REDIRECT_URI: "http://localhost:3000/api/auth/callback", NODE_ENV: production }
     ports: ["3000:3000"]
-volumes: { pgdata: {}, miniodata: {} }
+volumes: { pgdata: {}, miniodata: {}, clamdb: {} }

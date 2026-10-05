@@ -48,3 +48,12 @@ Run: `npm test` (needs PostgreSQL 16 + Redis; see README). "Real DB" = executed 
 | Dev disk storage: signed, expiring, method-bound URLs | `devfiles` | ✅ |
 | Document preview only after scan (staff and portal) | `screens.spec` › *documents…*; `portal.spec` › *documents…* | browser |
 | Phone layout: drawer navigation, no horizontal scrolling (staff and portal) | `screens.spec` / `portal.spec` › *phone layout* | browser |
+| Branded PDFs carry issuer profile, TRNs, lines, totals, page x of y; quotation never shows cost/margin; drafts watermarked | `documents` unit (pdftotext); `portal` › *branded PDF documents* | ✅ |
+| PDF downloads respect party scoping (customer: own posted invoices only; agent: report without customer) | `portal` › *branded PDF documents*; `portal.spec` › *invoice and shipment report download…*; `screens.spec` › *PDF downloads…* | ✅ / browser |
+| Customer messaging: shared vs internal visibility, own records only, rate limit | `portal` › *customer messaging*; `portal.spec` › *customer messaging…*; `screens.spec` › *messaging: staff share…* | ✅ / browser |
+| Real SMTP and WhatsApp Cloud API delivery, consent, retry/backoff, dedupe, delivery receipts | `worker` › *notifications…* (real SMTP server, local Graph stand-in) | ✅ |
+| WhatsApp webhook handshake, `X-Hub-Signature-256`, inbound dedupe; consent and company profile; delivery log | `notifications` (API) ; `screens.spec` › *contacts…*, *company profile…* | ✅ / browser |
+| ClamAV scan: EICAR flagged, clean passes, unreachable scanner never yields "clean" | `worker` › *ClamAV scanner* (real clamd when `CLAMD_TEST_PORT` is set) | ✅ |
+| OCR/text extraction: PDF text layer, scanned PDF and photo via Tesseract, ISO 6346 check digit, field parser | `extract.test` (real pdftotext/tesseract); `worker` › *extracts fields after a clean scan…* | ✅ |
+| Extraction API: staff only; pending / done states | `portal` › *document extraction* | ✅ |
+| Workflow messaging steps use the approved template catalogue | `contracts` validation; `screens.spec` › *messaging steps…* | ✅ / browser |
