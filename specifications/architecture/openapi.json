@@ -238,6 +238,159 @@
             }
           }
         }
+      },
+      "post": {
+        "operationId": "createFacility",
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Create a facility",
+        "description": "Permission: admin.tenant",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "legalEntityId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "warehouse",
+                      "yard",
+                      "office",
+                      "cfs"
+                    ]
+                  }
+                },
+                "required": [
+                  "legalEntityId",
+                  "name",
+                  "kind"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/facilities/{id}/locations": {
+      "post": {
+        "operationId": "createLocation",
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Add a storage location to a facility",
+        "description": "Permission: admin.tenant",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "zone": {
+                    "type": "string",
+                    "maxLength": 40
+                  }
+                },
+                "required": [
+                  "code"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/parties": {
@@ -3525,6 +3678,63 @@
         }
       }
     },
+    "/api/v1/invoices/{id}": {
+      "get": {
+        "operationId": "getInvoice",
+        "tags": [
+          "Finance"
+        ],
+        "summary": "Invoice with lines, tax and settlement",
+        "description": "Permission: invoices.view",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/supplier-bills": {
       "post": {
         "operationId": "recordSupplierBill",
@@ -4298,16 +4508,178 @@
                 "type": "object",
                 "properties": {
                   "key": {
-                    "type": "string"
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,60}$"
                   },
                   "triggerTopic": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "EnquiryQualified",
+                      "QuoteApproved",
+                      "QuoteAccepted",
+                      "JobOpened",
+                      "BookingRequested",
+                      "BookingConfirmed",
+                      "ShipmentEventRecorded",
+                      "CargoReceived",
+                      "ReleaseAuthorized",
+                      "CargoReleased",
+                      "CustomsReleaseRecorded",
+                      "DeliveryCompleted",
+                      "ChargeCreated",
+                      "InvoiceApproved",
+                      "InvoicePosted",
+                      "SupplierBillPosted",
+                      "PaymentAllocated",
+                      "JobClosed",
+                      "DocumentApproved",
+                      "ApprovalDecided",
+                      "IntegrationEventReceived",
+                      "IncidentReported",
+                      "IncidentResolved",
+                      "HoldReleased",
+                      "TripDispatched",
+                      "QualificationExpiring"
+                    ]
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 300
                   },
                   "definition": {
                     "type": "object",
-                    "additionalProperties": {
-                      "nullable": true
-                    }
+                    "properties": {
+                      "conditions": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "field": {
+                              "type": "string",
+                              "pattern": "^(aggregateType|aggregateId|topic|payload(\\.[A-Za-z0-9_]+)+)$"
+                            },
+                            "op": {
+                              "type": "string",
+                              "enum": [
+                                "eq",
+                                "ne",
+                                "gt",
+                                "gte",
+                                "lt",
+                                "lte",
+                                "contains",
+                                "exists"
+                              ]
+                            },
+                            "value": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "boolean"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "field",
+                            "op"
+                          ]
+                        },
+                        "maxItems": 5,
+                        "default": []
+                      },
+                      "actions": {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "create_task"
+                                  ]
+                                },
+                                "title": {
+                                  "type": "string",
+                                  "minLength": 3,
+                                  "maxLength": 200
+                                },
+                                "dueInHours": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 8760
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "title"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "notify"
+                                  ]
+                                },
+                                "channel": {
+                                  "type": "string",
+                                  "enum": [
+                                    "internal",
+                                    "email",
+                                    "whatsapp"
+                                  ]
+                                },
+                                "template": {
+                                  "type": "string",
+                                  "minLength": 2,
+                                  "maxLength": 100
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "channel",
+                                "template"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "wait"
+                                  ]
+                                },
+                                "seconds": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 2592000
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "seconds"
+                              ]
+                            }
+                          ]
+                        },
+                        "minItems": 1,
+                        "maxItems": 20
+                      }
+                    },
+                    "required": [
+                      "actions"
+                    ]
                   }
                 },
                 "required": [
@@ -4382,6 +4754,63 @@
           "Automation"
         ],
         "summary": "Activate workflow version",
+        "description": "Permission: automation.manage",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workflows/{id}/retire": {
+      "post": {
+        "operationId": "retireWorkflow",
+        "tags": [
+          "Automation"
+        ],
+        "summary": "Retire an active workflow version (running instances finish)",
         "description": "Permission: automation.manage",
         "security": [
           {
@@ -6386,6 +6815,202 @@
           }
         ],
         "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "running",
+                "waiting",
+                "completed",
+                "failed",
+                "cancelled",
+                "skipped"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "definitionId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workflow-runs/{id}": {
+      "get": {
+        "operationId": "getWorkflowRun",
+        "tags": [
+          "Automation"
+        ],
+        "summary": "One run with its step log",
+        "description": "Permission: automation.manage",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workflow-runs/{id}/cancel": {
+      "post": {
+        "operationId": "cancelWorkflowRun",
+        "tags": [
+          "Automation"
+        ],
+        "summary": "Cancel a running, waiting or failed run",
+        "description": "Permission: automation.manage",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workflow-runs/{id}/retry": {
+      "post": {
+        "operationId": "retryWorkflowRun",
+        "tags": [
+          "Automation"
+        ],
+        "summary": "Retry a failed run from its last durable step",
+        "description": "Permission: automation.manage",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
           {
             "schema": {
               "type": "string",

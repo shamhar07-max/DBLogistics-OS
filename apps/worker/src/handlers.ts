@@ -1,4 +1,5 @@
 import type pg from 'pg';
+import { conditionsHold, renderTemplate, WORKFLOW_LIMITS, type WorkflowEventContext } from '@dbl/contracts';
 import { inTenant, type Q } from './db';
 
 export interface DomainEvent { id: string; tenantId: string; topic: string; aggregateType: string; aggregateId: string; payload: Record<string, any>; correlationId?: string }
@@ -11,7 +12,7 @@ async function once(q: Q, tenantId: string, consumer: string, eventId: string): 
 }
 const audit = (q: Q, e: DomainEvent, action: string, detail: object) =>
   q.q(`INSERT INTO platform.audit_events(tenant_id, actor_kind, correlation_id, action, entity_type, entity_id, detail) VALUES ($1,'system',$2,$3,$4,$5,$6::jsonb)`, [e.tenantId, e.correlationId ?? null, action, e.aggregateType, e.aggregateId, JSON.stringify(detail)]);
-const task = (q: Q, e: DomainEvent, title: string) => q.q(`INSERT INTO collab.tasks(tenant_id, title, related_type, related_id, origin) VALUES ($1,$2,$3,$4,'automation')`, [e.tenantId, title, e.aggregateType, e.aggregateId]);
+const task = (q: Q, e: DomainEvent, title: string, dueInHours?: number) => q.q(`INSERT INTO collab.tasks(tenant_id, title, related_type, related_id, origin, due_at) VALUES ($1,$2,$3,$4,'automation', CASE WHEN $5::int IS NULL THEN NULL ELSE now() + ($5::int || ' hours')::interval END)`, [e.tenantId, title, e.aggregateType, e.aggregateId, dueInHours ?? null]);
 
 /** Built-in reactions (the Logistics pack's default automations). */
 export async function builtIns(q: Q, e: DomainEvent) {
@@ -23,32 +24,59 @@ export async function builtIns(q: Q, e: DomainEvent) {
 /** Tenant-defined workflows (versioned). One run per (definition, event): retries can never run a workflow twice. */
 export async function runWorkflows(pool: pg.Pool, e: DomainEvent) {
   const defs = await pool.query(`SELECT id, key, version, definition FROM automation.workflow_definitions WHERE tenant_id=$1 AND status='active' AND trigger_topic=$2`, [e.tenantId, e.topic]);
+  const ctx: WorkflowEventContext = { topic: e.topic, aggregateType: e.aggregateType, aggregateId: e.aggregateId, payload: e.payload ?? {} };
   for (const d of defs.rows) {
-    const created = await inTenant(pool, e.tenantId, async (q) => (await q.q(`INSERT INTO automation.workflow_runs(tenant_id, definition_id, trigger_event_id, state) VALUES ($1,$2,$3,$4::jsonb) ON CONFLICT DO NOTHING RETURNING id`, [e.tenantId, d.id, e.id, JSON.stringify({ index: 0, event: { aggregateType: e.aggregateType, aggregateId: e.aggregateId } })])));
-    if (created.length) await advanceRun(pool, created[0].id, e.tenantId);
+    const holds = conditionsHold(d.definition.conditions, ctx);
+    const state = { index: 0, event: ctx };
+    const log = holds ? [] : [{ at: new Date().toISOString(), note: 'Conditions not met — workflow did not run' }];
+    const created = await inTenant(pool, e.tenantId, async (q) => (await q.q(
+      `INSERT INTO automation.workflow_runs(tenant_id, definition_id, trigger_event_id, state, status, finished_at, log) VALUES ($1,$2,$3,$4::jsonb,$5,$6,$7::jsonb) ON CONFLICT DO NOTHING RETURNING id`,
+      [e.tenantId, d.id, e.id, JSON.stringify(state), holds ? 'running' : 'skipped', holds ? null : new Date().toISOString(), JSON.stringify(log)])));
+    if (created.length && holds) await advanceRun(pool, created[0].id, e.tenantId);
   }
 }
-/** Executes actions until the end or a durable wait. State and timers live in PostgreSQL, not in Redis. */
+const errText = (err: unknown) => String((err as any)?.message ?? err).slice(0, 500);
+
+/**
+ * Executes actions until the end or a durable wait. State and timers live in PostgreSQL, not in Redis.
+ * Every action runs inside one transaction with the state change: if anything throws, the whole step rolls back
+ * (no half-created tasks) and the run is marked failed with the reason, ready for a manual retry from the same step.
+ */
 export async function advanceRun(pool: pg.Pool, runId: string, tenantId: string) {
-  await inTenant(pool, tenantId, async (q) => {
-    const run = (await q.q(`SELECT r.*, d.definition FROM automation.workflow_runs r JOIN automation.workflow_definitions d ON d.id=r.definition_id WHERE r.id=$1 FOR UPDATE OF r`, [runId]))[0];
-    if (!run || !['running', 'waiting'].includes(run.status)) return;
-    const actions: any[] = run.definition.actions ?? []; let i = run.state.index ?? 0;
-    const ev = { tenantId, aggregateType: run.state.event.aggregateType, aggregateId: run.state.event.aggregateId, id: String(run.trigger_event_id), topic: '', payload: {} } as DomainEvent;
-    while (i < actions.length) {
-      const a = actions[i];
-      if (a.type === 'wait') { await q.q(`UPDATE automation.workflow_runs SET status='waiting', resume_at = now() + ($2 || ' seconds')::interval, state = jsonb_set(state, '{index}', to_jsonb($3::int)) WHERE id=$1`, [runId, String(a.seconds ?? 0), i + 1]); return; }
-      if (a.type === 'create_task') await task(q, ev, a.title);
-      else if (a.type === 'notify') await audit(q, ev, 'automation.notify', { channel: a.channel, template: a.template });   // channel adapters plug in here
-      i++;
-    }
-    await q.q(`UPDATE automation.workflow_runs SET status='completed', finished_at=now(), state = jsonb_set(state, '{index}', to_jsonb($2::int)) WHERE id=$1`, [runId, i]);
-  });
+  try {
+    await inTenant(pool, tenantId, async (q) => {
+      const run = (await q.q(`SELECT r.*, d.definition FROM automation.workflow_runs r JOIN automation.workflow_definitions d ON d.id=r.definition_id WHERE r.id=$1 FOR UPDATE OF r`, [runId]))[0];
+      if (!run || !['running', 'waiting'].includes(run.status)) return;
+      const actions: any[] = run.definition.actions ?? []; let i = run.state.index ?? 0; const log: any[] = [];
+      const st = run.state.event ?? {};
+      const ctx: WorkflowEventContext = { topic: st.topic ?? '', aggregateType: st.aggregateType ?? '', aggregateId: st.aggregateId ?? '', payload: st.payload ?? {} };
+      const ev = { tenantId, aggregateType: ctx.aggregateType, aggregateId: ctx.aggregateId, id: String(run.trigger_event_id), topic: ctx.topic, payload: ctx.payload } as DomainEvent;
+      const at = () => new Date().toISOString();
+      while (i < actions.length) {
+        const a = actions[i];
+        if (a.type === 'wait') {
+          const seconds = Math.min(Math.max(Number(a.seconds) || 0, 0), WORKFLOW_LIMITS.maxWaitSeconds); log.push({ at: at(), index: i, type: 'wait', note: `Waiting ${seconds} s` });
+          await q.q(`UPDATE automation.workflow_runs SET status='waiting', resume_at = now() + ($2 || ' seconds')::interval, heartbeat_at=now(), last_error=NULL, state = jsonb_set(state, '{index}', to_jsonb($3::int)), log = log || $4::jsonb WHERE id=$1`, [runId, String(seconds), i + 1, JSON.stringify(log)]); return;
+        }
+        if (a.type === 'create_task') { const title = renderTemplate(String(a.title ?? ''), ctx).trim() || 'Workflow task'; await task(q, ev, title, a.dueInHours); log.push({ at: at(), index: i, type: a.type, note: `Task created: ${title}` }); }
+        else if (a.type === 'notify') { await audit(q, ev, 'automation.notify', { channel: a.channel, template: a.template }); log.push({ at: at(), index: i, type: a.type, note: `Notification queued (${a.channel}/${a.template})` }); }   // channel adapters plug in here
+        else throw new Error(`Unknown action type "${a.type}" at step ${i + 1}`);                  // never silently skip a step
+        i++;
+      }
+      await q.q(`UPDATE automation.workflow_runs SET status='completed', finished_at=now(), heartbeat_at=now(), last_error=NULL, resume_at=NULL, state = jsonb_set(state, '{index}', to_jsonb($2::int)), log = log || $3::jsonb WHERE id=$1`, [runId, i, JSON.stringify(log)]);
+    });
+  } catch (err) {
+    await inTenant(pool, tenantId, (q) => q.q(`UPDATE automation.workflow_runs SET status='failed', attempts = attempts + 1, last_error=$2, finished_at=now(), heartbeat_at=now(), resume_at=NULL, log = log || $3::jsonb WHERE id=$1 AND status IN ('running','waiting')`,
+      [runId, errText(err), JSON.stringify([{ at: new Date().toISOString(), note: `Failed: ${errText(err)}` }])]));
+  }
 }
-/** Timer poller: resumes due waits (survives restarts because timers are rows). */
+/**
+ * Timer poller: resumes due waits and recovers runs orphaned by a crash (status 'running' with no heartbeat for 5 minutes).
+ * Timers are rows, so this survives restarts. One failing run never blocks the others (advanceRun contains its own errors).
+ */
 export async function resumeDueRuns(pool: pg.Pool): Promise<number> {
-  const due = (await pool.query(`SELECT id, tenant_id FROM automation.workflow_runs WHERE status='waiting' AND resume_at <= now() ORDER BY resume_at LIMIT 50`)).rows;
-  for (const r of due) { await inTenant(pool, r.tenant_id, (q) => q.q(`UPDATE automation.workflow_runs SET status='running', resume_at=NULL WHERE id=$1`, [r.id])); await advanceRun(pool, r.id, r.tenant_id); }
+  const due = (await pool.query(`SELECT id, tenant_id FROM automation.workflow_runs WHERE (status='waiting' AND resume_at <= now()) OR (status='running' AND heartbeat_at < now() - interval '5 minutes') ORDER BY COALESCE(resume_at, heartbeat_at) LIMIT 50`)).rows;
+  for (const r of due) { await inTenant(pool, r.tenant_id, (q) => q.q(`UPDATE automation.workflow_runs SET status='running', resume_at=NULL, heartbeat_at=now() WHERE id=$1`, [r.id])); await advanceRun(pool, r.id, r.tenant_id); }
   return due.length;
 }
 

@@ -5,3 +5,4 @@ export * from './errors';
 export * from './op';
 export * from './storage';
 export * from './platform.module';
+export * from './visibility';

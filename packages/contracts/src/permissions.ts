@@ -39,8 +39,8 @@ export const ROLE_TEMPLATES: Record<string, { name: string; permissions: Permiss
   hr: { name: 'HR', permissions: pick('people.view', 'people.manage', 'tasks.view', 'tasks.manage', 'parties.view') },
   quality_manager: { name: 'Quality manager', permissions: pick('quality.view', 'quality.manage', 'quality.hold.release', 'warehouse.view', 'shipments.view', 'jobs.view', 'documents.view', 'customs.view', 'tasks.view', 'tasks.manage', 'conversations.view', 'conversations.post', 'people.view') },
   auditor: { name: 'Auditor', permissions: pick('jobs.view', 'invoices.view', 'documents.view', 'audit.view', 'warehouse.view', 'customs.view', 'reports.finance.view', 'quality.view') },
-  customer_portal: { name: 'Customer (portal)', permissions: pick('jobs.view', 'shipments.view', 'documents.view', 'invoices.view', 'quotes.view', 'quotes.accept', 'enquiries.create') },
+  customer_portal: { name: 'Customer (portal)', permissions: pick('jobs.view', 'shipments.view', 'documents.view', 'documents.upload', 'invoices.view', 'quotes.view', 'quotes.accept', 'enquiries.view', 'enquiries.create') },
   agent_portal: { name: 'Agent (portal)', permissions: pick('shipments.view', 'shipments.events.record', 'documents.view', 'documents.upload') },
-  transporter_portal: { name: 'Transporter (portal)', permissions: pick('transport.view', 'transport.pod.capture', 'documents.upload') },
-  driver: { name: 'Driver', permissions: pick('transport.view', 'transport.pod.capture', 'documents.upload') },
+  transporter_portal: { name: 'Transporter (portal)', permissions: pick('transport.view', 'shipments.view', 'transport.pod.capture', 'documents.upload') },
+  driver: { name: 'Driver', permissions: pick('transport.view', 'shipments.view', 'transport.pod.capture', 'documents.upload') },
 };

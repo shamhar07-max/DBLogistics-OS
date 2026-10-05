@@ -92,7 +92,9 @@ export const DeviceCommandBatchBody = z.object({
   })).min(1).max(100),
 });
 export const AiToolInvokeBody = z.object({ args: z.record(z.unknown()).default({}) });
-export const WorkflowBody = z.object({ key: z.string(), triggerTopic: z.string(), definition: z.record(z.unknown()) });
+export const WorkflowRunQuery = z.object({ status: z.enum(['running', 'waiting', 'completed', 'failed', 'cancelled', 'skipped']).optional(), definitionId: Uuid.optional() });
+export const CreateFacilityBody = z.object({ legalEntityId: Uuid, name: z.string().min(2).max(120), kind: z.enum(['warehouse', 'yard', 'office', 'cfs']) });
+export const CreateLocationBody = z.object({ code: z.string().min(1).max(40), zone: z.string().max(40).optional() });
 
 // ---- Transport
 export const CreateTripBody = z.object({

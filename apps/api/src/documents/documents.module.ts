@@ -1,6 +1,6 @@
 import { Body, Controller, Inject, Injectable, Module, Param } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { audit, Ctx, Db, DomainError, emit, expectVersion, Op, Qry, STORAGE, type RequestContext, type StoragePort } from '../platform';
+import { audit, canTouch, Ctx, Db, DomainError, documentVisibility, emit, expectVersion, externalIssuerKind, isExternal, Op, Qry, STORAGE, type RequestContext, type StoragePort } from '../platform';
 
 @Injectable()
 export class DocumentsService {
@@ -20,6 +20,10 @@ export class DocumentsService {
       if (!i || i.created_by !== ctx.userId) throw new DomainError('NOT_FOUND', 'Upload intent not found.');
       if (i.consumed_at) throw new DomainError('DUPLICATE', 'Upload intent already used.');
       if (new Date(i.expires_at) < new Date()) throw new DomainError('VALIDATION_FAILED', 'Upload intent expired.');
+      if (isExternal(ctx)) {                                              // portal uploads: only onto records they can see, and never claiming to be an authority/internal issuer
+        if (!(await canTouch(tx, ctx, b.relatedType, b.relatedId))) throw new DomainError('NOT_FOUND', 'Record not found.');
+        const kind = externalIssuerKind(ctx); if (!kind) throw new DomainError('FORBIDDEN', 'This workspace cannot upload documents.'); b = { ...b, issuerKind: kind };
+      }
       const head = await this.storage.head(i.storage_key);
       if (!head) throw new DomainError('VALIDATION_FAILED', 'File was not uploaded.');
       if (head.size > Number(i.max_bytes)) throw new DomainError('VALIDATION_FAILED', 'File is larger than authorised.');
@@ -33,6 +37,7 @@ export class DocumentsService {
   }
   list(ctx: RequestContext, q: { relatedType?: string; relatedId?: string; docType?: string }) {
     const w: string[] = []; const a: unknown[] = []; const add = (c: string, v: unknown) => { a.push(v); w.push(c.replace('?', `$${a.length}`)); };
+    if (isExternal(ctx)) { a.push(ctx.userId, ctx.partyId); w.push(documentVisibility(ctx, 'd', 1, 2)); }
     if (q.relatedType) add('d.related_type = ?', q.relatedType); if (q.relatedId) add('d.related_id = ?', q.relatedId); if (q.docType) add('d.doc_type = ?', q.docType);
     return this.db.run(ctx, (tx) => tx.q(`SELECT d.id, d.doc_type, d.issuer_kind, d.issuer_name, d.external_reference, d.related_type, d.related_id, d.status, d.version, d.created_at, d.approved_at, v.scan_status, v.size_bytes, v.content_type, v.sha256
       FROM platform.documents d JOIN LATERAL (SELECT * FROM platform.document_versions WHERE document_id = d.id ORDER BY version_no DESC LIMIT 1) v ON true ${w.length ? 'WHERE ' + w.join(' AND ') : ''} ORDER BY d.created_at DESC LIMIT 300`, a));
@@ -40,11 +45,11 @@ export class DocumentsService {
   /** Signed, short-lived download — only for versions that passed the scan. */
   downloadUrl(ctx: RequestContext, id: string) {
     return this.db.run(ctx, async (tx) => {
-      const v = await tx.maybe(`SELECT v.storage_key, v.scan_status, v.sha256 FROM platform.document_versions v WHERE v.document_id=$1 ORDER BY v.version_no DESC LIMIT 1`, [id]);
+      const v = await tx.maybe(`SELECT v.storage_key, v.scan_status, v.sha256, v.content_type FROM platform.document_versions v JOIN platform.documents d ON d.id = v.document_id WHERE v.document_id=$1 AND ${documentVisibility(ctx, 'd', 2, 3)} ORDER BY v.version_no DESC LIMIT 1`, isExternal(ctx) ? [id, ctx.userId, ctx.partyId] : [id]);
       if (!v) throw new DomainError('NOT_FOUND', 'Document not found.');
       if (v.scan_status !== 'clean') throw new DomainError('DOCUMENT_NOT_CLEAN', 'The document has not passed the malware scan.', { scanStatus: v.scan_status });
       await audit(tx, ctx, 'document.downloaded', 'document', id);
-      return { url: await this.storage.presignDownload(v.storage_key, 300), expiresInSeconds: 300, sha256: v.sha256 };
+      return { url: await this.storage.presignDownload(v.storage_key, 300), expiresInSeconds: 300, sha256: v.sha256, contentType: v.content_type };
     });
   }
   approve(ctx: RequestContext, id: string) {

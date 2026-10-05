@@ -1,5 +1,5 @@
 import { Body, Controller, Inject, Injectable, Module, Param } from '@nestjs/common';
-import { audit, assertScope, Ctx, Db, DomainError, emit, Op, type RequestContext, type Tx } from '../platform';
+import { audit, assertScope, Ctx, Db, DomainError, emit, isExternal, Op, type RequestContext, type Tx } from '../platform';
 import { PeopleModule, PeopleService } from '../people';
 
 /** Offline-first device sync: each command carries commandId/device/actor/observed version/device time; server receipt time is stored separately. */
@@ -10,7 +10,8 @@ export class TransportService {
     return this.db.run(ctx, (tx) => tx.q(`SELECT t.id, t.ref, t.status, t.vehicle_ref, t.version, p.legal_name AS transporter, e.full_name AS driver, t.driver_employee_id,
       COALESCE((SELECT json_agg(json_build_object('id', s.id, 'seq', s.seq, 'kind', s.kind, 'address', s.address, 'status', s.status, 'shipmentId', s.shipment_id, 'shipmentRef', sh.ref, 'pod', pod.signed_by IS NOT NULL, 'signedBy', pod.signed_by) ORDER BY s.seq)
         FROM transport.trip_stops s LEFT JOIN logistics.shipments sh ON sh.id = s.shipment_id LEFT JOIN transport.proofs_of_delivery pod ON pod.trip_stop_id = s.id WHERE s.trip_id = t.id), '[]') AS stops
-      FROM transport.trips t JOIN parties.parties p ON p.id = t.transporter_party_id LEFT JOIN people.employees e ON e.id = t.driver_employee_id ORDER BY t.created_at DESC LIMIT 200`));
+      FROM transport.trips t JOIN parties.parties p ON p.id = t.transporter_party_id LEFT JOIN people.employees e ON e.id = t.driver_employee_id
+      ${isExternal(ctx) ? (['transporter', 'driver'].includes(ctx.workspace) ? `WHERE t.transporter_party_id = $1 AND t.status IN ('dispatched','in_progress','completed')` : 'WHERE false') : ''} ORDER BY t.created_at DESC LIMIT 200`, isExternal(ctx) && ['transporter', 'driver'].includes(ctx.workspace) ? [ctx.partyId] : []));
   }
   createTrip(ctx: RequestContext, b: any) {
     return this.db.run(ctx, async (tx) => {
@@ -55,10 +56,14 @@ export class TransportService {
     if (cmd.type === 'capture_pod') {
       const p = cmd.payload;
       const stop = await tx.maybe(`SELECT * FROM transport.trip_stops WHERE id=$1 FOR UPDATE`, [p.tripStopId]);
-      if (!stop) throw new DomainError('NOT_FOUND', 'Stop not found.');
+      const trip = stop && await tx.maybe(`SELECT id, status, transporter_party_id FROM transport.trips WHERE id=$1 FOR UPDATE`, [stop.trip_id]);
+      if (!stop || !trip || (isExternal(ctx) && trip.transporter_party_id !== ctx.partyId)) throw new DomainError('NOT_FOUND', 'Stop not found.');   // a transporter can only act on its own trips
+      if (!['dispatched', 'in_progress'].includes(trip.status)) throw new DomainError('INVALID_STATE_TRANSITION', `Trip is ${trip.status}: proof of delivery can only be captured on a dispatched trip.`);
       if (stop.status === 'done') throw new DomainError('INVALID_STATE_TRANSITION', 'This stop already has proof of delivery.');
       await tx.q(`INSERT INTO transport.proofs_of_delivery(tenant_id, trip_stop_id, signed_by, captured_at, device_id, document_id, command_id) VALUES ($1,$2,$3,$4,$5,$6,$7)`, [ctx.tenantId, p.tripStopId, p.signedBy, cmd.deviceTime, deviceId, p.documentId ?? null, cmd.commandId]);
       await tx.q(`UPDATE transport.trip_stops SET status='done' WHERE id=$1`, [p.tripStopId]);
+      const left = await tx.one<{ n: number }>(`SELECT count(*)::int n FROM transport.trip_stops WHERE trip_id=$1 AND status NOT IN ('done','failed')`, [trip.id]);
+      await tx.q(`UPDATE transport.trips SET status=$2 WHERE id=$1`, [trip.id, left.n === 0 ? 'completed' : 'in_progress']);
       if (stop.shipment_id) await tx.q(`INSERT INTO logistics.tracking_events(tenant_id, shipment_id, code, event_time, source, is_actual, external_event_id) VALUES ($1,$2,'POD_CAPTURED',$3,'device',true,$4) ON CONFLICT DO NOTHING`, [ctx.tenantId, stop.shipment_id, cmd.deviceTime, cmd.commandId]);
       // Evidence captured ≠ delivery completed: completion is an online command that validates the approved POD document.
       return { evidence: 'pod_captured', note: 'Delivery completion requires online validation.' };

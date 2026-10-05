@@ -186,7 +186,7 @@ describe('integrations, tracking and offline', () => {
     const j = await openJob(w); const ops = await w.member(w.a.tenantId, `o${randomUUID().slice(0, 4)}`, ['freight_ops']); const driver = await w.member(w.a.tenantId, `d${randomUUID().slice(0, 4)}`, ['driver']);
     const s = await ops.post('/shipments', { jobId: j.jobId, mode: 'road', origin: 'A', destination: 'B', cargo: [{ description: 'c', quantity: '1', ownerPartyId: j.customer }] });
     const tr = await makeParty(w.owner, 'Haulier', ['transporter']);
-    const trip = (await w.su.query(`INSERT INTO transport.trips(tenant_id, ref, transporter_party_id) VALUES ($1,$2,$3) RETURNING id`, [w.a.tenantId, `TRP-${randomUUID().slice(0, 6)}`, tr])).rows[0].id;
+    const trip = (await w.su.query(`INSERT INTO transport.trips(tenant_id, ref, transporter_party_id, status) VALUES ($1,$2,$3,'dispatched') RETURNING id`, [w.a.tenantId, `TRP-${randomUUID().slice(0, 6)}`, tr])).rows[0].id;
     const stop = (await w.su.query(`INSERT INTO transport.trip_stops(tenant_id, trip_id, seq, kind, shipment_id, address) VALUES ($1,$2,1,'delivery',$3,'Riyadh') RETURNING id`, [w.a.tenantId, trip, s.body.id])).rows[0].id;
     const commandId = randomUUID(); const batch = { deviceId: 'dev-1', commands: [{ commandId, type: 'capture_pod', deviceTime: '2026-10-02T08:00:00Z', payload: { tripStopId: stop, signedBy: 'Khalid' } }] };
     const first = await driver.post('/device/commands', batch); const second = await driver.post('/device/commands', batch);

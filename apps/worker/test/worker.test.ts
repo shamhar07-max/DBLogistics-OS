@@ -81,5 +81,38 @@ describe('outbox relay + consumers', () => {
     await expect(pool.query(`SELECT * FROM finance.invoices`)).rejects.toThrow(/permission denied/);
     await expect(pool.query(`UPDATE platform.outbox SET payload='{}'`)).rejects.toThrow(/permission denied/);
   });
+describe('workflow engine (validated language, failure handling, recovery)', () => {
+  const def = async (key: string, topic: string, definition: object) => (await su.query(`INSERT INTO automation.workflow_definitions(tenant_id,key,version,trigger_topic,definition,status,owner_user_id) VALUES ($1,$2,1,$3,$4::jsonb,'active',$5) RETURNING id`, [tenant, key, topic, JSON.stringify(definition), randomUUID()])).rows[0].id as string;
+  const fire = (topic: string, payload: object) => handleEvent(pool, scanner, { id: String(Math.floor(Math.random() * 1e12)), tenantId: tenant, topic, aggregateType: 'job', aggregateId: randomUUID(), payload });
+  const runs = async (id: string) => (await su.query(`SELECT status, attempts, last_error, log, state FROM automation.workflow_runs WHERE definition_id=$1 ORDER BY started_at`, [id])).rows;
+
+  it('conditions gate a run (skipped runs are recorded with the reason); templates read the stored trigger payload; due dates are set', async () => {
+    const id = await def('big-job', 'JobClosed', { conditions: [{ field: 'payload.amount', op: 'gt', value: 100 }], actions: [{ type: 'create_task', title: 'Review {{payload.jobRef}} ({{aggregateType}})', dueInHours: 24 }] });
+    await fire('JobClosed', { amount: 50, jobRef: 'J-1' }); await fire('JobClosed', { amount: 500, jobRef: 'J-77' });
+    const r = await runs(id); expect(r.map((x) => x.status)).toEqual(['skipped', 'completed']); expect(r[0].log[0].note).toMatch(/Conditions not met/); expect(r[1].state.event.payload.jobRef).toBe('J-77');
+    const t = (await su.query(`SELECT title, due_at, origin FROM collab.tasks WHERE tenant_id=$1 AND title LIKE 'Review J-%'`, [tenant])).rows; expect(t).toHaveLength(1);
+    expect(t[0]).toMatchObject({ title: 'Review J-77 (job)', origin: 'automation' }); expect(t[0].due_at).not.toBeNull();
+  });
+  it('an action that cannot run fails the run with the reason and rolls the whole step back; retry resumes from the same step and fails visibly again, never half-applied', async () => {
+    const id = await def('bad-step', 'ChargeCreated', { actions: [{ type: 'create_task', title: 'Half applied?' }, { type: 'teleport', where: 'moon' }] });
+    await fire('ChargeCreated', {});
+    let r = (await runs(id))[0]; expect(r).toMatchObject({ status: 'failed', attempts: 1 }); expect(r.last_error).toMatch(/Unknown action type "teleport" at step 2/); expect(await tasks('Half applied?')).toBe(0);
+    await su.query(`UPDATE automation.workflow_runs SET status='waiting', resume_at=now() WHERE definition_id=$1`, [id]);          // what POST /workflow-runs/:id/retry does
+    expect(await resumeDueRuns(pool)).toBeGreaterThanOrEqual(1); r = (await runs(id))[0]; expect(r).toMatchObject({ status: 'failed', attempts: 2 }); expect(await tasks('Half applied?')).toBe(0);
+  });
+  it('one failing run never starves the others in the timer poller; a cancelled run never advances', async () => {
+    const bad = await def('poison', 'InvoicePosted', { actions: [{ type: 'wait', seconds: 1 }, { type: 'nope' }] }); const good = await def('healthy', 'InvoicePosted', { actions: [{ type: 'wait', seconds: 1 }, { type: 'create_task', title: 'Healthy after wait' }] });
+    const cancelled = await def('to-cancel', 'InvoicePosted', { actions: [{ type: 'wait', seconds: 1 }, { type: 'create_task', title: 'Must not exist' }] });
+    await fire('InvoicePosted', {}); await su.query(`UPDATE automation.workflow_runs SET status='cancelled' WHERE definition_id=$1`, [cancelled]);
+    await su.query(`UPDATE automation.workflow_runs SET resume_at = now() - interval '1 second' WHERE status='waiting' AND definition_id IN ($1,$2)`, [bad, good]);
+    expect(await resumeDueRuns(pool)).toBe(2); expect((await runs(good))[0].status).toBe('completed'); expect((await runs(bad))[0].status).toBe('failed'); expect(await tasks('Healthy after wait')).toBe(1); expect(await tasks('Must not exist')).toBe(0);
+  });
+  it('runs orphaned by a worker crash (running, no heartbeat for 5 minutes) are recovered; fresh running runs are left alone', async () => {
+    const id = await def('orphan', 'PaymentAllocated', { actions: [{ type: 'create_task', title: 'Recovered after crash' }] });
+    const mk = async (ageMinutes: number) => (await su.query(`INSERT INTO automation.workflow_runs(tenant_id, definition_id, trigger_event_id, status, state, heartbeat_at) VALUES ($1,$2,$3,'running',$4::jsonb, now() - ($5 || ' minutes')::interval) RETURNING id`, [tenant, id, Math.floor(Math.random() * 1e12), JSON.stringify({ index: 0, event: { topic: 'PaymentAllocated', aggregateType: 'x', aggregateId: randomUUID(), payload: {} } }), String(ageMinutes)])).rows[0].id;
+    await mk(1); await mk(30); expect(await resumeDueRuns(pool)).toBe(1); expect(await tasks('Recovered after crash')).toBe(1);
+    expect((await runs(id)).map((x) => x.status).sort()).toEqual(['completed', 'running']);
+  });
+});
 });
 void QueueEvents;

@@ -1,5 +1,5 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { audit, assertScope, DomainError, emit, Db, expectVersion, isExternal, type RequestContext, type Tx } from '../../platform';
+import { audit, assertScope, canTouch, DomainError, emit, Db, expectVersion, isExternal, shipmentVisibility, type RequestContext, type Tx } from '../../platform';
 import { FinanceService } from '../../finance';
 import { canBooking, canShipment, currentMilestone } from '../domain/lifecycle';
 
@@ -33,12 +33,13 @@ export class LogisticsService {
 
   async listShipments(ctx: RequestContext, jobId?: string) {
     return this.db.run(ctx, (tx) => tx.q(`SELECT s.id, s.ref, s.mode, s.origin, s.destination, s.status, s.documents_status, s.delivered_at, s.job_id, j.ref AS job_ref FROM logistics.shipments s JOIN logistics.jobs j ON j.id = s.job_id
-      WHERE true ${jobId ? 'AND s.job_id = $1' : ''} ${isExternal(ctx) ? `AND j.customer_party_id = $${jobId ? 2 : 1}` : ''} ORDER BY s.created_at DESC LIMIT 300`, [...(jobId ? [jobId] : []), ...(isExternal(ctx) ? [ctx.partyId] : [])]));
+      WHERE true ${jobId ? 'AND s.job_id = $1' : ''} AND ${shipmentVisibility(ctx, 's', 'j', jobId ? 2 : 1)} ORDER BY s.created_at DESC LIMIT 300`, [...(jobId ? [jobId] : []), ...(isExternal(ctx) ? [ctx.partyId] : [])]));
   }
   async getShipment(ctx: RequestContext, id: string) {
     return this.db.run(ctx, async (tx) => {
-      const s = await tx.maybe(`SELECT s.*, j.ref AS job_ref, j.customer_party_id, j.legal_entity_id FROM logistics.shipments s JOIN logistics.jobs j ON j.id = s.job_id WHERE s.id=$1`, [id]);
-      if (!s || (isExternal(ctx) && s.customer_party_id !== ctx.partyId)) throw new DomainError('NOT_FOUND', 'Shipment not found.');
+      const s = await tx.maybe(`SELECT s.*, j.ref AS job_ref, j.customer_party_id, j.legal_entity_id FROM logistics.shipments s JOIN logistics.jobs j ON j.id = s.job_id WHERE s.id=$1 AND ${shipmentVisibility(ctx, 's', 'j', 2)}`, isExternal(ctx) ? [id, ctx.partyId] : [id]);
+      if (!s) throw new DomainError('NOT_FOUND', 'Shipment not found.');
+      if (isExternal(ctx)) { delete s.legal_entity_id; if (ctx.workspace !== 'customer') { delete s.customer_party_id; delete s.job_ref; } }
       const legs = await tx.q(`SELECT l.id, l.seq, l.mode, l.origin, l.destination, l.planned_departure, l.planned_arrival, l.estimated_arrival, l.actual_arrival, p.legal_name AS operator FROM logistics.legs l LEFT JOIN parties.parties p ON p.id = l.operator_party_id WHERE l.shipment_id=$1 ORDER BY l.seq`, [id]);
       const cargo = await tx.q(`SELECT c.id, c.kind, c.description, c.quantity, c.gross_weight_kg, c.volume_cbm, c.hs_code, c.batch, p.legal_name AS owner FROM logistics.cargo_units c JOIN parties.parties p ON p.id = c.owner_party_id WHERE c.shipment_id=$1`, [id]);
       const bookings = await tx.q(`SELECT b.id, b.status, b.external_ref, b.outcome_unknown, b.version, b.created_at, p.legal_name AS carrier FROM logistics.bookings b JOIN parties.parties p ON p.id = b.carrier_party_id WHERE b.shipment_id=$1 ORDER BY b.created_at`, [id]);
@@ -62,8 +63,8 @@ export class LogisticsService {
   }
   async timeline(ctx: RequestContext, id: string) {
     return this.db.run(ctx, async (tx) => {
-      const s = await tx.maybe(`SELECT s.id, s.status, j.customer_party_id FROM logistics.shipments s JOIN logistics.jobs j ON j.id=s.job_id WHERE s.id=$1`, [id]);
-      if (!s || (isExternal(ctx) && s.customer_party_id !== ctx.partyId)) throw new DomainError('NOT_FOUND', 'Shipment not found.');
+      const s = await tx.maybe(`SELECT s.id, s.status FROM logistics.shipments s JOIN logistics.jobs j ON j.id=s.job_id WHERE s.id=$1 AND ${shipmentVisibility(ctx, 's', 'j', 2)}`, isExternal(ctx) ? [id, ctx.partyId] : [id]);
+      if (!s) throw new DomainError('NOT_FOUND', 'Shipment not found.');
       const events = await tx.q(`SELECT code, event_time, received_at, source, is_actual, external_event_id, detail FROM logistics.tracking_events WHERE shipment_id=$1 ORDER BY event_time, received_at`, [id]);
       return { shipmentId: id, status: s.status, currentMilestone: currentMilestone(events as any), events: events.map((e: any) => ({ ...e, kind: e.is_actual ? 'actual' : 'estimated' })) };
     });
@@ -71,8 +72,9 @@ export class LogisticsService {
   async recordEvent(ctx: RequestContext, shipmentId: string, b: any) {
     return this.db.run(ctx, async (tx) => {
       const s = await tx.maybe(`SELECT s.*, j.legal_entity_id FROM logistics.shipments s JOIN logistics.jobs j ON j.id=s.job_id WHERE s.id=$1 FOR UPDATE OF s`, [shipmentId]);
-      if (!s) throw new DomainError('NOT_FOUND', 'Shipment not found.');
+      if (!s || !(await canTouch(tx, ctx, 'shipment', shipmentId))) throw new DomainError('NOT_FOUND', 'Shipment not found.');   // an agent can only report on shipments they operate
       assertScope(ctx, 'shipments.events.record', s.legal_entity_id);
+      if (isExternal(ctx)) b = { ...b, source: 'supplier' };            // external reports are never presented as carrier or system evidence
       const ev = await tx.maybe(`INSERT INTO logistics.tracking_events(tenant_id, shipment_id, code, event_time, source, is_actual, external_event_id, detail) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb)
                                  ON CONFLICT (tenant_id, source, external_event_id) DO NOTHING RETURNING id`, [ctx.tenantId, shipmentId, b.code, b.eventTime, b.source, b.isActual, b.externalEventId ?? null, JSON.stringify(b.detail)]);
       if (!ev) return { duplicate: true };

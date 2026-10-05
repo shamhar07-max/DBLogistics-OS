@@ -1,6 +1,7 @@
 import type { ZodTypeAny } from 'zod';
 import type { Permission } from './permissions';
 import * as S from './schemas';
+import { WorkflowBody } from './workflow';
 
 export interface RouteDef {
   method: 'GET' | 'POST'; path: string; operationId: string; tag: string; summary: string;
@@ -14,6 +15,8 @@ export const ROUTE_TABLE = [
   r({ method: 'GET', path: '/me/memberships', operationId: 'listMemberships', tag: 'Session', summary: 'Tenants the user belongs to', permission: null }),
   r({ method: 'GET', path: '/legal-entities', operationId: 'listLegalEntities', tag: 'Organization', summary: 'Legal entities', permission: 'parties.view' }),
   r({ method: 'GET', path: '/facilities', operationId: 'listFacilities', tag: 'Organization', summary: 'Facilities (warehouses, yards, offices) and their locations', permission: 'parties.view' }),
+  r({ method: 'POST', path: '/facilities', operationId: 'createFacility', tag: 'Organization', summary: 'Create a facility', permission: 'admin.tenant', body: S.CreateFacilityBody, status: 201 }),
+  r({ method: 'POST', path: '/facilities/:id/locations', operationId: 'createLocation', tag: 'Organization', summary: 'Add a storage location to a facility', permission: 'admin.tenant', body: S.CreateLocationBody, status: 201 }),
   r({ method: 'GET', path: '/parties', operationId: 'listParties', tag: 'Parties', summary: 'List parties', permission: 'parties.view' }),
   r({ method: 'POST', path: '/parties', operationId: 'createParty', tag: 'Parties', summary: 'Create party', permission: 'parties.create', body: S.CreatePartyBody, status: 201 }),
   r({ method: 'POST', path: '/parties/:id/bank-detail-changes', operationId: 'proposeBankChange', tag: 'Parties', summary: 'Propose bank-detail change (maker)', permission: 'bank-details.change.propose', body: S.BankChangeBody, status: 201 }),
@@ -53,6 +56,7 @@ export const ROUTE_TABLE = [
   r({ method: 'POST', path: '/invoices/:id/approve', operationId: 'approveInvoice', tag: 'Finance', summary: 'Approve invoice (not by its drafter)', permission: 'invoices.approve', ifMatch: true, idempotent: true }),
   r({ method: 'POST', path: '/invoices/:id/post', operationId: 'postInvoice', tag: 'Finance', summary: 'Post invoice: one transaction, balanced journal, number allocation', permission: 'invoices.post', idempotent: true, ifMatch: true, body: S.PostInvoiceBody }),
   r({ method: 'GET', path: '/invoices', operationId: 'listInvoices', tag: 'Finance', summary: 'List invoices', permission: 'invoices.view' }),
+  r({ method: 'GET', path: '/invoices/:id', operationId: 'getInvoice', tag: 'Finance', summary: 'Invoice with lines, tax and settlement', permission: 'invoices.view' }),
   r({ method: 'POST', path: '/supplier-bills', operationId: 'recordSupplierBill', tag: 'Finance', summary: 'Record supplier bill; clears accrual; duplicate detection', permission: 'bills.record', idempotent: true, body: S.SupplierBillBody, status: 201 }),
   r({ method: 'POST', path: '/payments', operationId: 'recordPayment', tag: 'Finance', summary: 'Record customer receipt', permission: 'payments.record', body: S.PaymentBody, status: 201 }),
   r({ method: 'POST', path: '/payments/:id/allocate', operationId: 'allocatePayment', tag: 'Finance', summary: 'Allocate payment to invoice (never beyond available)', permission: 'payments.allocate', idempotent: true, body: S.AllocatePaymentBody }),
@@ -62,8 +66,9 @@ export const ROUTE_TABLE = [
   r({ method: 'POST', path: '/approval-requests/:id/reject', operationId: 'rejectRequest', tag: 'Collaboration', summary: 'Reject', permission: 'approvals.decide', body: S.DecideBody }),
   r({ method: 'POST', path: '/device/commands', operationId: 'syncDeviceCommands', tag: 'Mobile', summary: 'Offline command sync — one effect per commandId', permission: 'transport.pod.capture', body: S.DeviceCommandBatchBody }),
   r({ method: 'POST', path: '/webhooks/:provider', operationId: 'receiveWebhook', tag: 'Integrations', summary: 'Signed provider webhook; dedupes by external event id', permission: null, public: true }),
-  r({ method: 'POST', path: '/workflows', operationId: 'createWorkflow', tag: 'Automation', summary: 'Create workflow definition (draft)', permission: 'automation.manage', body: S.WorkflowBody, status: 201 }),
+  r({ method: 'POST', path: '/workflows', operationId: 'createWorkflow', tag: 'Automation', summary: 'Create workflow definition (draft)', permission: 'automation.manage', body: WorkflowBody, status: 201 }),
   r({ method: 'POST', path: '/workflows/:id/activate', operationId: 'activateWorkflow', tag: 'Automation', summary: 'Activate workflow version', permission: 'automation.manage' }),
+  r({ method: 'POST', path: '/workflows/:id/retire', operationId: 'retireWorkflow', tag: 'Automation', summary: 'Retire an active workflow version (running instances finish)', permission: 'automation.manage' }),
   r({ method: 'POST', path: '/ai/tools/:name/invoke', operationId: 'invokeAiTool', tag: 'Intelligence', summary: 'Invoke a controlled AI tool as the calling user', permission: 'ai.use', body: S.AiToolInvokeBody }),
   r({ method: 'GET', path: '/reports/owner-overview', operationId: 'getOwnerOverview', tag: 'Intelligence', summary: 'Owner overview KPIs (live, drill-down ready)', permission: 'reports.owner.view' }),
   // ---- breadth release: remaining staff areas ----
@@ -104,7 +109,10 @@ export const ROUTE_TABLE = [
   r({ method: 'GET', path: '/reports/job-profitability', operationId: 'getJobProfitability', tag: 'Intelligence', summary: 'Per-job expected vs accounting margin', permission: 'reports.finance.view' }),
   r({ method: 'GET', path: '/ai/tools', operationId: 'listAiTools', tag: 'Intelligence', summary: 'Controlled AI tools and whether the caller may use them', permission: 'ai.use' }),
   r({ method: 'GET', path: '/workflows', operationId: 'listWorkflows', tag: 'Automation', summary: 'Workflow definitions (versioned)', permission: 'automation.manage' }),
-  r({ method: 'GET', path: '/workflow-runs', operationId: 'listWorkflowRuns', tag: 'Automation', summary: 'Workflow executions', permission: 'automation.manage' }),
+  r({ method: 'GET', path: '/workflow-runs', operationId: 'listWorkflowRuns', tag: 'Automation', summary: 'Workflow executions', permission: 'automation.manage', query: S.WorkflowRunQuery }),
+  r({ method: 'GET', path: '/workflow-runs/:id', operationId: 'getWorkflowRun', tag: 'Automation', summary: 'One run with its step log', permission: 'automation.manage' }),
+  r({ method: 'POST', path: '/workflow-runs/:id/cancel', operationId: 'cancelWorkflowRun', tag: 'Automation', summary: 'Cancel a running, waiting or failed run', permission: 'automation.manage' }),
+  r({ method: 'POST', path: '/workflow-runs/:id/retry', operationId: 'retryWorkflowRun', tag: 'Automation', summary: 'Retry a failed run from its last durable step', permission: 'automation.manage' }),
   r({ method: 'GET', path: '/integrations', operationId: 'listIntegrations', tag: 'Integrations', summary: 'Connections and health (no secrets)', permission: 'integrations.manage' }),
   r({ method: 'GET', path: '/admin/members', operationId: 'listMembers', tag: 'Administration', summary: 'Tenant members and roles', permission: 'admin.tenant' }),
   r({ method: 'POST', path: '/admin/members', operationId: 'addMember', tag: 'Administration', summary: 'Add member with a role template', permission: 'admin.tenant', body: S.AddMemberBody, status: 201 }),

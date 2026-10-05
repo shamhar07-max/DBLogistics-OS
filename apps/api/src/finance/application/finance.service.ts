@@ -115,7 +115,16 @@ export class FinanceService {
   }
   async listInvoices(ctx: RequestContext) {
     return this.db.run(ctx, (tx) => tx.q(`SELECT id, ref, status, einvoice_status, job_id, customer_party_id, currency, total, amount_allocated, posting_date, due_date, version FROM finance.invoices
-      ${isExternal(ctx) ? 'WHERE customer_party_id = $1' : ''} ORDER BY created_at DESC LIMIT 200`, isExternal(ctx) ? [ctx.partyId] : []));
+      ${isExternal(ctx) ? `WHERE customer_party_id = $1 AND status IN ('posted','credited')` : ''} ORDER BY created_at DESC LIMIT 200`, isExternal(ctx) ? [ctx.partyId] : []));      // customers never see drafts or approvals-in-flight
+  }
+  async getInvoice(ctx: RequestContext, id: string) {
+    return this.db.run(ctx, async (tx) => {
+      const i = await tx.maybe(`SELECT i.id, i.ref, i.status, i.einvoice_status, i.job_id, j.ref AS job_ref, i.customer_party_id, i.currency, i.subtotal, i.tax_total, i.total, i.amount_allocated, i.posting_date, i.due_date, i.version
+        FROM finance.invoices i JOIN logistics.jobs j ON j.id = i.job_id WHERE i.id=$1 ${isExternal(ctx) ? `AND i.customer_party_id=$2 AND i.status IN ('posted','credited')` : ''}`, isExternal(ctx) ? [id, ctx.partyId] : [id]);
+      if (!i) throw new DomainError('NOT_FOUND', 'Invoice not found.');
+      const lines = await tx.q(`SELECT description, net_amount, tax_code, tax_rate, tax_amount FROM finance.invoice_lines WHERE invoice_id=$1 ORDER BY description`, [id]);
+      return { ...i, balance: money(D(i.total).minus(i.amount_allocated)), lines };
+    });
   }
 
   // ---------------------------------------------------------------- supplier bills
