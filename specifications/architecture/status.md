@@ -1,0 +1,39 @@
+# Implementation status — what is built, what is scaffolded, what is not
+
+Honest ledger against the engineering blueprint. **Verified** = covered by an automated test that runs against real PostgreSQL (and Redis for the worker) in this repository.
+
+| Blueprint area | Status | Evidence / gap |
+|---|---|---|
+| Modular monolith (NestJS) with domain/application/presentation layering | ✅ built | 14 modules in `apps/api/src`; boundary guard `tools/check-boundaries.ts` (tested) |
+| Versioned REST + OpenAPI | ✅ built | `packages/contracts` route table → controllers (`@Op`) → `openapi.json` (CI drift check); conformance test: contract ⇄ implemented routes |
+| PostgreSQL schema, constraints, composite tenant FKs | ✅ verified | `database/migrations/001–012` |
+| Multi-tenancy: `tenant_id` + **RLS (forced)** + non-bypass runtime role | ✅ verified | tests: cross-tenant API denial, raw SQL under RLS, every `tenant_id` table has FORCE RLS, role is not SUPERUSER/BYPASSRLS, separate migrator/worker roles |
+| Transactional commands, idempotency keys, optimistic concurrency (`If-Match`), retry on 40001/40P01 | ✅ verified | replayed key → same response; reused key/different body refused; concurrent identical posts → one posting |
+| Audit (append-only) + transactional outbox | ✅ verified | triggers + revoked privileges; worker relay test (two racing relays → one delivery) |
+| Finance: charges, accrual, invoices, supplier bills, payments, balanced immutable journals, periods | ✅ verified (single currency) | see `accounting/accounting-manual.md`. **Not built:** FX/revaluation, credit notes & reversal endpoints (templates exist), period close workflow, intercompany, fixed assets, payroll, VAT returns |
+| Commercial: enquiries, quotes (immutable once approved), acceptance → job | ✅ verified | rate library table exists (`rate_versions`) but **no rate-comparison/procurement endpoints yet** |
+| Logistics: jobs, shipments, legs, cargo units, bookings (outcome-unknown), tracking, delivery with POD | ✅ verified | **Not built:** consolidations, container/free-time (detention/demurrage) engine, air weight rules, multimodal re-planning |
+| Warehouse custody: receipt, reservation, release, quarantine, ledger invariants | ✅ verified | concurrent release/reserve tests + `invariants.sql`. **Not built:** putaway/picking tasks, cycle counts, storage billing, excise/VAT-zone movement controls |
+| Trade: customs case, release **only with authority-issued approved evidence** | ✅ verified | **Not built:** declaration lines, HS classification workflow, permits, guarantees, authority integrations |
+| Documents: upload intent → direct private upload → immutable version → scan → approve | ✅ verified (S3 port + memory adapter) | scan in worker via `ScanPort` (default stub). **Not built:** OCR extraction, PDF rendering workers, retention jobs |
+| Identity: OIDC (JWKS verify), memberships, role grants with scope, external-party scoping | ✅ verified with dev HS256; ⚠️ OIDC path unit-tested only | Keycloak realm in `infrastructure/local`; end-to-end login against Keycloak not yet exercised |
+| Session gateway (BFF): sealed HttpOnly cookie, PKCE login, CSRF, proxy allow-list | ✅ verified (unit + browser E2E) | sealed-cookie sessions (stateless) instead of a Redis session store — trade-off noted in `overview.md` |
+| Worker: outbox relay, exactly-once-effect consumers, durable workflows + timers, inbox normaliser, scan | ✅ verified with real Redis | e-invoice / carrier / messaging **adapters not built** (ports only) |
+| Integrations framework | 🟡 partial | connections table, signed-webhook inbox with dedupe ✅; no provider adapters, no sync cursors in use, no outbound retry framework |
+| AI: tool registry, user-permission enforcement, high-risk → approval, budget, audit | ✅ verified | **No LLM is called.** Tools are the controlled surface; model orchestration/retrieval is not built |
+| Staff web (Next.js): shell, Today, jobs list/workspace, enquiries, quote builder, warehouse, finance, approvals | ✅ built, 7 browser tests | 7 of 14 nav areas have screens; workspace tabs plan/bookings/cargo/tasks/conversations/incidents/audit are placeholders |
+| Partner portal | 🟡 minimal | customer jobs, tracking, quote acceptance, invoices. Agent/transporter experiences not built |
+| Driver/warehouse mobile | 🟡 skeleton | queue logic tested (`packages/offline-sync`) + server contract tested; the Expo app itself is **not built/run** here |
+| Design system & tokens (Tailwind preset, components) | ✅ built | `packages/design-tokens`, `packages/ui` (tested) |
+| Platform admin control plane | ❌ not built | provisioning use case exists and is tested |
+| Infrastructure as code | 🟡 drafted | docker-compose and Dockerfiles written; Terraform **not validated** (no terraform binary / cloud account here) |
+| Observability (OpenTelemetry, dashboards, alerts) | ❌ not built | correlation id (`X-Request-Id`) flows request → audit → outbox → worker; no exporter wired |
+| Backup/restore | ✅ drill verified locally | `pg_dump/restore` + invariants in test; PITR/WAL archiving/S3 versioning are deployment config (Terraform draft) |
+| Reporting | 🟡 | owner overview + margin queries; no KPI dictionary enforcement, summary tables, or report builder |
+| Migration tooling for real customer data | ❌ not built | plan in `recovery/` and blueprint §36 |
+
+## Deliberate deviations from the blueprint
+1. **No Drizzle ORM.** Reviewed SQL migrations + parameterised queries through a small `Tx` wrapper. Rationale: the critical logic (locks, `FOR UPDATE`, `ON CONFLICT`, RLS context) is SQL-first; typed table definitions can be introspected later (`drizzle-kit pull`) without changing behaviour.
+2. **Sealed-cookie session** (encrypted JWE, HttpOnly) rather than a server-side session store. Tokens are never exposed to JS; revocation before expiry needs a denylist or a Redis store — listed as follow-up.
+3. **esbuild toolchain** (tsx/tsup/vitest) with *explicit* `@Inject()` tokens, because esbuild does not emit decorator metadata.
+4. **Single currency per job** in this release: charges, bills and payments must match the job currency (`CURRENCY_MISMATCH`).

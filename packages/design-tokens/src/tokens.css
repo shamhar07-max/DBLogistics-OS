@@ -1,0 +1,128 @@
+/* ==========================================================================
+   DigitalBurj Logistics OS — Design Tokens
+   Sector: international freight forwarding · customs · bonded warehousing
+   Colours sampled from the master logo; mode / status colours follow
+   freight-industry conventions (sea = blue, air = sky, road = hi-vis amber).
+   ========================================================================== */
+
+:root {
+  /* ---- Brand: Container Green (sampled from the logo mark) -------------- */
+  --dbl-ink:        #03110D;   /* wordmark ink */
+  --dbl-forest-950: #02150F;
+  --dbl-forest-900: #04241E;
+  --dbl-forest-800: #04302A;   /* PRIMARY — container green */
+  --dbl-forest-700: #0A453B;
+  --dbl-forest-600: #10594D;
+  --dbl-forest-500: #1B7A6A;
+  --dbl-forest-300: #7FB5A8;
+  --dbl-forest-100: #DCEBE7;
+  --dbl-forest-50:  #EEF5F3;
+
+  /* ---- Brand: Signal Red (sampled from the logo core + underline) ------- */
+  --dbl-signal:      #F5280A;  /* ACCENT — primary action, live, alert */
+  --dbl-signal-action: #E12509; /* AA-safe (4.7:1) red for filled buttons / badges carrying white text */
+  --dbl-signal-deep: #D50000;
+  --dbl-signal-100:  #FDE6E1;
+  --dbl-signal-50:   #FFF3F0;
+
+  /* ---- Sector: freight modes ------------------------------------------- */
+  --mode-ocean:     #0B5E8E;   /* sea / port navy-blue        */
+  --mode-air:       #2FA3DC;   /* sky blue                    */
+  --mode-road:      #F2A900;   /* hi-vis safety amber         */
+  --mode-warehouse: #A9793F;   /* kraft / pallet timber       */
+  --mode-customs:   #5B4BB5;   /* customs-stamp indigo        */
+  --mode-ocean-100:     #DDEBF4;
+  --mode-air-100:       #DDF0FA;
+  --mode-road-100:      #FDF0CC;
+  --mode-warehouse-100: #F1E6D6;
+  --mode-customs-100:   #E7E3F6;
+
+  /* ---- Neutrals: bill-of-lading paper → asphalt ------------------------- */
+  --paper:     #F4F2EC;
+  --paper-2:   #EBE8DF;
+  --concrete:  #D9D6CC;
+  --steel:     #5E6A66;
+  --steel-2:   #8A9591;
+  --asphalt:   #1A2320;
+  --white:     #FFFFFF;   /* logo plate is ALWAYS pure white */
+
+  /* ---- Status (freight meaning, not decoration) ------------------------- */
+  --status-cleared:  #17935A;  /* released / delivered / matched */
+  --status-hold:     #F2A900;  /* customs hold / awaiting       */
+  --status-stop:     #D50000;  /* exception / blocked / overdue */
+  --status-info:     #0B5E8E;  /* in transit / informational    */
+  --status-cleared-100: #DDF3E8;
+  --status-hold-100:    #FDF0CC;
+  --status-stop-100:    #FDE6E1;
+  --status-info-100:    #DDEBF4;
+
+  /* ---- Semantic surfaces ------------------------------------------------ */
+  --bg:            var(--paper);
+  --surface:       #FFFFFF;
+  --surface-2:     #FAF9F5;
+  --line:          #E2DFD5;
+  --line-strong:   #CFCBBE;
+  --text:          var(--asphalt);
+  --text-muted:    var(--steel);
+  --text-faint:    var(--steel-2);
+  --primary:       var(--dbl-forest-800);
+  --primary-hover: var(--dbl-forest-700);
+  --accent:        var(--dbl-signal);
+  --on-accent:     #FFFFFF;     /* text colour that is legible on --accent */
+  --focus:         #2FA3DC;
+
+  /* ---- Type ------------------------------------------------------------- */
+  --font-display: "Chakra Petch", "Barlow", system-ui, sans-serif;           /* headings: squared, cut-corner like the mark */
+  --font-ui:      "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif; /* UI: road-signage DNA, tight & legible        */
+  --font-label:   "Barlow Condensed", "Barlow", sans-serif;                   /* shipping-label caps, big KPIs                */
+  --font-data:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace; /* BL / AWB / container / HS codes              */
+
+  --fs-12: .75rem;  --fs-13: .8125rem; --fs-14: .875rem; --fs-15: .9375rem;
+  --fs-16: 1rem;    --fs-18: 1.125rem; --fs-20: 1.25rem; --fs-24: 1.5rem;
+  --fs-32: 2rem;    --fs-40: 2.5rem;   --fs-56: 3.5rem;  --fs-72: 4.5rem;
+
+  /* ---- Shape: small radii + chamfered corner (echoes the logo facets) --- */
+  --r-xs: 4px; --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-pill: 999px;
+  --chamfer: 14px;          /* cut corner on hero cards / buttons */
+  --chamfer-sm: 8px;
+
+  /* ---- Space (4px base) ------------------------------------------------- */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px;
+  --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px; --s-16: 64px;
+
+  /* ---- Elevation: grounded, like cargo on a dock ------------------------ */
+  --shadow-1: 0 1px 0 rgba(3,17,13,.04), 0 1px 2px rgba(3,17,13,.06);
+  --shadow-2: 0 1px 0 rgba(3,17,13,.04), 0 6px 18px -8px rgba(3,17,13,.22);
+  --shadow-3: 0 2px 0 rgba(3,17,13,.05), 0 18px 40px -18px rgba(3,17,13,.38);
+  --shadow-signal: 0 10px 24px -10px rgba(245,40,10,.65);
+
+  /* ---- Motion (same vocabulary as digitalburj.com) ---------------------- */
+  --ease-out:    cubic-bezier(.22, 1, .36, 1);
+  --ease-inout:  cubic-bezier(.65, 0, .35, 1);
+  --dur-fast: 160ms; --dur-base: 320ms; --dur-slow: 640ms; --dur-hero: 1200ms;
+}
+
+/* Sector-aware themes: the same tokens re-tint per working environment. */
+[data-env="warehouse"] { --accent: #8A5C28;               --on-accent:#fff;              --primary: #3A2A14; }
+[data-env="customs"]   { --accent: var(--mode-customs);   --on-accent:#fff;              --primary: #2A2457; }
+[data-env="transport"] { --accent: var(--mode-road);      --on-accent: var(--dbl-ink);   --primary: var(--asphalt); }
+[data-env="ocean"]     { --accent: var(--mode-ocean);     --on-accent:#fff;              --primary: #072F4A; }
+[data-env="air"]       { --accent: var(--mode-air);       --on-accent: var(--dbl-ink);   --primary: #0B3A55; }
+
+/* Night operations (control room / warehouse night shift) */
+[data-theme="night"] {
+  --bg: #07110E; --surface: #0C1B17; --surface-2: #10241F;
+  --line: #1B3029; --line-strong: #27443B;
+  --text: #E9F0ED; --text-muted: #9DB2AB; --text-faint: #6E857D;
+  --primary: var(--dbl-forest-500);
+}
+
+/* ---- Motion kill-switch: user toggle + OS preference -------------------- */
+html[data-motion="paused"] *, html[data-motion="paused"] *::before, html[data-motion="paused"] *::after {
+  animation-play-state: paused !important;
+  transition-duration: 0ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: 0ms !important; scroll-behavior: auto !important; }
+  [data-reveal] { opacity: 1 !important; transform: none !important; }
+}

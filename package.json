@@ -1,0 +1,32 @@
+{
+  "name": "digitalburj-logistics-os",
+  "private": true,
+  "version": "0.1.0",
+  "description": "DigitalBurj Logistics OS — multi-tenant freight, customs & warehouse platform (Business OS core + Logistics industry pack)",
+  "engines": { "node": ">=22" },
+  "workspaces": [
+    "apps/api", "apps/worker", "apps/staff-web", "apps/partner-portal",
+    "packages/*"
+  ],
+  "scripts": {
+    "db:migrate": "tsx database/migrate.ts",
+    "db:reset:local": "infrastructure/local/pg-local.sh reset",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "check:boundaries": "tsx tools/check-boundaries.ts",
+    "openapi": "npm run openapi -w @dbl/contracts",
+    "specs": "tsx tools/gen-specs.ts",
+    "dev:api": "npm run dev -w @dbl/api",
+    "dev:worker": "npm run dev -w @dbl/worker",
+    "dev:staff": "npm run dev -w @dbl/staff-web"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "pg": "^8.13.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

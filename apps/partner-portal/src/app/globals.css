@@ -1,0 +1,9 @@
+@import url('/fonts.css');
+@import '@dbl/design-tokens/tokens.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body { background: var(--bg); color: var(--text); font-family: var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1,h2,h3 { font-family: var(--font-display); }
+html[data-motion="paused"] * { animation-play-state: paused !important; transition-duration: 0ms !important; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition-duration: 0ms !important; } }

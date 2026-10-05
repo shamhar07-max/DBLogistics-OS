@@ -1,0 +1,1 @@
+{ "name": "@dbl/design-tokens", "version": "0.1.0", "private": true, "type": "module", "main": "src/index.ts", "types": "src/index.ts", "exports": { ".": "./src/index.ts", "./tailwind-preset": "./src/tailwind-preset.cjs", "./tokens.css": "./src/tokens.css" }, "scripts": { "typecheck": "tsc --noEmit -p .", "sync": "node scripts/sync.mjs" } }

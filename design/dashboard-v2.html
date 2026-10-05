@@ -248,11 +248,33 @@ $('avJ').innerHTML=av(3,54,false);
 $('dn1').innerHTML=donut([{v:85,c:'#E12509'},{v:15,c:'#F0EEE8'}],{r:30,sw:12,size:84,center:'<b>85%</b>'});
 
 /* truck svg */
-$('truck').innerHTML=`<svg viewBox="0 0 300 140" width="100%"><ellipse cx="150" cy="128" rx="130" ry="7" fill="#000" opacity=".08"/>
-<rect x="68" y="18" width="170" height="86" rx="6" fill="#fff" stroke="#E2DFD5"/><rect x="150" y="18" width="88" height="86" rx="6" fill="#E12509"/><rect x="156" y="26" width="76" height="70" rx="4" fill="#F7B6A8" opacity=".55"/>
-<g fill="#C9976A" stroke="#A9793F" stroke-width="1"><rect x="160" y="62" width="30" height="32" rx="2"/><rect x="192" y="72" width="26" height="22" rx="2"/><rect x="172" y="40" width="24" height="22" rx="2"/><rect x="204" y="52" width="22" height="20" rx="2"/></g>
-<path d="M18 104V58c0-6 3-9 9-9h27l15 22v33z" fill="#fff" stroke="#E2DFD5"/><path d="M26 58h24l11 15H26z" fill="#BFD7E6"/><rect x="14" y="100" width="224" height="12" rx="4" fill="#2A3330"/>
-<g><circle cx="52" cy="112" r="14" fill="#1A2320"/><circle cx="52" cy="112" r="6" fill="#C9C5BC"/><circle cx="186" cy="112" r="14" fill="#1A2320"/><circle cx="186" cy="112" r="6" fill="#C9C5BC"/><circle cx="216" cy="112" r="14" fill="#1A2320"/><circle cx="216" cy="112" r="6" fill="#C9C5BC"/></g></svg>`;
+$('truck').innerHTML=`<svg viewBox="0 0 320 150" width="100%" role="img" aria-label="Box truck with cartons">
+<ellipse cx="165" cy="136" rx="140" ry="6" fill="#000" opacity=".09"/>
+<!-- cargo box (rear, right) with open back showing cartons -->
+<rect x="104" y="14" width="196" height="94" rx="6" fill="#fff" stroke="#DAD6CB" stroke-width="1.5"/>
+<rect x="104" y="84" width="196" height="24" fill="#E12509"/>
+<rect x="104" y="14" width="196" height="8" rx="4" fill="#F1EFEA"/>
+<rect x="238" y="22" width="62" height="62" fill="#2A3330" opacity=".92"/>
+<g stroke="#8E6330" stroke-width="1.2"><rect x="244" y="52" width="24" height="30" rx="1.5" fill="#D2A06A"/><rect x="270" y="60" width="22" height="22" rx="1.5" fill="#C98F58"/><rect x="250" y="30" width="22" height="22" rx="1.5" fill="#DDB07C"/><rect x="274" y="38" width="18" height="22" rx="1.5" fill="#D2A06A"/></g>
+<path d="M256 52v30M281 60v22M261 30v22M283 38v22" stroke="#8E6330" stroke-width=".8" opacity=".6"/>
+<text x="124" y="60" font-family="Chakra Petch,Barlow,sans-serif" font-weight="700" font-size="17" fill="#04302A">DIGITALBURJ</text>
+<rect x="124" y="66" width="42" height="3" fill="#E12509"/>
+<!-- chassis -->
+<rect x="14" y="104" width="292" height="9" rx="3" fill="#2A3330"/>
+<!-- cab (front, left) -->
+<path d="M16 108V66c0-5 3-9 8-10l22-6 22-30c2-3 5-4 8-4h22v92z" fill="#fff" stroke="#DAD6CB" stroke-width="1.5"/>
+<path d="M50 52l18-24c1-1 2-2 4-2h18v30z" fill="#BFD7E6" stroke="#9CBBD0"/>
+<path d="M50 52l18-24" stroke="#fff" stroke-width="2" opacity=".6"/>
+<rect x="16" y="86" width="82" height="22" fill="#E12509"/>
+<rect x="10" y="94" width="10" height="12" rx="3" fill="#2A3330"/>
+<rect x="18" y="70" width="8" height="6" rx="2" fill="#FFD36B"/>
+<rect x="90" y="62" width="10" height="3" rx="1.5" fill="#B8B3A6"/>
+<!-- wheels -->
+<g><circle cx="56" cy="116" r="17" fill="#1A2320"/><circle cx="56" cy="116" r="8" fill="#C9C5BC"/><circle cx="56" cy="116" r="3" fill="#6E7A76"/>
+<circle cx="214" cy="116" r="17" fill="#1A2320"/><circle cx="214" cy="116" r="8" fill="#C9C5BC"/><circle cx="214" cy="116" r="3" fill="#6E7A76"/>
+<circle cx="256" cy="116" r="17" fill="#1A2320"/><circle cx="256" cy="116" r="8" fill="#C9C5BC"/><circle cx="256" cy="116" r="3" fill="#6E7A76"/></g>
+<path d="M36 104a20 20 0 0 1 40 0z" fill="#fff" stroke="#DAD6CB"/>
+</svg>`;
 
 /* route lane, temp rows, portals */
 $('rt').innerHTML=[['Collect','Shanghai','is-done'],['Ocean','SHA → JEA','is-now'],['Receive','Est. 08 Oct',''],['Bonded','Temp zone',''],['Release','Evidence','is-hold'],['Deliver','Dubai · 10 Oct','']].map(([a,b,c])=>`<div class="route__stop ${c}"><b>${a}</b><span>${b}</span></div>`).join('');

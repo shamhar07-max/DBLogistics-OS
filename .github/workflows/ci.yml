@@ -1,0 +1,46 @@
+name: ci
+on: { push: { branches: [main, 'claude/**'] }, pull_request: {} }
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    services:
+      postgres: { image: 'postgres:16', env: { POSTGRES_PASSWORD: postgres, POSTGRES_HOST_AUTH_METHOD: trust }, ports: ['54329:5432'], options: >- --health-cmd "pg_isready -U postgres" --health-interval 3s --health-retries 20 }
+      redis: { image: 'redis:7', ports: ['6391:6379'] }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Bootstrap database roles (once per cluster)
+        run: psql -h localhost -p 54329 -U postgres -f infrastructure/local/bootstrap-roles.sql
+      - run: npm run check:boundaries
+      - run: npm run typecheck
+      - name: OpenAPI is up to date with the contract table
+        run: npm run openapi && git diff --exit-code specifications/architecture/openapi.json
+      - name: Unit + real-PostgreSQL integration tests (API, worker with Redis, packages)
+        run: npm test
+      - run: npx vitest run tools
+      - name: Build web, API, worker
+        env: { SESSION_SECRET: ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci, OIDC_ISSUER_URL: 'https://idp.invalid', OIDC_WEB_CLIENT_ID: x, OIDC_WEB_CLIENT_SECRET: x, NODE_ENV: production }
+        run: npm run build
+  e2e:
+    needs: verify
+    runs-on: ubuntu-24.04
+    services:
+      postgres: { image: 'postgres:16', env: { POSTGRES_PASSWORD: postgres, POSTGRES_HOST_AUTH_METHOD: trust }, ports: ['54329:5432'] }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci && npx playwright install --with-deps chromium
+      - run: |
+          psql -h localhost -p 54329 -U postgres -f infrastructure/local/bootstrap-roles.sql
+          psql -h localhost -p 54329 -U postgres -c "CREATE DATABASE dbl OWNER dbl_migrator" && psql -h localhost -p 54329 -U postgres -d dbl -c "CREATE EXTENSION pgcrypto"
+          npm run db:migrate
+          (cd apps/api && DEV_AUTH_SECRET=dev-secret-dev-secret-dev-secret-00 npx tsx src/main.ts &) ; sleep 8
+          (cd apps/api && npx tsx scripts/seed-dev.ts) > seed.json
+          (cd apps/staff-web && SESSION_SECRET=ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci DEV_AUTH_SECRET=dev-secret-dev-secret-dev-secret-00 API_BASE_URL=http://localhost:3001 npx next dev -p 3000 &) ; sleep 12
+          cd apps/staff-web && TENANT_ID=$(node -e "console.log(JSON.parse(require('fs').readFileSync('../../seed.json','utf8')).tenantId)") npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: e2e-screenshots, path: apps/staff-web/e2e/artifacts }

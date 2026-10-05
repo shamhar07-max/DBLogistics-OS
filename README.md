@@ -1,5 +1,41 @@
-# DigitalBurj Logistics OS — Brand & Design System
+# DigitalBurj Logistics OS
 
+> **One system. Every operation.** — multi-tenant operating system for freight forwarding, customs brokerage and bonded warehousing, built as a **Business-OS core + Logistics industry pack**.
+
+This repository contains the **brand & design system**, the **dashboard designs**, and a **working full-stack foundation** that implements the blueprint's first milestone — *enquiry → approved quotation → job → booking → cargo execution → delivery evidence → customer invoice → supplier-cost reconciliation → collection → job closure* — with the hardest invariants enforced by PostgreSQL and proven by tests.
+
+> **Read first:** [`specifications/architecture/status.md`](specifications/architecture/status.md) — an honest ledger of what is built/verified, scaffolded, and not started.
+
+## Quickstart (no Docker needed)
+```bash
+npm install
+infrastructure/local/pg-local.sh start                       # PostgreSQL 16 on :54329 + roles (dbl_app / dbl_worker / dbl_migrator)
+psql -h /tmp -p 54329 -U postgres -c "CREATE DATABASE dbl OWNER dbl_migrator" && psql -h /tmp -p 54329 -U postgres -d dbl -c "CREATE EXTENSION pgcrypto"
+npm run db:migrate
+(cd apps/api && DEV_AUTH_SECRET=dev-secret-dev-secret-dev-secret-00 npx tsx src/main.ts)     # API :3001   (run tsx from apps/api: it needs that tsconfig)
+(cd apps/api && npx tsx scripts/seed-dev.ts)                 # demo tenant + realistic scenario through the real API
+(cd apps/staff-web && SESSION_SECRET=… DEV_AUTH_SECRET=… API_BASE_URL=http://localhost:3001 npm run dev)   # http://localhost:3000 → "Local development login": subject `layla`, tenant id from the seed output
+```
+With Docker: `docker compose up -d postgres redis minio keycloak` (then `--profile apps up --build`).
+
+## Verify
+```bash
+npm run check:boundaries && npm run typecheck && npm test      # 60+ tests; API/worker suites hit real PostgreSQL (and Redis)
+cd apps/staff-web && TENANT_ID=<uuid from seed> npm run e2e    # 7 browser tests against the live stack (use `next dev`; `next start` refuses dev auth by design)
+```
+
+## Layout
+```
+apps/        api (NestJS) · worker (BullMQ) · staff-web · partner-portal (Next.js) · logistics-mobile (Expo skeleton) · platform-admin (not built)
+packages/    contracts (Zod + route table → OpenAPI) · api-client · gateway (BFF) · ui · design-tokens · localization · offline-sync · configuration
+database/    migrations/001–012 · invariants.sql · reference-data/ · development-seeds/
+specifications/  architecture · domains · workflows · permissions · accounting · integrations · acceptance-tests · recovery
+infrastructure/  local (pg-local.sh, keycloak realm) · containers (Dockerfile) · terraform (DRAFT)
+brand/ design/  brand kit, guidelines page, dashboard v1/v2 designs
+tools/       check-boundaries (architecture guard) · gen-specs (permission matrix, event/API catalogs)
+```
+
+---
 > **One system. Every operation.** — The operating system for an international freight forwarder, customs broker and bonded-warehouse operator.
 
 | Open | What it is |

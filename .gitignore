@@ -1,2 +1,11 @@
 node_modules/
 .DS_Store
+apps/staff-web/public/
+apps/*/.next/
+apps/*/next-env.d.ts
+*.tsbuildinfo
+dist/
+apps/staff-web/e2e/artifacts/
+apps/*/test-results/
+playwright-report/
+seed.json

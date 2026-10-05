@@ -1,0 +1,55 @@
+# Local stack:  docker compose up -d postgres redis minio keycloak   (infrastructure)
+#               docker compose --profile apps up --build              (api, worker, staff-web, partner-portal)
+name: dbl
+services:
+  postgres:
+    image: postgres:16
+    environment: { POSTGRES_PASSWORD: postgres, POSTGRES_DB: dbl }
+    ports: ["54329:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data", "./infrastructure/local/bootstrap-roles.sql:/docker-entrypoint-initdb.d/10-roles.sql:ro"]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U postgres"], interval: 3s, retries: 20 }
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+    command: ["redis-server", "--appendonly", "yes"]
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment: { MINIO_ROOT_USER: minio, MINIO_ROOT_PASSWORD: minio12345 }
+    ports: ["9000:9000", "9001:9001"]
+    volumes: ["miniodata:/data"]
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: start-dev --import-realm
+    environment: { KC_BOOTSTRAP_ADMIN_USERNAME: admin, KC_BOOTSTRAP_ADMIN_PASSWORD: admin }
+    ports: ["8080:8080"]
+    volumes: ["./infrastructure/local/keycloak-realm.json:/opt/keycloak/data/import/realm.json:ro"]
+  migrate:
+    profiles: [apps]
+    build: { context: ., dockerfile: infrastructure/containers/node.Dockerfile, target: tooling }
+    command: ["npx", "tsx", "database/migrate.ts"]
+    environment: { MIGRATION_DATABASE_URL: "postgres://postgres:postgres@postgres:5432/dbl" }
+    depends_on: { postgres: { condition: service_healthy } }
+  api:
+    profiles: [apps]
+    build: { context: ., dockerfile: infrastructure/containers/node.Dockerfile, target: api }
+    environment:
+      DATABASE_URL: postgres://dbl_app:dbl_app_dev@postgres:5432/dbl
+      OIDC_ISSUER_URL: http://keycloak:8080/realms/dbl
+      S3_ENDPOINT: http://minio:9000
+      DOCUMENT_BUCKET: dbl-documents-dev
+      AWS_ACCESS_KEY_ID: minio
+      AWS_SECRET_ACCESS_KEY: minio12345
+    ports: ["3001:3001"]
+    depends_on: { migrate: { condition: service_completed_successfully } }
+  worker:
+    profiles: [apps]
+    build: { context: ., dockerfile: infrastructure/containers/node.Dockerfile, target: worker }
+    environment: { WORKER_DATABASE_URL: "postgres://dbl_worker:dbl_worker_dev@postgres:5432/dbl", REDIS_URL: "redis://redis:6379" }
+    depends_on: { migrate: { condition: service_completed_successfully } }
+  staff-web:
+    profiles: [apps]
+    build: { context: ., dockerfile: infrastructure/containers/node.Dockerfile, target: staff-web }
+    environment: { API_BASE_URL: "http://api:3001", SESSION_SECRET: "change-me-change-me-change-me-change-me", OIDC_ISSUER_URL: "http://localhost:8080/realms/dbl", OIDC_WEB_CLIENT_ID: dbl-staff-web, OIDC_WEB_CLIENT_SECRET: dev-secret, OIDC_REDIRECT_URI: "http://localhost:3000/api/auth/callback", NODE_ENV: production }
+    ports: ["3000:3000"]
+volumes: { pgdata: {}, miniodata: {} }

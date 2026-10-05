@@ -1,0 +1,12 @@
+{
+  "name": "dbl-logistics-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": { "start": "expo start", "android": "expo run:android", "ios": "expo run:ios" },
+  "dependencies": {
+    "@dbl/offline-sync": "file:../../packages/offline-sync",
+    "expo": "~52.0.0", "expo-camera": "~16.0.0", "expo-sqlite": "~15.0.0", "expo-secure-store": "~14.0.0", "expo-auth-session": "~6.0.0",
+    "react": "18.3.1", "react-native": "0.76.5"
+  }
+}
