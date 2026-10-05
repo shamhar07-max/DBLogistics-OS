@@ -76,6 +76,19 @@ describe('outbox relay + consumers', () => {
       expect((await su.query(`SELECT scan_status FROM platform.document_versions WHERE id=$1`, [v])).rows[0].scan_status).toBe(expected);
     }
   });
+  it('extracts fields after a clean scan, only once, and never reads an infected file', async () => {
+    const reads: string[] = []; const reader = { read: async (k: string) => { reads.push(k); return Buffer.from('BL NO: MAEU123456789 container CSQU3054383 FOB USD 100.00 ' + (k.includes('eicar') ? 'X' : '')); } };
+    for (const [key, scan] of [['x/ok.txt', 'clean'], ['x/eicar.txt', 'infected']] as const) {
+      const d = (await su.query(`INSERT INTO platform.documents(tenant_id,doc_type,issuer_kind,related_type,related_id) VALUES ($1,'BL','carrier','job',gen_random_uuid()) RETURNING id`, [tenant])).rows[0].id;
+      const v = (await su.query(`INSERT INTO platform.document_versions(tenant_id,document_id,version_no,storage_key,sha256,size_bytes,content_type) VALUES ($1,$2,1,$3,'a','1','text/plain') RETURNING id`, [tenant, d, key])).rows[0].id;
+      const ev = { id: String(await emit('DocumentApproved', randomUUID(), { stage: 'registered', versionId: v })), tenantId: tenant, topic: 'DocumentApproved', aggregateType: 'document', aggregateId: d, payload: { stage: 'registered', versionId: v } };
+      await handleEvent(pool, scanner, ev, reader); await handleEvent(pool, scanner, ev, reader);          // redelivery
+      const rows = (await su.query(`SELECT status, fields FROM platform.document_extractions WHERE document_version_id=$1`, [v])).rows;
+      if (scan === 'clean') { expect(rows).toHaveLength(1); expect(rows[0].status).toBe('done'); expect(rows[0].fields.incoterm).toBe('FOB'); expect(rows[0].fields.containerNumbers[0].checkDigitValid).toBe(true); }
+      else expect(rows).toHaveLength(0);
+    }
+    expect(reads).toEqual(['x/ok.txt']);                                                                 // one read for the clean file; infected bytes were never opened
+  });
   it('the worker role is tenant-bound: without a tenant context it sees no domain rows', async () => {
     const r = await pool.query(`SELECT count(*)::int n FROM collab.tasks`); expect(r.rows[0].n).toBe(0);
     expect((await pool.query(`SELECT count(*)::int n FROM finance.invoices`)).rows[0].n).toBe(0);                      // readable (to resolve the customer for notifications) but only inside a tenant context

@@ -52,6 +52,17 @@ export class DocumentsService {
       return { url: await this.storage.presignDownload(v.storage_key, 300), expiresInSeconds: 300, sha256: v.sha256, contentType: v.content_type };
     });
   }
+  /** OCR / text-layer output for the latest version. Staff only; derived data that a human still has to confirm. */
+  extraction(ctx: RequestContext, id: string) {
+    if (isExternal(ctx)) throw new DomainError('NOT_FOUND', 'Document not found.');
+    return this.db.run(ctx, async (tx) => {
+      const v = await tx.maybe(`SELECT v.id, v.scan_status, x.engine, x.status, x.page_count, x.text, x.fields, x.confidence, x.error, x.created_at
+        FROM platform.document_versions v LEFT JOIN platform.document_extractions x ON x.document_version_id = v.id WHERE v.document_id=$1 ORDER BY v.version_no DESC LIMIT 1`, [id]);
+      if (!v) throw new DomainError('NOT_FOUND', 'Document not found.');
+      if (!v.status) return { versionId: v.id, status: v.scan_status === 'clean' ? 'pending' : v.scan_status === 'pending' ? 'waiting_for_scan' : 'not_available', fields: {}, text: null };
+      return { versionId: v.id, status: v.status, engine: v.engine, pageCount: v.page_count, text: v.text, fields: v.fields, confidence: v.confidence === null ? null : Number(v.confidence), error: v.error, extractedAt: v.created_at };
+    });
+  }
   approve(ctx: RequestContext, id: string) {
     return this.db.run(ctx, async (tx) => {
       const d = await tx.maybe(`SELECT * FROM platform.documents WHERE id=$1 FOR UPDATE`, [id]);
@@ -71,6 +82,7 @@ export class DocumentsController {
   @Op('registerDocument') rd(@Ctx() c: RequestContext, @Body() b: any) { return this.s.register(c, b); }
   @Op('listDocuments') ld(@Ctx() c: RequestContext, @Qry() q: any) { return this.s.list(c, q); }
   @Op('getDocumentDownloadUrl') dl(@Ctx() c: RequestContext, @Param('id') id: string) { return this.s.downloadUrl(c, id); }
+  @Op('getDocumentExtraction') ex(@Ctx() c: RequestContext, @Param('id') id: string) { return this.s.extraction(c, id); }
   @Op('approveDocument') ad(@Ctx() c: RequestContext, @Param('id') id: string) { return this.s.approve(c, id); }
 }
 @Module({ providers: [DocumentsService], controllers: [DocumentsController], exports: [DocumentsService] }) export class DocumentsModule {}

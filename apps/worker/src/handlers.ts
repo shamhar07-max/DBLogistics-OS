@@ -1,3 +1,4 @@
+import { extractDocument, type ExtractionResult } from './extract/extract';
 import type pg from 'pg';
 import { conditionsHold, renderTemplate, WORKFLOW_LIMITS, type WorkflowEventContext } from '@dbl/contracts';
 import { inTenant, type Q } from './db';
@@ -135,10 +136,24 @@ export async function scanDocument(pool: pg.Pool, scanner: ScanPort, e: DomainEv
   });
 }
 
-export async function handleEvent(pool: pg.Pool, scanner: ScanPort, e: DomainEvent) {
+/** Text/field extraction for a freshly scanned CLEAN document version. Slow engines run outside any DB transaction; the result is stored once per version. */
+export async function extractVersion(pool: pg.Pool, reader: { read(key: string): Promise<Buffer> }, e: DomainEvent) {
+  if (e.payload.stage !== 'registered') return;
+  const v = await inTenant(pool, e.tenantId, async (q) => (await q.q(`SELECT v.id, v.storage_key, v.content_type, v.scan_status, (SELECT 1 FROM platform.document_extractions x WHERE x.document_version_id = v.id) AS done FROM platform.document_versions v WHERE v.id=$1`, [e.payload.versionId]))[0]);
+  if (!v || v.scan_status !== 'clean' || v.done) return;               // never read bytes that did not pass the scan
+  let r: ExtractionResult;
+  try { r = await extractDocument(await reader.read(v.storage_key), v.content_type); } catch (err) { r = { status: 'failed', engine: 'reader', error: (err as Error).message.slice(0, 500) }; }
+  await inTenant(pool, e.tenantId, async (q) => {
+    await q.q(`INSERT INTO platform.document_extractions(tenant_id, document_version_id, engine, status, page_count, text, fields, confidence, error) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT (tenant_id, document_version_id) DO NOTHING`,
+      [e.tenantId, v.id, r.engine, r.status, r.pageCount ?? null, r.text?.replace(/\u0000/g, '') ?? null, JSON.stringify(r.fields ?? {}), r.confidence ?? null, r.error ?? null]);
+    await audit(q, e, 'document.extracted', { status: r.status, engine: r.engine });
+  });
+}
+
+export async function handleEvent(pool: pg.Pool, scanner: ScanPort, e: DomainEvent, reader?: { read(key: string): Promise<Buffer> }) {
   await inTenant(pool, e.tenantId, (q) => builtIns(q, e));
   await runWorkflows(pool, e);
   if (e.topic === 'IntegrationEventReceived') await normalizeInbox(pool, e);
-  if (e.topic === 'DocumentApproved') await scanDocument(pool, scanner, e);
+  if (e.topic === 'DocumentApproved') { await scanDocument(pool, scanner, e); if (reader) await extractVersion(pool, reader, e); }
 }
 export const SYSTEM_USER = SYSTEM;

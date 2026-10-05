@@ -179,3 +179,17 @@ describe('customer messaging', () => {
     await expect(w.su.query(`UPDATE collab.messages SET body='tampered' WHERE related_id=$1`, [sMine.id])).rejects.toThrow();                                                            // append-only
   });
 });
+
+describe('document extraction (OCR / text layer)', () => {
+  it('staff read extracted fields; customers cannot; pending and missing are explicit', async () => {
+    const job = await openJob(w); const cust = await ext('customer', 'customer_portal', job.customer); const s = await shipment(job.jobId, job.customer);
+    const doc = await approvedDocument(w, w.owner, { docType: 'Bill of lading', issuerKind: 'carrier', relatedType: 'shipment', relatedId: s.id });
+    const ver = (await w.su.query(`SELECT id FROM platform.document_versions WHERE document_id=$1`, [doc])).rows[0].id;
+    expect((await w.owner.get(`/documents/${doc}/extraction`)).body.status).toBe('pending');
+    await w.su.query(`INSERT INTO platform.document_extractions(tenant_id, document_version_id, engine, status, page_count, text, fields, confidence) VALUES ($1,$2,'tesseract(eng+ara)','done',2,'BL MAEU1','{"incoterm":"FOB"}',91.5)`, [w.a.tenantId, ver]);
+    const r = await w.owner.get(`/documents/${doc}/extraction`);
+    expect(r.status).toBe(200); expect(r.body).toMatchObject({ status: 'done', engine: 'tesseract(eng+ara)', pageCount: 2, confidence: 91.5, fields: { incoterm: 'FOB' } });
+    expect((await cust.get(`/documents/${doc}/extraction`)).status).toBe(403);
+    expect((await w.owner.get(`/documents/${randomUUID()}/extraction`)).status).toBe(404);
+  });
+});

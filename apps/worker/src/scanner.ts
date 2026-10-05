@@ -77,10 +77,13 @@ export class ClamdScanner implements ScanPort {
 /** Fail closed: with no scanner configured, nothing is ever marked clean. */
 export const unconfiguredScanner: ScanPort = { async scan() { return 'failed'; } };
 
+export function pickReader(env: Record<string, string | undefined> = process.env): ObjectReader | undefined {
+  return env.DEV_STORAGE_DIR ? new DiskReader(env.DEV_STORAGE_DIR) : env.DOCUMENT_BUCKET ? new S3Reader(env.DOCUMENT_BUCKET) : undefined;
+}
 export function pickScanner(env: Record<string, string | undefined> = process.env): { scanner: ScanPort; name: string } {
   if (env.CLAMD_HOST || env.CLAMD_SOCKET) {
     const target: ClamdTarget = env.CLAMD_SOCKET ? { path: env.CLAMD_SOCKET } : { host: env.CLAMD_HOST!, port: Number(env.CLAMD_PORT ?? 3310) };
-    const reader: ObjectReader | undefined = env.DEV_STORAGE_DIR ? new DiskReader(env.DEV_STORAGE_DIR) : env.DOCUMENT_BUCKET ? new S3Reader(env.DOCUMENT_BUCKET) : undefined;
+    const reader = pickReader(env);
     if (reader) return { scanner: new ClamdScanner(reader, target), name: `ClamAV clamd ${'path' in target ? target.path : `${target.host}:${target.port}`}` };
   }
   if (env.DEV_STORAGE_DIR) return { scanner: new DiskScanner(env.DEV_STORAGE_DIR), name: `disk signature scan (${env.DEV_STORAGE_DIR})` };
