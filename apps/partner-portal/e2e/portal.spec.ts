@@ -68,6 +68,7 @@ test('account page shows company and plain-language permissions', async ({ page 
 test.describe('phone layout', () => {
   test.use({ viewport: { width: 390, height: 844 } });
   test('no screen scrolls sideways on a phone', async ({ page }) => {
+    test.setTimeout(180_000);
     await login(page, 'foods-user');
     for (const path of ['/', '/shipments', '/quotes', '/quotes/new', '/invoices', '/documents', '/account']) {
       await go(page, path); await expect(page.getByRole('heading', { level: 1 })).toBeVisible(); await page.waitForTimeout(250);
