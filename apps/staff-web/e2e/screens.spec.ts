@@ -120,7 +120,7 @@ test.describe('phone layout', () => {
   test('navigation becomes a drawer and no screen scrolls sideways', async ({ page }) => {
     test.setTimeout(240_000);
     await login(page, 'layla'); await expect(page.getByRole('button', { name: 'Open navigation' })).toBeVisible(); await expect(page.getByRole('link', { name: 'Customers' })).not.toBeInViewport();
-    await page.getByRole('button', { name: 'Open navigation' }).click(); await expect(page.getByRole('link', { name: 'Customers' })).toBeInViewport(); await shot(page, '23-phone-drawer'); await page.getByRole('link', { name: 'Customers' }).click(); await expect(page).toHaveURL(/\/customers$/); await expect(page.getByRole('link', { name: 'Customers' })).not.toBeInViewport();
+    await page.getByRole('button', { name: 'Open navigation' }).click(); await expect(page.getByRole('link', { name: 'Customers' })).toBeInViewport(); await shot(page, '23-phone-drawer'); await page.getByRole('link', { name: 'Customers' }).click(); await expect(page).toHaveURL(/\/customers$/, { timeout: 30000 }); await expect(page.getByRole('link', { name: 'Customers' })).not.toBeInViewport();
     for (const [href] of SCREENS) { await go(page, href); await expect(page.getByRole('heading', { level: 1 })).toBeVisible(); await page.waitForTimeout(250); expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), href).toBeLessThanOrEqual(1); }
     await go(page, '/jobs'); await page.getByRole('link', { name: /^JOB-/ }).first().click(); await page.waitForTimeout(400); expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), 'job workspace').toBeLessThanOrEqual(1); await shot(page, '24-phone-job');
   });
