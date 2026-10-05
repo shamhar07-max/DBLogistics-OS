@@ -1,0 +1,163 @@
+/* ==========================================================================
+   DigitalBurj Logistics OS — Components
+   Sector-specific: chamfered "casting" cards, shipping-label type, hi-vis
+   hazard stripes, container corrugation, route lanes, departure-board ticker.
+   ========================================================================== */
+@import url("../tokens/tokens.css");
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:400 var(--fs-14)/1.5 var(--font-ui);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:600;letter-spacing:-.01em;margin:0;line-height:1.15}
+p{margin:0}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:var(--r-xs)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.icon{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-.125em}
+
+/* ---- Type roles -------------------------------------------------------- */
+.t-display{font-family:var(--font-display);font-weight:700;letter-spacing:-.02em;line-height:1.02}
+.t-label{font-family:var(--font-label);font-weight:600;text-transform:uppercase;letter-spacing:.09em;font-size:var(--fs-12);color:var(--text-muted)}
+.t-kpi{font-family:var(--font-label);font-weight:700;letter-spacing:-.005em;line-height:1;font-variant-numeric:tabular-nums}
+.t-data{font-family:var(--font-data);font-size:.92em;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.muted{color:var(--text-muted)}
+.faint{color:var(--text-faint)}
+
+/* ---- Sector textures --------------------------------------------------- */
+.corrugated{background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.055) 0 2px,transparent 2px 14px)}
+.hazard{height:8px;background:repeating-linear-gradient(-45deg,var(--mode-road) 0 10px,var(--dbl-ink) 10px 20px);background-size:28.28px 28.28px;animation:hazardSlide 1.4s linear infinite}
+.hazard--static{animation:none}
+.barcode{height:28px;min-width:96px;background:repeating-linear-gradient(90deg,var(--dbl-ink) 0 2px,transparent 2px 4px,var(--dbl-ink) 4px 5px,transparent 5px 8px,var(--dbl-ink) 8px 11px,transparent 11px 13px)}
+.stencil{font-family:var(--font-label);font-weight:700;text-transform:uppercase;letter-spacing:.14em}
+
+/* ---- Cards: chamfered top-right corner like a container casting ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow-1);position:relative}
+.card--cast{border-radius:var(--r-md) 0 var(--r-md) var(--r-md);--c:var(--chamfer);
+  clip-path:polygon(0 0,calc(100% - var(--c)) 0,100% var(--c),100% 100%,0 100%);border:0;box-shadow:none;
+  background:linear-gradient(var(--surface),var(--surface)) padding-box;outline:1px solid var(--line);outline-offset:-1px}
+.card--forest{background:var(--dbl-forest-800);color:#EAF4F1;border-color:transparent}
+.card__head{display:flex;align-items:center;gap:var(--s-2);padding:var(--s-3) var(--s-4);border-bottom:1px solid var(--line)}
+.card__title{font:600 var(--fs-14)/1 var(--font-display);letter-spacing:.01em;display:flex;align-items:center;gap:var(--s-2)}
+.card__title .icon{font-size:16px;color:var(--primary)}
+.card__body{padding:var(--s-4)}
+.card__head .spacer{flex:1}
+.link-btn{font:600 var(--fs-12)/1 var(--font-ui);color:var(--dbl-forest-600);display:inline-flex;align-items:center;gap:4px;cursor:pointer;background:none;border:0;padding:4px 6px;border-radius:var(--r-xs)}
+.link-btn:hover{background:var(--dbl-forest-50)}
+
+/* ---- Buttons ------------------------------------------------------------ */
+.btn{--c:var(--chamfer-sm);display:inline-flex;align-items:center;gap:var(--s-2);height:38px;padding:0 var(--s-4);border:0;cursor:pointer;
+  font:600 var(--fs-14)/1 var(--font-display);letter-spacing:.01em;transition:transform var(--dur-fast) var(--ease-out),box-shadow var(--dur-base) var(--ease-out),background var(--dur-fast);
+  clip-path:polygon(0 0,calc(100% - var(--c)) 0,100% var(--c),100% 100%,0 100%);border-radius:var(--r-sm) 0 var(--r-sm) var(--r-sm)}
+.btn--primary{background:var(--dbl-forest-800);color:#fff}
+.btn--primary:hover{background:var(--dbl-forest-700);transform:translateY(-1px)}
+.btn--signal{background:var(--dbl-signal-action);color:#fff}
+.btn--signal:hover{background:#B91B05;transform:translateY(-1px)}
+.btn--ghost{background:var(--surface);color:var(--text);box-shadow:inset 0 0 0 1px var(--line-strong)}
+.btn--ghost:hover{background:var(--dbl-forest-50)}
+.btn--sm{height:30px;padding:0 var(--s-3);font-size:var(--fs-13)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn--signal.is-glow{filter:drop-shadow(var(--shadow-signal))}
+
+/* ---- Chips & status (shape = meaning: square = state, pill = tag) ------- */
+.chip{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:var(--r-xs);font:600 11px/1 var(--font-label);letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
+.chip::before{content:"";width:6px;height:6px;background:currentColor;border-radius:50%}
+.chip--ok{background:var(--status-cleared-100);color:#0C6B3F}
+.chip--hold{background:var(--status-hold-100);color:#8A5F00}
+.chip--stop{background:var(--status-stop-100);color:#A80000}
+.chip--info{background:var(--status-info-100);color:var(--mode-ocean)}
+.chip--idle{background:var(--paper-2);color:var(--steel)}
+.chip--plain::before{display:none}
+.chip--live::before{animation:pulseDot 1.6s var(--ease-inout) infinite}
+.tag{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:var(--r-pill);font:600 11.5px/1 var(--font-ui);background:var(--paper);color:var(--steel);border:1px solid var(--line)}
+.src{display:inline-flex;align-items:center;gap:4px;font:500 10.5px/1 var(--font-data);color:var(--steel);padding:3px 5px;border-radius:3px;background:var(--paper)}
+.src--carrier{background:var(--status-cleared-100);color:#0C6B3F}
+.src--inferred{background:repeating-linear-gradient(-45deg,var(--paper) 0 4px,var(--paper-2) 4px 8px);color:var(--steel)}
+
+/* ---- Freight-mode glyph badges ----------------------------------------- */
+.mode{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:var(--r-sm);font-size:16px}
+.mode--ocean{background:var(--mode-ocean-100);color:var(--mode-ocean)}
+.mode--air{background:var(--mode-air-100);color:#177AA8}
+.mode--road{background:var(--mode-road-100);color:#8A5F00}
+.mode--warehouse{background:var(--mode-warehouse-100);color:#7A5424}
+.mode--customs{background:var(--mode-customs-100);color:var(--mode-customs)}
+.mode--multi{background:var(--dbl-forest-100);color:var(--dbl-forest-700)}
+
+/* ---- Inputs ------------------------------------------------------------- */
+.input{height:38px;width:100%;padding:0 12px;border:1px solid var(--line-strong);border-radius:var(--r-sm);background:var(--surface);font:inherit;color:inherit;transition:box-shadow var(--dur-fast),border-color var(--dur-fast)}
+.input:focus{outline:0;border-color:var(--dbl-forest-500);box-shadow:0 0 0 3px rgba(27,122,106,.18)}
+.field{display:grid;gap:6px}
+.field label{font:600 11px/1 var(--font-label);letter-spacing:.09em;text-transform:uppercase;color:var(--steel)}
+.switch{width:38px;height:22px;border-radius:99px;background:var(--concrete);position:relative;border:0;cursor:pointer;transition:background var(--dur-base)}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:var(--shadow-1);transition:transform var(--dur-base) var(--ease-out)}
+.switch[aria-checked="true"]{background:var(--dbl-forest-600)}
+.switch[aria-checked="true"]::after{transform:translateX(16px)}
+
+/* ---- Tabs --------------------------------------------------------------- */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line)}
+.tab{padding:10px 14px;font:600 var(--fs-13)/1 var(--font-display);color:var(--steel);border:0;background:none;cursor:pointer;position:relative}
+.tab[aria-selected="true"]{color:var(--text)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:3px;background:var(--dbl-signal)}
+
+/* ---- Tables ------------------------------------------------------------- */
+.tbl{width:100%;border-collapse:collapse;font-size:var(--fs-13)}
+.tbl th{font:600 10.5px/1 var(--font-label);letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-align:left;padding:9px 12px;background:var(--surface-2);border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tbody tr{transition:background var(--dur-fast)}
+.tbl tbody tr:hover{background:var(--dbl-forest-50)}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+
+/* ---- Progress / meters --------------------------------------------------- */
+.meter{height:8px;border-radius:99px;background:var(--paper-2);overflow:hidden;position:relative}
+.meter>i{display:block;height:100%;border-radius:inherit;background:var(--dbl-forest-600);transform-origin:left;animation:barGrow var(--dur-hero) var(--ease-out) both}
+.meter--signal>i{background:var(--dbl-signal)}
+.meter--amber>i{background:var(--mode-road)}
+.meter--ocean>i{background:var(--mode-ocean)}
+
+/* ---- Route lane: the freight signature element --------------------------- */
+.route{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:0;align-items:start}
+.route__stop{position:relative;text-align:center;padding-top:34px;font-size:var(--fs-12)}
+.route__stop::before{content:"";position:absolute;top:10px;left:50%;width:14px;height:14px;transform:translateX(-50%);border-radius:50%;background:var(--surface);border:3px solid var(--concrete);z-index:2}
+.route__stop::after{content:"";position:absolute;top:16px;left:-50%;width:100%;height:2px;background:repeating-linear-gradient(90deg,var(--concrete) 0 6px,transparent 6px 11px);z-index:1}
+.route__stop:first-child::after{display:none}
+.route__stop.is-done::before{background:var(--status-cleared);border-color:var(--status-cleared)}
+.route__stop.is-done::after{background:var(--status-cleared)}
+.route__stop.is-now::before{background:var(--dbl-signal);border-color:var(--dbl-signal-100);box-shadow:0 0 0 0 rgba(245,40,10,.5);animation:pulseRing 2s var(--ease-out) infinite}
+.route__stop.is-now::after{background:repeating-linear-gradient(90deg,var(--dbl-signal) 0 6px,transparent 6px 11px);background-size:11px 2px;animation:routeFlow .9s linear infinite}
+.route__stop.is-hold::before{background:var(--mode-road);border-color:var(--mode-road-100)}
+.route__stop b{display:block;font:600 12.5px/1.2 var(--font-display);color:var(--text)}
+.route__stop span{display:block;color:var(--steel);font-size:11.5px;margin-top:2px}
+.route__stop .src{margin-top:5px}
+
+/* ---- Departure-board ticker ---------------------------------------------- */
+.ticker{background:var(--dbl-ink);color:#CFE3DD;overflow:hidden;white-space:nowrap;font:500 12px/1 var(--font-data);border-bottom:3px solid var(--dbl-signal)}
+.ticker__track{display:inline-flex;gap:40px;padding:9px 0;animation:marquee 60s linear infinite}
+.ticker__track span{display:inline-flex;gap:8px;align-items:center}
+.ticker__track em{font-style:normal;color:var(--mode-road)}
+.ticker__track b{color:#fff;font-weight:600}
+.ticker__track .ok{color:#5FD99A}.ticker__track .late{color:#FF7A66}
+
+/* ---- Live (floating) card — as on digitalburj.com ----------------------- */
+.live{animation:floatY 6s var(--ease-inout) infinite}
+.live:nth-child(2n){animation-delay:-2s;animation-duration:7s}
+.live:nth-child(3n){animation-delay:-4s;animation-duration:8s}
+.dot-live{width:8px;height:8px;border-radius:50%;background:var(--dbl-signal);display:inline-block;animation:pulseDot 1.6s var(--ease-inout) infinite}
+
+/* ---- Reveal on scroll (staggered via --i) ------------------------------- */
+[data-reveal]{opacity:0;transform:translateY(14px);transition:opacity var(--dur-slow) var(--ease-out),transform var(--dur-slow) var(--ease-out);transition-delay:calc(var(--i,0) * 60ms)}
+[data-reveal].is-in{opacity:1;transform:none}
+
+/* ---- Keyframes ----------------------------------------------------------- */
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.7)}}
+@keyframes pulseRing{0%{box-shadow:0 0 0 0 rgba(245,40,10,.5)}80%,100%{box-shadow:0 0 0 12px rgba(245,40,10,0)}}
+@keyframes routeFlow{to{background-position-x:11px}}
+@keyframes barGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes marquee{to{transform:translateX(-50%)}}
+@keyframes hazardSlide{to{background-position:28.28px 0}}
+@keyframes drawLine{from{stroke-dashoffset:var(--len,600)}to{stroke-dashoffset:0}}
+@keyframes sweep{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.draw{stroke-dasharray:var(--len,600);animation:drawLine 1.8s var(--ease-out) both}
+.sweep{position:relative;overflow:hidden}
+.sweep::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:sweep 2.8s var(--ease-inout) infinite}

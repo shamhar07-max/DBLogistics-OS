@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en" data-motion="running">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Owner Overview — DigitalBurj Logistics OS</title>
+<link rel="icon" href="../brand/assets/logo/favicon.ico">
+<link rel="apple-touch-icon" href="../brand/assets/logo/icon-180.png">
+<link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side corrugated" aria-label="Primary">
+    <div class="logo-plate" style="--w:100%">
+      <!-- Master logo, unmodified. Only the empty white margin of the file is trimmed by CSS. -->
+      <div style="position:relative;width:100%;aspect-ratio:1760/480;overflow:hidden">
+        <img src="../brand/assets/logo/digitalburj-logistics-os-logo.png" alt="DigitalBurj Logistics OS — One system. Every operation."
+             style="position:absolute;width:112.67%;left:-7.67%;top:-29.17%;max-width:none">
+      </div>
+    </div>
+    <div class="entity">
+      <svg class="icon"><use href="#i-anchor"/></svg>
+      <div><b>Dubai HQ · Jebel Ali Branch</b><span>Legal entity: Demo Freight LLC</span></div>
+      <svg class="icon" style="margin-left:auto;font-size:14px;color:#8FB0A7;transform:rotate(90deg)"><use href="#i-chevron"/></svg>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="net">
+      <div class="t-label" style="color:#6F918A;margin-bottom:8px">Network · treated differently</div>
+      <div class="nr"><i style="background:var(--dbl-signal)"></i><b>Operated offices</b><span>Dubai HQ · Jebel Ali</span></div>
+      <div class="nr"><i style="background:var(--mode-road)"></i><b>Separate entities</b><span>Intercompany orders</span></div>
+      <div class="nr"><i style="background:var(--mode-air)"></i><b>Partner agents</b><span>Settlement records</span></div>
+    </div>
+    <div class="side__foot">
+      <div class="me"><div class="avatar">LH</div><div><b>Layla Hassan</b><span>Owner · all entities</span></div>
+        <button class="ibtn" style="margin-left:auto;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);color:#CFE3DD;width:32px;height:32px" aria-label="Lock"><svg class="icon"><use href="#i-lock"/></svg></button></div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="top">
+      <div class="cmd"><svg class="icon"><use href="#i-search"/></svg>
+        <input class="input" placeholder="Search jobs, containers, HS codes — or ask DigitalBurj AI…" aria-label="Search"><kbd>⌘ K</kbd></div>
+      <div class="envs" role="tablist" aria-label="Working environment" id="envs"></div>
+      <div class="grow"></div>
+      <button class="motion-btn" data-motion-toggle aria-pressed="false"><svg class="icon"><use href="#i-pause"/></svg><span data-label>Pause motion</span></button>
+      <button class="ibtn" aria-label="Notifications"><svg class="icon"><use href="#i-bell"/></svg><span class="badge">7</span></button>
+      <button class="ibtn" aria-label="Integrations"><svg class="icon"><use href="#i-plug"/></svg></button>
+    </header>
+    <div class="ticker" aria-label="Live departures board"><div class="ticker__track" id="ticker"></div></div>
+
+    <main class="content">
+
+      <!-- Hero -->
+      <section class="hero" data-reveal>
+        <div>
+          <div class="crumb"><span class="chip chip--live chip--info">Live</span><span class="t-label">Today · Owner overview · Mon 5 Oct 2026 · Dubai (GST)</span></div>
+          <h1>Good morning, Layla. <em>142 jobs</em> are moving.</h1>
+          <p>9 need attention before noon, 11 need your decision. Every figure below drills down to its source record.</p>
+        </div>
+        <div class="actions">
+          <button class="btn btn--ghost"><svg class="icon"><use href="#i-sparkle"/></svg>Brief me</button>
+          <button class="btn btn--primary"><svg class="icon"><use href="#i-plus"/></svg>New job</button>
+          <button class="btn btn--signal is-glow"><svg class="icon"><use href="#i-quote"/></svg>New enquiry</button>
+        </div>
+      </section>
+
+      <!-- Four owner questions -->
+      <section class="q4">
+        <a class="q q--move live" data-reveal href="#shipments"><span class="t-label">What is moving?</span>
+          <div class="q__n t-kpi"><span data-count="142">142</span><small>active jobs</small></div>
+          <div class="q__s"><span><b>9</b> arrivals today</span><span><b>12</b> departures</span><span><b>86%</b> on time</span></div>
+          <svg class="icon ghost"><use href="#i-ship"/></svg></a>
+        <a class="q q--risk live" data-reveal href="#risk"><span class="t-label">What is at risk?</span>
+          <div class="q__n t-kpi"><span data-count="9">9</span><small>exceptions</small></div>
+          <div class="q__s"><span><b>3</b> customs holds</span><span><b>4</b> free-time expiring</span><span><b>2</b> cargo condition</span></div>
+          <svg class="icon ghost"><use href="#i-alert"/></svg></a>
+        <a class="q q--earn live" data-reveal href="#money"><span class="t-label">What is earning money?</span>
+          <div class="q__n t-kpi"><span data-count="1.28" data-decimals="2" data-prefix="AED ">AED 1.28</span><small>M margin MTD</small></div>
+          <div class="q__s"><span><b>18.4%</b> expected margin</span><span><b>−1.2 pt</b> vs quoted</span></div>
+          <svg class="icon ghost"><use href="#i-chart"/></svg></a>
+        <a class="q q--decide live" data-reveal href="#approvals"><span class="t-label">What needs my decision?</span>
+          <div class="q__n t-kpi"><span data-count="11">11</span><small>approvals</small></div>
+          <div class="q__s"><span><b>3</b> rate exceptions</span><span><b>3</b> payments</span><span><b>2</b> cargo releases</span></div>
+          <svg class="icon ghost"><use href="#i-check"/></svg></a>
+      </section>
+
+      <!-- KPIs -->
+      <section class="kpis" id="kpis"></section>
+
+      <div class="h-title" id="shipments"><h2>Shipments · Transport</h2></div>
+      <section class="g">
+        <!-- Spotlight job -->
+        <article class="card card--cast s8" data-reveal style="display:flex;flex-direction:column">
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-shipment"/></svg>Job spotlight · needs attention</div><span class="spacer"></span>
+            <span class="tag">Healthcare pack</span><span class="tag">Reefer 2–8 °C</span><button class="link-btn">Open workspace <svg class="icon"><use href="#i-arrowRight"/></svg></button></div>
+          <div class="spot__top">
+            <span class="mode mode--multi"><svg class="icon"><use href="#i-layers"/></svg></span>
+            <span class="spot__id">DBL-J-26-04817</span>
+            <div><b style="font:600 14px var(--font-display)">Gulf Pharma Distribution</b><div class="muted" style="font-size:12.5px">1 × 40ft RF · 22 pallets · 18,420 kg · Incoterm FOB Shanghai · Owner: R. Menon</div></div>
+            <span style="margin-left:auto" class="tag"><svg class="icon" style="font-size:13px"><use href="#i-clock"/></svg>ETA Jebel Ali 08 Oct · 09:30</span>
+          </div>
+          <div class="dims" style="padding-top:10px">
+            <div class="dim"><span class="t-label">Execution</span><span class="chip chip--info chip--live">In transit</span><b>Leg 2 of 6 · on schedule</b></div>
+            <div class="dim"><span class="t-label">Customs · authority</span><span class="chip chip--hold">Awaiting response</span><b>Internal checklist 100% — not “released”</b></div>
+            <div class="dim"><span class="t-label">Documents</span><span class="chip chip--stop">2 missing</span><b>11 / 13 · permit, temp log</b></div>
+            <div class="dim"><span class="t-label">Finance</span><span class="chip chip--idle">Unbilled</span><b>Accrual AED 38.4k · not invoice-ready</b></div>
+          </div>
+          <div class="spot__route"><div class="route" id="route"></div></div>
+          <div class="marg" style="margin-top:auto">
+            <div><span class="t-label">Quoted margin</span><b>19.2%</b><small>AED 24,300 · QT-2291 v2</small></div>
+            <div><span class="t-label">Expected margin</span><b style="color:var(--status-hold)">17.9%</b><small>−1.3 pt · THC variance</small></div>
+            <div><span class="t-label">Accounting margin</span><b>9.4%</b><small>costs accrued, revenue partial</small></div>
+            <div><span class="t-label">Cash position</span><b class="down">−12.6k</b><small>deposits paid · none collected</small></div>
+          </div>
+        </article>
+
+        <!-- Mode mix -->
+        <article class="card s4" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-globe"/></svg>What is moving · by mode</div><span class="spacer"></span><button class="link-btn">All jobs</button></div>
+          <div class="card__body mix">
+            <div class="stack" id="stack"></div>
+            <ul id="mix"></ul>
+            <div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--line-strong);display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">
+              <div><span class="t-label">Consolidations</span><div class="t-kpi" style="font-size:24px;margin-top:6px">7</div></div>
+              <div><span class="t-label">Project cargo</span><div class="t-kpi" style="font-size:24px;margin-top:6px">3</div></div>
+              <div><span class="t-label">Cross-trade</span><div class="t-kpi" style="font-size:24px;margin-top:6px">11</div></div>
+            </div>
+            <div style="margin-top:16px;display:grid;gap:12px;font-size:12.5px">
+              <div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><b style="font:600 12.5px var(--font-display)">Milestone completeness</b><span class="t-data">94%</span></div><div class="meter"><i style="width:94%"></i></div></div>
+              <div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><b style="font:600 12.5px var(--font-display)">Tracking · carrier-confirmed events</b><span class="t-data">71%</span></div><div class="meter meter--ocean"><i style="width:71%"></i></div></div>
+              <div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><b style="font:600 12.5px var(--font-display)">Estimated events not yet actual</b><span class="t-data">29%</span></div><div class="meter meter--amber"><i style="width:29%"></i></div></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Shipments table -->
+        <article class="card s8" data-reveal>
+          <div class="card__head" style="padding-bottom:0;border:0"><div class="card__title"><svg class="icon"><use href="#i-box"/></svg>Shipments</div><span class="spacer"></span>
+            <button class="btn btn--ghost btn--sm"><svg class="icon"><use href="#i-filter"/></svg>Filter</button></div>
+          <div class="tabs" id="shipTabs" style="padding:0 10px" role="tablist"></div>
+          <div style="overflow:auto"><table class="tbl"><thead><tr>
+            <th>Job</th><th>Customer · Route</th><th>Mode</th><th>Execution</th><th>Customs</th><th>Docs</th><th>Finance</th><th>ETA</th><th class="num">Margin</th></tr></thead>
+            <tbody id="shipRows"></tbody></table></div>
+        </article>
+
+        <!-- Container exposure -->
+        <article class="card s4" data-reveal id="risk">
+          <div class="hazard"></div>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-anchor"/></svg>Container free-time exposure</div><span class="spacer"></span><span class="chip chip--stop">Next 48 h</span></div>
+          <div class="rows" id="exposure"></div>
+          <div class="recon" style="grid-template-columns:1fr 1fr">
+            <div><span class="t-label">Estimated</span><b>AED 11.1k</b></div>
+            <div><span class="t-label">Confirmed (supplier)</span><b>AED 4.3k</b></div>
+          </div>
+          <div style="padding:14px 0 6px;border-top:1px solid var(--line)"><div class="t-label" style="padding:0 16px 8px">Exposure forecast · 7 days · AED k</div><div class="bars" id="fc" style="height:96px"></div></div>
+          <div style="padding:10px 16px 14px;font-size:12px;color:var(--steel);border-top:1px solid var(--line)">Detention, demurrage, terminal storage and combined free time each run on their <b>own tariff, clock-start event and calendar</b>. Estimates are never shown as confirmed charges.</div>
+        </article>
+      </section>
+
+      <div class="h-title"><h2>Warehouse · Customs · Documents</h2></div>
+      <section class="g">
+        <article class="card s4" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-warehouse"/></svg>Jebel Ali warehouses</div><span class="spacer"></span><span class="chip chip--ok">Custody balanced</span></div>
+          <div style="padding:12px 0 8px" id="zones"></div>
+          <div class="recon">
+            <div><span class="t-label">Reconciled</span><b>99.7%</b></div>
+            <div><span class="t-label">Discrepancies</span><b style="color:var(--status-stop)">4</b></div>
+            <div><span class="t-label">Held cargo</span><b style="color:var(--status-hold)">17 plt</b></div>
+          </div>
+          <div style="padding:10px 16px;font-size:12px;color:var(--steel);border-top:1px solid var(--line)">Customs status · excise status · storage billing · accounting balance are tracked as <b>separate ledgers</b> — never one “bonded” flag.</div>
+        </article>
+
+        <article class="card s5" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-customs"/></svg>Customs &amp; trade cases</div><span class="spacer"></span><span class="chip chip--hold">3 holds</span><button class="link-btn">Open</button></div>
+          <table class="tbl"><thead><tr><th>Case</th><th>Importer · Procedure</th><th>Authority status</th><th>Internal</th></tr></thead><tbody id="customs"></tbody></table>
+          <div style="padding:10px 16px;font-size:12px;color:var(--steel);border-top:1px solid var(--line);display:flex;gap:8px;align-items:center"><svg class="icon" style="color:var(--mode-customs)"><use href="#i-lock"/></svg>“Customs released” can only be set with uploaded evidence. AI may suggest HS codes — a specialist approves.</div>
+        </article>
+
+        <article class="card s3" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-docs"/></svg>Documents</div></div>
+          <div class="card__body" style="display:grid;gap:12px">
+            <div style="display:flex;gap:14px;align-items:center">
+              <svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--paper-2)" stroke-width="9"/><circle class="draw" style="--len:188" cx="38" cy="38" r="30" fill="none" stroke="var(--dbl-forest-600)" stroke-width="9" stroke-linecap="round" stroke-dasharray="164 188" transform="rotate(-90 38 38)"/><text x="38" y="43" text-anchor="middle" font-family="Barlow Condensed" font-weight="700" font-size="20">87%</text></svg>
+              <div><b style="font:600 13px var(--font-display)">Required docs complete</b><div class="muted" style="font-size:12px">23 awaiting · 41 OCR-extracted today</div></div></div>
+            <div class="t-label">Cross-document checks</div>
+            <div style="display:grid;gap:7px;font-size:12.5px">
+              <div style="display:flex;gap:8px;align-items:center"><span class="chip chip--stop chip--plain">3</span>mismatches</div>
+              <div class="muted" style="font-size:12px;line-height:1.45">Gross weight · Package count · Container no. differ between invoice, packing list and draft BL.</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag">BL</span><span class="tag">AWB</span><span class="tag">POD</span><span class="tag">Permit</span></div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <div class="h-title"><h2>Commercial · Transport · Service</h2></div>
+      <section class="g">
+        <article class="card s4" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-quote"/></svg>Enquiries → handover</div><span class="spacer"></span><span class="chip chip--ok">44% win</span></div>
+          <div class="funnel" id="funnel"></div>
+          <div class="recon"><div><span class="t-label">Quotes awaiting</span><b>11</b></div><div><span class="t-label">Aged 5d+</span><b style="color:var(--status-hold)">4</b></div><div><span class="t-label">Rates expiring</span><b style="color:var(--status-stop)">6</b></div></div>
+        </article>
+
+        <article class="card s4" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-truck"/></svg>Dispatch · 38 trips today</div><span class="spacer"></span><span class="chip chip--info chip--live">Live</span></div>
+          <div class="rows" id="trips"></div>
+          <div class="recon"><div><span class="t-label">POD pending</span><b>7</b></div><div><span class="t-label">Subcontractors</span><b>9</b></div><div><span class="t-label">Driver app</span><b>31/38</b></div></div>
+        </article>
+
+        <article class="card s4" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-mail"/></svg>Service inbox</div><span class="spacer"></span><span class="chip chip--hold">2 SLA at risk</span></div>
+          <div class="rows" id="inbox"></div>
+        </article>
+      </section>
+
+      <div class="h-title" id="money"><h2>Money · Approvals</h2></div>
+      <section class="g">
+        <article class="card s4" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-money"/></svg>Receivables ageing</div><span class="spacer"></span><span class="t-data muted">AED</span></div>
+          <div style="padding:16px 0 10px"><div class="bars" id="ageing"></div></div>
+          <div class="recon" style="grid-template-columns:1fr 1fr"><div><span class="t-label">Payables due 7 d</span><b>AED 0.94M</b></div><div><span class="t-label">Bills with variance</span><b style="color:var(--status-hold)">3</b></div></div>
+          <div class="t-label" style="padding:12px 16px 4px;border-top:1px solid var(--line)">Collections · approved policy</div>
+          <div class="rows" id="coll"></div>
+        </article>
+
+        <article class="card s4" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-invoice"/></svg>Billing → ledger → e-Invoice</div></div>
+          <div class="three">
+            <div><span class="t-label">Operational billing</span><b>14</b><small>jobs invoice-ready<br>6 older than 10 days</small></div>
+            <div><span class="t-label">Accounting posting</span><b>52</b><small>invoices posted<br>balanced journals</small></div>
+            <div><span class="t-label">e-Invoice (PINT-AE)</span><b>47</b><small>accepted by ASP<br><span class="down">3 rejected</span> · 2 pending</small></div>
+          </div>
+          <div style="padding:0 16px 16px;display:grid;gap:8px;font-size:12.5px">
+            <div style="display:flex;gap:8px;align-items:center"><span class="chip chip--stop">Rejected</span>INV-26-1183 · buyer TRN format — correction drafted</div>
+            <div style="display:flex;gap:8px;align-items:center"><span class="chip chip--hold">Leakage</span>9 handling events have no charge line</div>
+          </div>
+          <div class="t-label" style="padding:12px 16px 4px;border-top:1px solid var(--line)">Supplier bill matching</div>
+          <div class="rows" id="bills"></div>
+        </article>
+
+        <article class="card s4" data-reveal id="approvals">
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-check"/></svg>Approvals queue</div><span class="spacer"></span><span class="chip chip--hold">11 pending</span></div>
+          <div id="appr"></div>
+        </article>
+      </section>
+
+      <div class="h-title"><h2>Industry packs · Quality · Portals</h2></div>
+      <section class="g">
+        <article class="card s4" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-layers"/></svg>Industry packs · active jobs</div></div>
+          <div class="packs" id="packs"></div>
+        </article>
+
+        <article class="card s4" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-quality"/></svg>Quality, claims &amp; assets</div><span class="spacer"></span><span class="chip chip--stop">1 quality hold</span></div>
+          <div class="rows" id="quality"></div>
+        </article>
+
+        <article class="card s4" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-people"/></svg>External portals · online now</div></div>
+          <div class="portal" id="portals"></div>
+          <div style="padding:0 16px 14px;font-size:12px;color:var(--steel);display:flex;gap:8px;align-items:center"><svg class="icon"><use href="#i-lock"/></svg>Internal margins, other customers and supplier rates are never visible to external users.</div>
+        </article>
+      </section>
+
+      <div class="h-title"><h2>Intelligence · Automation · Platform</h2></div>
+      <section class="g">
+        <article class="card ai card--cast s5" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-sparkle"/></svg>DigitalBurj AI · recommended actions</div><span class="spacer"></span><span class="chip chip--live" style="background:rgba(255,255,255,.1);color:#9FE8C3">Evidence-backed</span></div>
+          <div id="recs"></div>
+          <div class="agents" id="agents"></div>
+          <div class="ask"><input class="input" value="Which delivered shipments have not been invoiced?" aria-label="Ask DigitalBurj AI"><button class="btn btn--signal"><svg class="icon"><use href="#i-arrowRight"/></svg>Ask</button></div>
+        </article>
+
+        <article class="card s4" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-bolt"/></svg>Automation</div><span class="spacer"></span><span class="chip chip--ok">38 rules · 0 failed</span></div>
+          <div class="runs" id="runs"></div>
+          <div style="padding:12px 16px 16px;border-top:1px solid var(--line)"><div class="t-label" style="margin-bottom:8px">New rule · describe it in words</div><div style="display:flex;gap:8px"><input class="input" value="Hold stock when cycle count differs by more than 2 units" aria-label="New automation"><button class="btn btn--primary">Draft</button></div><div class="muted" style="font-size:11.5px;margin-top:8px">Produces an inspectable, versioned rule — with owner, permissions, retries and history.</div></div>
+        </article>
+
+        <article class="card s3" data-reveal>
+          <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-plug"/></svg>Platform &amp; data health</div></div>
+          <div id="health"></div>
+        </article>
+      </section>
+
+      <section class="card" data-reveal>
+        <div class="card__head"><div class="card__title"><svg class="icon"><use href="#i-chart"/></svg>Reports · every KPI has a written definition</div><span class="spacer"></span><button class="link-btn">KPI dictionary</button></div>
+        <div class="reports" id="reports"></div>
+      </section>
+
+      <div class="foot"><div class="barcode"></div><span>Illustrative sample data · Entities, customers and figures are fictional · DigitalBurj Logistics OS design preview</span></div>
+    </main>
+  </div>
+</div>
+
+<script src="../brand/js/icons.js"></script>
+<script src="../brand/js/motion.js"></script>
+<script>
+const I=(n,c)=>DBL_ICON(n,c);
+const chip=(t,x,l)=>`<span class="chip chip--${t}${l?' chip--live':''}">${x}</span>`;
+const $=id=>document.getElementById(id);
+
+/* Sidebar — the 14 product areas */
+const nav=[
+ ['Workspace',[['today','Today','',1,[['Owner overview',1],['My tasks'],['Approvals'],['Exceptions'],['Service commitments']]]]],
+ ['Commercial',[['customers','Customers','128'],['quote','Enquiries & Quotes','14']]],
+ ['Operations',[['shipment','Shipments','142'],['truck','Transport','38'],['warehouse','Warehouses',''],['customs','Customs & Trade','3!'],['docs','Documents','23']]],
+ ['Finance & people',[['money','Money',''],['people','People & Assets','']]],
+ ['Control',[['quality','Service & Quality','2'],['sparkle','Intelligence',''],['bolt','Automation',''],['sliders','Administration','']]]
+];
+$('nav').innerHTML=nav.map(([s,items])=>`<div class="nav__sec">${s}</div>`+items.map(([ic,l,n,act,sub])=>
+ `<a href="#" class="${act?'is-active':''}">${I(ic)}<span>${l}</span>${n?`<span class="n ${n.endsWith('!')?'n--hot':''}">${n.replace('!','')}</span>`:''}</a>`+
+ (sub?`<div class="sub">${sub.map(([x,on])=>`<a href="#" class="${on?'on':''}">${x}</a>`).join('')}</div>`:'')).join('')).join('');
+
+/* Working environments */
+$('envs').innerHTML=[['Owner',1],['Commercial'],['Operations'],['Warehouse'],['Finance'],['Portals']].map(([x,s])=>`<button role="tab" aria-selected="${!!s}">${x}</button>`).join('');
+
+/* Departures-board ticker */
+const tk=[['<em>VSL</em> <b>EVER-STAR 041E</b> Jebel Ali','<span class="ok">ETA 08 Oct 09:30</span>'],['<em>FLT</em> <b>EK 9912</b> FRA → DXB','<span class="ok">DEPARTED 02:10</span>'],['<em>CNT</em> <b>MRKU 7421186</b>','<span class="late">FREE TIME 22 h</span>'],['<em>TRK</em> <b>TR-2291</b> Jebel Ali → Dammam','<span class="ok">POD RECEIVED</span>'],['<em>CUS</em> <b>CASE 5531</b> Re-export','<span class="late">HOLD · INSPECTION</span>'],['<em>VSL</em> <b>MSC AURORA</b> Mundra','<span class="late">ROLLED +3 d</span>'],['<em>WH</em> <b>BONDED-A</b>','<span class="ok">RECONCILED 99.7%</span>']];
+const tkh=tk.map(([a,b])=>`<span>${a} ${b}</span>`).join('');$('ticker').innerHTML=tkh+tkh;
+
+/* KPIs */
+const spark=(d,c)=>{const w=84,h=30,mx=Math.max(...d),mn=Math.min(...d);const p=d.map((v,i)=>`${(i/(d.length-1)*w).toFixed(1)},${(h-3-((v-mn)/(mx-mn||1))*(h-8)).toFixed(1)}`).join(' ');return `<svg class="spark" viewBox="0 0 ${w} ${h}"><polyline class="draw" style="--len:140" points="${p}" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`};
+const kp=[
+ ['Cash position','AED ','4.82','M',[3.9,4.1,4.0,4.4,4.6,4.7,4.82],'up','▲ 6.4% vs last week','var(--dbl-forest-600)',2],
+ ['Receivables overdue','AED ','0.61','M',[.4,.45,.5,.55,.52,.6,.61],'down','▲ 9 invoices · 3 disputed','var(--dbl-signal)',2,1],
+ ['Expected margin','','18.4','%',[19.8,19.5,19.1,18.9,18.7,18.5,18.4],'down','▼ 1.2 pt vs quoted','var(--mode-road)',1],
+ ['Unbilled work','AED ','386','k',[210,240,300,340,310,360,386],'down','14 delivered jobs','var(--mode-ocean)',0],
+ ['Container exposure','AED ','15.4','k',[4,6,5,9,11,13,15.4],'down','4 boxes · next 48 h','var(--dbl-signal)',1,1],
+ ['Missing supplier costs','','23','',[12,15,14,18,20,22,23],'down','charges · est. AED 212k','var(--mode-customs)',0]
+];
+$('kpis').innerHTML=kp.map(([l,pre,v,suf,d,dir,txt,col,dec,risk],i)=>`<div class="card kpi ${risk?'is-risk':''}" data-reveal>${spark(d,col)}<span class="t-label">${l}</span>
+ <div class="t-kpi"><small>${pre}</small><span data-count="${v}" data-decimals="${dec}">${v}</span><small>${suf}</small></div><div class="kpi__d ${dir}">${txt}</div></div>`).join('');
+
+/* Route lane */
+const stops=[['Collection','Shanghai · 28 Sep','d','Supplier-reported','done'],['Ocean carriage','SHA → Jebel Ali · upd. 2 h','n','Carrier-confirmed','carrier'],['Jebel Ali receipt','Est. 08 Oct 09:30','','Estimated','inferred'],['Bonded storage','Zone: Temp-controlled','','Planned',''],['Authorised release','Needs permit + temp log','h','Evidence required','inferred'],['Road delivery','Dubai · 10 Oct','','Planned','']];
+$('route').innerHTML=stops.map(([a,b,s,src,k])=>`<div class="route__stop ${s=='d'?'is-done':s=='n'?'is-now':s=='h'?'is-hold':''}"><b>${a}</b><span>${b}</span><span class="src ${k=='carrier'?'src--carrier':k=='inferred'?'src--inferred':''}">${src}</span></div>`).join('');
+
+/* Mode mix */
+const modes=[['ocean','ship','Ocean',58,'var(--mode-ocean)','88%'],['air','plane','Air',31,'var(--mode-air)','92%'],['road','truck','Road',44,'var(--mode-road)','81%'],['multi','layers','Multimodal',9,'var(--dbl-forest-600)','78%']];
+$('stack').innerHTML=modes.map(m=>`<i style="flex:${m[3]};background:${m[4]}"></i>`).join('');
+$('mix').innerHTML=modes.map(([c,ic,l,n,col,ot])=>`<li><span class="mode mode--${c}">${I(ic)}</span><b style="font:600 13px var(--font-display)">${l}</b><span class="ot">${ot} OTP</span><span class="n">${n}</span></li>`).join('');
+
+/* Shipments */
+const ex={t:'info',h:'hold',s:'stop',o:'ok',i:'idle'};
+const jobs=[
+ ['04817','Gulf Pharma Distribution','SHA → JEA → DXB','ocean','ship',['info','In transit'],['hold','Awaiting'],['stop','2 missing'],['idle','Unbilled'],'08 Oct','17.9%'],
+ ['04822','Meridian Aero Services','FRA → DXB (GSE)','air','plane',['info','Departed'],['idle','Not started'],['ok','Complete'],['idle','Quoted'],'06 Oct','21.2%'],
+ ['04790','Falcon Beverages','JEA → Dammam','road','truck',['ok','Delivered'],['ok','Cleared'],['ok','Complete'],['hold','Part-invoiced'],'04 Oct','14.1%'],
+ ['04803','Al Noor Foods Trading','Mundra → JEA (LCL)','ocean','ship',['info','Discharged'],['stop','Inspection hold'],['ok','Complete'],['idle','Accrued'],'05 Oct','12.6%'],
+ ['04761','Sahara Agri Machinery','HAM → JEA → RUH','ocean','ship',['hold','Rolled +3 d'],['idle','Pre-lodged'],['hold','1 pending'],['idle','Deposit'],'12 Oct','16.4%'],
+ ['04829','Orchid Fashion FZE','IST → DXB','air','plane',['info','In transit'],['hold','Lodged'],['ok','Complete'],['stop','14 d overdue'],'06 Oct','19.8%'],
+ ['04755','Helix Medical Supplies','BOM → JEA → MCT','multi','layers',['info','Bonded storage'],['ok','Cleared'],['ok','Complete'],['hold','Part-invoiced'],'09 Oct','18.9%'],
+ ['04812','Northgate Imports','JEA bonded → DOH','road','truck',['info','Dispatched'],['hold','Excise evid.'],['ok','Complete'],['idle','Accrued'],'05 Oct','15.3%']
+];
+const tabs=['All jobs · 142','Ocean · 58','Air · 31','Road · 44','Multimodal · 9','Consolidations · 7','Project · 3'];
+$('shipTabs').innerHTML=tabs.map((t,i)=>`<button class="tab" role="tab" aria-selected="${i==0}">${t}</button>`).join('');
+$('shipRows').innerHTML=jobs.map(([id,cu,rt,mc,ic,e,c,d,f,eta,m])=>`<tr><td class="t-data" style="white-space:nowrap"><b>DBL-${id}</b></td><td><b style="font:600 13px var(--font-display)">${cu}</b><div class="muted" style="font-size:12px">${rt}</div></td>
+ <td><span class="mode mode--${mc}">${I(ic)}</span></td><td>${chip(e[0],e[1])}</td><td>${chip(c[0],c[1])}</td><td>${chip(d[0],d[1])}</td><td>${chip(f[0],f[1])}</td><td class="t-data" style="white-space:nowrap">${eta}</td><td class="num t-data"><b>${m}</b></td></tr>`).join('');
+
+/* Container exposure */
+const cx=[['MRKU 7421186','Jebel Ali Terminal · Falcon Beverages','22 h','Est.','3,100','hold'],['CMAU 5530972','Detention · Al Noor Foods','31 h','Est.','5,600','hold'],['HLXU 3398041','Storage · Sahara Agri','40 h','Est.','2,400','info'],['TGHU 8800215','Demurrage invoice received','Due','Confirmed','4,300','stop']];
+$('exposure').innerHTML=cx.map(([n,s,t,k,v,c])=>`<div class="row"><span class="mode mode--ocean">${I('box')}</span><div class="main"><b class="t-data">${n}</b><small>${s}</small></div><div class="r"><div class="cd" style="color:${c=='stop'?'var(--status-stop)':'var(--text)'}">${t}</div><small><span class="chip chip--plain chip--${k=='Est.'?'hold':'stop'}">${k} · AED ${v}</span></small></div></div>`).join('');
+
+/* Zones */
+const zn=[['Bonded A','82','var(--dbl-forest-600)'],['Bonded B','64','var(--dbl-forest-600)'],['Excise zone','71','var(--mode-customs)'],['General','58','var(--mode-warehouse)'],['Temp 2–8 °C','91','var(--dbl-signal)'],['Dock doors','75','var(--mode-road)']];
+$('zones').innerHTML=zn.map(([n,p,c])=>`<div class="zone"><b>${n}</b><div class="meter"><i style="width:${p}%;background:${c}"></i></div><span class="p">${p}%</span></div>`).join('');
+
+/* Customs */
+const cc=[['5531','Northgate Imports · Re-export','hold','Inspection hold','Checklist 80%'],['5528','Al Noor Foods · Import','hold','Query raised','Docs sent'],['5526','Gulf Pharma · Import','info','Awaiting response','Checklist 100%'],['5519','Helix Medical · Transit','ok','Released · evidence ✓','Closed'],['5514','Falcon Bev. · Export','ok','Released · evidence ✓','Closed']];
+$('customs').innerHTML=cc.map(([n,a,t,s,i])=>`<tr><td class="t-data"><b>${n}</b></td><td style="font-size:12.5px">${a}</td><td>${chip(t,s)}</td><td class="muted" style="font-size:12px">${i}</td></tr>`).join('');
+
+/* Funnel */
+const fn=[['Enquiries',64],['Qualified',41],['Rates requested',33],['Quotes sent',27],['Accepted',14],['Handed over',12]];
+$('funnel').innerHTML=fn.map(([l,n])=>`<div class="fun"><span>${l}</span><i style="width:${n/64*100}%"></i><b>${n}</b></div>`).join('');
+
+/* Trips */
+const tr=[['TR-2291','JEA → Dammam · Subcontractor A','POD ✓','ok'],['TR-2305','Dubai → Abu Dhabi · Reefer','In transit','info'],['TR-2311','Container drayage · Port → WH','Waiting 48 min','hold'],['TR-2318','Failed delivery · redelivery','Action','stop']];
+$('trips').innerHTML=tr.map(([n,s,t,c])=>`<div class="row"><span class="mode mode--road">${I('truck')}</span><div class="main"><b class="t-data">${n}</b><small>${s}</small></div>${chip(c,t)}</div>`).join('');
+
+/* Inbox */
+const ib=[['mail','Gulf Pharma · 04817','Please confirm temp-log timing','SLA 38 m','hold'],['sparkle','WhatsApp · Orchid Fashion','Payment promise for INV-1102','Draft ready','info'],['mail','Meridian Aero · 04822','GSE dimensions amended','SLA 12 m','stop'],['sparkle','Agent · Shanghai','Vessel delay update','Linked ✓','ok'],['quality','Claim · Falcon Beverages','Survey report received','Open','info'],['customs','Customs query · case 5528','Broker needs invoice page 3','Task','hold']];
+$('inbox').innerHTML=ib.map(([ic,a,b,t,c])=>`<div class="row"><span class="mode mode--multi">${I(ic)}</span><div class="main"><b>${a}</b><small>${b}</small></div>${chip(c,t)}</div>`).join('');
+
+/* Ageing */
+const ag=[['Current',1.02,'var(--dbl-forest-600)'],['1–30',0.51,'var(--mode-ocean)'],['31–60',0.34,'var(--mode-road)'],['61–90',0.19,'var(--dbl-signal)'],['90+',0.08,'var(--dbl-signal-deep)']];
+$('ageing').innerHTML=ag.map(([l,v,c],i)=>`<div class="b"><em>${v.toFixed(2)}M</em><i style="height:${v/1.02*80}px;background:${c};animation-delay:${i*90}ms"></i><span>${l}</span></div>`).join('');
+
+/* Forecast + collections + bills */
+const fc=[['Tue',4.3],['Wed',9.8],['Thu',6.1],['Fri',2.2],['Sat',0.9],['Sun',0.4],['Mon',3.2]];
+$('fc').innerHTML=fc.map(([d,v],i)=>`<div class="b"><em>${v}</em><i style="height:${v/9.8*54+4}px;background:${v>6?'var(--dbl-signal)':'var(--mode-road)'};animation-delay:${i*70}ms"></i><span>${d}</span></div>`).join('');
+$('coll').innerHTML=[['Orchid Fashion FZE','14 d late · AED 87.4k','Reminder drafted','hold'],['Sahara Agri Machinery','31 d · AED 64.0k','Promise 09 Oct','info'],['Al Noor Foods Trading','Disputed · AED 22.1k','Credit note review','stop']].map(([a,b,t,c])=>`<div class="row"><div class="main"><b>${a}</b><small>${b}</small></div>${chip(c,t)}</div>`).join('');
+$('bills').innerHTML=[['Terminal handling · 04817','+AED 1,240 vs approved rate','Variance','hold'],['Haulier invoice HB-7731','Possible duplicate of HB-7713','Duplicate?','stop'],['Airline AWB 176-…','Matches commitment · accrual cleared','Matched','ok']].map(([a,b,t,c])=>`<div class="row"><div class="main"><b>${a}</b><small>${b}</small></div>${chip(c,t)}</div>`).join('');
+
+/* Approvals */
+const ap=[['signal','Rate exception · FRA→DXB air · margin 9.2%','R. Menon · QT-2307 · below 12% floor'],['stop','Release decision · Excise cargo 04812','Evidence 2/3 · warehouse keeper sign-off'],['hold','Payment run · 6 suppliers · AED 312k','Maker: Accounts · Checker: you'],['customs','Bank-detail change · Supplier “Ocean Haul”','Verified callback pending'],['info','Variation · Project 04761 crane standby','+AED 18.4k · customer approval attached']];
+const ac={signal:'var(--dbl-signal)',stop:'var(--status-stop)',hold:'var(--mode-road)',customs:'var(--mode-customs)',info:'var(--mode-ocean)'};
+$('appr').innerHTML=ap.map(([c,a,b])=>`<div class="appr"><span style="width:6px;height:34px;border-radius:3px;background:${ac[c]}"></span><div><b>${a}</b><small>${b}</small></div><div class="btns"><button class="btn btn--ghost btn--sm">Review</button><button class="btn btn--primary btn--sm">Approve</button></div></div>`).join('');
+
+/* Packs */
+const pk=[['Tobacco & excise','Batch traceability · stamp evidence',8,'var(--mode-customs)'],['Healthcare & pharma','Temp control · expiry · quality release',17,'var(--status-cleared)'],['Aerospace & GSE','Serials · urgent · technical docs',6,'var(--mode-air)'],['Project & oversized','Surveys · lifting plans · permits',3,'var(--mode-road)'],['Beverages','Flexitank · expiry · breakage',12,'var(--mode-ocean)'],['Agri equipment','Dismantle · heavy transport',5,'var(--mode-warehouse)'],['Fashion','Style/size/colour · hangers',9,'var(--dbl-signal)'],['Agro-food (ext.)','Perishables · permits',7,'var(--dbl-forest-500)']];
+$('packs').innerHTML=pk.map(([a,b,n,c])=>`<div class="pack" style="--c:${c}"><span class="n">${n}</span><b>${a}</b><small>${b}</small></div>`).join('');
+
+/* Quality */
+const ql=[['thermo','Temperature excursion · 04817 reefer','Quality hold open — not auto-cleared','stop','Hold'],['alert','Damage claim · Falcon Beverages','Survey booked · insurer notified','hold','Claim'],['scan','Forklift FL-07 calibration due','Out of service in 2 d','info','Asset'],['user','3 operators · DG-handling expired','New assignments blocked','hold','People']];
+$('quality').innerHTML=ql.map(([ic,a,b,c,t])=>`<div class="row"><span class="mode mode--${c=='stop'?'customs':'warehouse'}" style="${c=='stop'?'background:var(--status-stop-100);color:var(--status-stop)':''}">${I(ic)}</span><div class="main"><b>${a}</b><small>${b}</small></div>${chip(c,t)}</div>`).join('');
+
+/* Portals */
+const po=[['Customers',38,'quotes · docs · tracking'],['Overseas agents',9,'milestones · settlement'],['Transporters',17,'RFQs · trips · POD'],['Drivers',31,'mobile · offline sync']];
+$('portals').innerHTML=po.map(([a,n,s])=>`<div><span class="t-label">${a}</span><b>${n}</b><small>${s}</small></div>`).join('');
+
+/* AI */
+const rc=[['money','Finance Agent','14 delivered jobs (AED 386k) are not invoiced — 6 are older than 10 days.',['POD verified','Rates v2 approved','Owner: Finance','Due today'],'Prepare invoices'],
+ ['anchor','Operations Agent','4 containers pass free time within 48 h (est. AED 15.4k). Gate-out can be booked for 3.',['Terminal feed','Carrier tariff','Owner: R. Menon','Due 14:00'],'Book gate-out'],
+ ['quote','Commercial Agent','6 rate sheets expire in 7 days; 2 affect open quotes worth AED 212k.',['Rate library','QT-2291 · QT-2307','Owner: Pricing','Due Thu'],'Request renewals'],
+ ['docs','Document Agent','Job 04817 lacks import permit + temp log. Draft document request is ready.',['OCR · 3 mismatches','Customs case 5526','Owner: Customs','Due today'],'Send request']];
+$('recs').innerHTML=rc.map(([ic,a,b,t,btn],i)=>`<div class="rec"><span class="agent">${I(ic)}</span><div><b>${b}</b><small>${a}</small><div class="meta">${t.map((x,j)=>`<span class="tag ${j==3?'sig':''}">${x}</span>`).join('')}<span class="tag" style="margin-left:auto;background:rgba(255,255,255,.14);color:#fff;cursor:pointer">${btn} →</span></div></div></div>`).join('');
+$('agents').innerHTML=['Owner','Commercial','Procurement','Operations','Document','Warehouse','Finance','Collections','Compliance','Service'].map(a=>`<span class="tag">${a}</span>`).join('');
+
+/* Automation */
+const rn=[['ok','Quote accepted → job draft created','QT-2291 · v12','08:42'],['ok','Cutoff approaching → 2 jobs missing VGM escalated','v7','08:15'],['ok','Supplier ETA changed → 3 milestones recalculated','v9','07:58'],['hold','Supplier bill → variance AED 1,240 flagged','v4','07:31'],['ok','Qualification expired → assignment blocked','v3','06:40'],['ok','Warehouse discrepancy → stock held, investigation opened','v5','06:12'],['ok','Handling completed → billable service event','v8','05:55']];
+$('runs').innerHTML=rn.map(([c,a,v,t])=>`<div class="run"><span style="width:9px;height:9px;border-radius:50%;background:var(--status-${c=='ok'?'cleared':'hold'})"></span><div><b style="font:600 12.5px/1.3 var(--font-display)">${a}</b><div class="t-data">${v}</div></div><span class="t-data">${t}</span></div>`).join('');
+
+/* Health */
+const hh=[['Carrier & airline feeds','last event 2 min','ok','Healthy'],['Email & WhatsApp intake','12 enquiries today','ok','Healthy'],['e-Invoice ASP adapter','3 rejections','hold','Review'],['Bank statements','synced 06:10','ok','Healthy'],['Authority evidence','2 manual captures','hold','Manual'],['Backups · PITR','restore drill 12 d ago','ok','Healthy'],['Data quality score','missing milestones 4%','ok','96%'],['Security events','0 in 24 h · support access off','ok','Clear'],['AI usage · month','tool calls audited · budget 62%','ok','OK']];
+$('health').innerHTML=hh.map(([a,b,c,t])=>`<div class="hl"><div><b style="font:600 12.5px var(--font-display)">${a}</b><small>${b}</small></div>${chip(c,t)}</div>`).join('');
+
+/* Reports */
+$('reports').innerHTML=['Throughput','Quote conversion','On-time pickup & delivery','Milestone completeness','Customs clearance duration','Container charge exposure','Warehouse occupancy & custody','Storage & handling revenue','Expected vs actual margin','Unbilled & missing costs','Customer & agent profitability','AR / AP ageing','Claims & recoveries','Supplier reliability','Staff workload','Data quality & integrations'].map(r=>`<span class="tag" style="height:30px;padding:0 12px;font-size:12.5px">${I('chart')}${r}</span>`).join('');
+</script>
+</body>
+</html>
