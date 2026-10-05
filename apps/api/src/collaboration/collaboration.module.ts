@@ -1,5 +1,5 @@
 import { Body, Controller, Inject, Injectable, Module, Param } from '@nestjs/common';
-import { audit, Ctx, Db, DomainError, emit, Op, Qry, type RequestContext } from '../platform';
+import { audit, canTouch, Ctx, Db, DomainError, emit, isExternal, Op, Qry, type RequestContext } from '../platform';
 
 @Injectable()
 export class CollaborationService {
@@ -19,12 +19,39 @@ export class CollaborationService {
       await tx.q(`UPDATE collab.tasks SET status='done', completed_by=$2, completed_at=now() WHERE id=$1`, [id, ctx.userId]); await audit(tx, ctx, 'task.completed', 'task', id); return { id, status: 'done' };
     });
   }
+  /** Staff see every message; customers see ONLY messages marked shared on records they own, with staff shown as "Team". */
   listMessages(ctx: RequestContext, q: { relatedType?: string; relatedId?: string }) {
-    return this.db.run(ctx, (tx) => tx.q(`SELECT m.id, m.channel, m.direction, m.body, m.created_at, m.related_type, m.related_id, u.subject AS author FROM collab.messages m LEFT JOIN platform.users u ON u.id = m.author_user_id
-      WHERE ($1::text IS NULL OR m.related_type = $1) AND ($2::uuid IS NULL OR m.related_id = $2) ORDER BY m.id DESC LIMIT 300`, [q.relatedType ?? null, q.relatedId ?? null]));
+    return this.db.run(ctx, async (tx) => {
+      if (isExternal(ctx)) {
+        if (!q.relatedType || !q.relatedId || !(await canTouch(tx, ctx, q.relatedType, q.relatedId))) throw new DomainError('NOT_FOUND', 'Conversation not found.');
+        return tx.q(`SELECT m.id, m.channel, m.direction, m.body, m.created_at, m.related_type, m.related_id, (m.author_user_id = $3) AS mine, CASE WHEN m.author_user_id = $3 THEN 'You' WHEN m.direction = 'outbound' THEN 'DigitalBurj team' ELSE 'Your colleague' END AS author
+          FROM collab.messages m WHERE m.related_type = $1 AND m.related_id = $2 AND m.visibility = 'shared' ORDER BY m.id DESC LIMIT 300`, [q.relatedType, q.relatedId, ctx.userId]);
+      }
+      return tx.q(`SELECT m.id, m.channel, m.direction, m.visibility, m.body, m.created_at, m.related_type, m.related_id, u.subject AS author FROM collab.messages m LEFT JOIN platform.users u ON u.id = m.author_user_id
+        WHERE ($1::text IS NULL OR m.related_type = $1) AND ($2::uuid IS NULL OR m.related_id = $2) ORDER BY m.id DESC LIMIT 300`, [q.relatedType ?? null, q.relatedId ?? null]);
+    });
   }
+  /**
+   * Customers can only write inbound, shared messages on their own shipments/jobs/quotes (rate-limited). Staff choose per message whether the
+   * customer sees it ("shared": also notifies the customer's contacts); everything else stays an internal note.
+   */
   postMessage(ctx: RequestContext, b: any) {
-    return this.db.run(ctx, async (tx) => { const m = await tx.one(`INSERT INTO collab.messages(tenant_id, related_type, related_id, channel, direction, body, author_user_id) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id, created_at`, [ctx.tenantId, b.relatedType, b.relatedId, b.channel, b.direction, b.body, ctx.userId]); return m; });
+    return this.db.run(ctx, async (tx) => {
+      let { channel, direction, shared } = b as { channel: string; direction: string; shared: boolean };
+      if (isExternal(ctx)) {
+        if (ctx.workspace !== 'customer' || !['shipment', 'job', 'quote'].includes(b.relatedType) || !(await canTouch(tx, ctx, b.relatedType, b.relatedId))) throw new DomainError('NOT_FOUND', 'Conversation not found.');
+        const recent = await tx.one<{ n: number }>(`SELECT count(*)::int n FROM collab.messages WHERE author_user_id=$1 AND created_at > now() - interval '1 hour'`, [ctx.userId]);
+        if (recent.n >= 30) throw new DomainError('RATE_LIMITED', 'You have sent many messages in the last hour. Please wait a little before sending more.');
+        channel = 'portal'; direction = 'inbound'; shared = true;
+      } else if (shared) {
+        if (!['shipment', 'job', 'quote'].includes(b.relatedType)) throw new DomainError('VALIDATION_FAILED', 'Only shipment, job and quote conversations can be shared with the customer.');
+        channel = 'portal'; direction = 'outbound';
+      } else if (channel === 'portal') throw new DomainError('VALIDATION_FAILED', 'Portal messages are shared messages.');
+      const m = await tx.one(`INSERT INTO collab.messages(tenant_id, related_type, related_id, channel, direction, body, author_user_id, visibility) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id, created_at`,
+        [ctx.tenantId, b.relatedType, b.relatedId, channel, direction, b.body, ctx.userId, shared ? 'shared' : 'internal']);
+      if (shared) await emit(tx, ctx, 'MessagePosted', b.relatedType, b.relatedId, { messageId: m.id, direction, relatedType: b.relatedType, excerpt: String(b.body).slice(0, 160) });
+      return m;
+    });
   }
   create(ctx: RequestContext, b: any) {
     return this.db.run(ctx, async (tx) => { const a = await tx.one(`INSERT INTO collab.approval_requests(tenant_id, kind, subject_type, subject_id, summary, requested_by) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, status`, [ctx.tenantId, b.kind, b.subjectType, b.subjectId, b.summary, ctx.userId]); await audit(tx, ctx, 'approval.requested', 'approval_request', a.id); return a; });

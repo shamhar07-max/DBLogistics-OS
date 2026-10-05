@@ -33,6 +33,7 @@ export async function canTouch(tx: { maybe: (sql: string, a?: unknown[]) => Prom
   if (type === 'shipment') return !!(await tx.maybe(`SELECT 1 FROM logistics.shipments s JOIN logistics.jobs j ON j.id = s.job_id WHERE s.id = $1 AND ${shipmentVisibility(ctx, 's', 'j', 2)}`, [id, ctx.partyId]));
   if (type === 'job') return ctx.workspace === 'customer' && !!(await tx.maybe(`SELECT 1 FROM logistics.jobs WHERE id = $1 AND customer_party_id = $2`, [id, ctx.partyId]));
   if (type === 'trip') return ['transporter', 'driver'].includes(ctx.workspace) && !!(await tx.maybe(`SELECT 1 FROM transport.trips WHERE id = $1 AND transporter_party_id = $2 AND status <> 'cancelled'`, [id, ctx.partyId]));
+  if (type === 'quote') return ctx.workspace === 'customer' && !!(await tx.maybe(`SELECT 1 FROM commercial.quotes WHERE id = $1 AND customer_party_id = $2 AND status IN ('approved','sent','accepted','expired')`, [id, ctx.partyId]));
   return false;
 }
 /** The issuer an external upload may claim is fixed by who they are — a portal user can never mint "authority" evidence. */

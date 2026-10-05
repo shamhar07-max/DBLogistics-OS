@@ -24,7 +24,7 @@ for (const r of ROUTES) {
       body: r.body ? { content: { 'application/json': { schema: r.body } } } : undefined,
     },
     responses: {
-      [String(r.status ?? 200)]: { description: 'OK' },
+      [String(r.status ?? 200)]: r.binary ? { description: 'Binary document', content: { [r.binary]: { schema: { type: 'string', format: 'binary' } } } } : { description: 'OK' },
       '4XX': { description: 'Error', content: { 'application/json': { schema: Err } } },
     },
   });

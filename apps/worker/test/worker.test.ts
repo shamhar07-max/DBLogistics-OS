@@ -78,7 +78,10 @@ describe('outbox relay + consumers', () => {
   });
   it('the worker role is tenant-bound: without a tenant context it sees no domain rows', async () => {
     const r = await pool.query(`SELECT count(*)::int n FROM collab.tasks`); expect(r.rows[0].n).toBe(0);
-    await expect(pool.query(`SELECT * FROM finance.invoices`)).rejects.toThrow(/permission denied/);
+    expect((await pool.query(`SELECT count(*)::int n FROM finance.invoices`)).rows[0].n).toBe(0);                      // readable (to resolve the customer for notifications) but only inside a tenant context
+    expect((await pool.query(`SELECT count(*)::int n FROM parties.contacts`)).rows[0].n).toBe(0);
+    await expect(pool.query(`SELECT * FROM finance.journals`)).rejects.toThrow(/permission denied/);                   // the ledger stays off limits
+    await expect(pool.query(`UPDATE finance.invoices SET status='posted'`)).rejects.toThrow(/permission denied/);
     await expect(pool.query(`UPDATE platform.outbox SET payload='{}'`)).rejects.toThrow(/permission denied/);
   });
 describe('workflow engine (validated language, failure handling, recovery)', () => {
@@ -126,5 +129,137 @@ describe('document scanner', () => {
     expect(diskPath('/d', 't1/incoming/abc')).toBe('/d/499a6a003dee3817acc4eecd02ad76cd1bb7859ac791faf29261d5db3b8887e9');                  // same literal as apps/api/test/devfiles.test.ts
     expect(await pickScanner({}).scanner.scan('x')).toBe('failed'); expect(pickScanner({ DEV_STORAGE_DIR: dir }).scanner).toBeInstanceOf(DiskScanner);
     expect(await pickScanner({ ALLOW_UNSCANNED_DOCUMENTS: 'true', NODE_ENV: 'production' }).scanner.scan('x')).toBe('failed');
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------- notifications
+import { createServer, type Server } from 'node:http';
+import { SMTPServer } from 'smtp-server';
+import { simpleParser, type ParsedMail } from 'mailparser';
+import { pickAdapters, SendError, SmtpEmailAdapter, WhatsAppCloudAdapter } from '../src/notify/adapters';
+import { renderNotification } from '../src/notify/templates';
+import { notifyCustomer, pickChannel, sendDue } from '../src/notify/queue';
+import { inTenant } from '../src/db';
+import { NOTIFICATION_TEMPLATES } from '@dbl/contracts';
+
+describe('notifications: real SMTP and WhatsApp Cloud API adapters, consent-aware queue, retries, receipts', () => {
+  let smtp: SMTPServer, smtpPort = 0; const mails: ParsedMail[] = []; let rcptRule: (addr: string) => { code: number; msg: string } | null = () => null;
+  let graph: Server, graphPort = 0; const calls: Array<{ path: string; auth?: string; body: any }> = []; let graphReply: () => { status: number; body: any } = () => ({ status: 200, body: { messages: [{ id: `wamid.${Math.random().toString(36).slice(2)}` }] } });
+  let jobId = '', shipmentId = '', partyN = '', contacts: Record<string, string> = {};
+  const wa = () => new WhatsAppCloudAdapter({ token: 'TKN', phoneNumberId: '1234567890', apiBase: `http://127.0.0.1:${graphPort}/v21.0` });
+  const mail = () => new SmtpEmailAdapter(`smtp://127.0.0.1:${smtpPort}`, 'DigitalBurj Logistics <no-reply@dbl.test>');
+  const adapters = () => ({ email: mail(), whatsapp: wa() });
+  const rows = async (where = '') => (await su.query(`SELECT * FROM integ.outbound_messages WHERE tenant_id=$1 ${where} ORDER BY created_at, id`, [tenant])).rows;
+
+  beforeAll(async () => {
+    smtp = new SMTPServer({ authOptional: true, disabledCommands: ['STARTTLS'], onRcptTo(a, _s, cb) { const r = rcptRule(a.address); cb(r ? Object.assign(new Error(r.msg), { responseCode: r.code }) : undefined); },
+      onData(stream, _s, cb) { simpleParser(stream).then((m) => { mails.push(m); cb(); }, cb); } });
+    await new Promise<void>((r) => smtp.listen(0, '127.0.0.1', () => r())); smtpPort = (smtp.server.address() as any).port;
+    graph = createServer((req, res) => { let b = ''; req.on('data', (d) => (b += d)); req.on('end', () => { calls.push({ path: req.url!, auth: req.headers.authorization, body: JSON.parse(b || '{}') }); const r = graphReply(); res.writeHead(r.status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(r.body)); }); });
+    await new Promise<void>((r) => graph.listen(0, '127.0.0.1', () => r())); graphPort = (graph.address() as any).port;
+    partyN = (await su.query(`INSERT INTO parties.parties(tenant_id,legal_name) VALUES ($1,'Notify Customer LLC') RETURNING id`, [tenant])).rows[0].id;
+    const ins = async (name: string, email: string | null, phone: string | null, pref: string | null, optIn: boolean, optOut: boolean) => (await su.query(`INSERT INTO parties.contacts(tenant_id,party_id,name,email,phone,preferred_channel,whatsapp_opt_in,email_opt_out) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`, [tenant, partyN, name, email, phone, pref, optIn, optOut])).rows[0].id;
+    contacts = { amal: await ins('Amal', 'amal@cust.test', null, null, false, false), bilal: await ins('Bilal', null, '+971501112233', 'whatsapp', true, false), chen: await ins('Chen', 'chen@cust.test', null, null, false, true), dina: await ins('Dina', 'dina@cust.test', '+971509998877', 'whatsapp', false, false), eli: await ins('Eli', 'eli@cust.test', '+971505554433', null, true, false) };
+    jobId = (await su.query(`INSERT INTO logistics.jobs(tenant_id,legal_entity_id,ref,customer_party_id,currency) VALUES ($1,$2,'JOB-N-1',$3,'AED') RETURNING id`, [tenant, le, partyN])).rows[0].id;
+    shipmentId = (await su.query(`INSERT INTO logistics.shipments(tenant_id,job_id,ref,mode,origin,destination) VALUES ($1,$2,'SHP-N-1','air','Frankfurt','Dubai') RETURNING id`, [tenant, jobId])).rows[0].id;
+    await su.query(`UPDATE org.legal_entities SET address='Warehouse 14, Jebel Ali', email='ops@dbl.test', phone='+971 4 555 0100' WHERE id=$1`, [le]);
+  });
+  afterAll(async () => { await new Promise((r) => smtp.close(() => r(null))); await new Promise((r) => graph.close(() => r(null))); });
+
+  it('every catalogue template renders email (escaped, with the brand logo and call to action) and WhatsApp parameters in the documented order', () => {
+    for (const t of NOTIFICATION_TEMPLATES) {
+      const vars = Object.fromEntries(t.vars.map((k) => [k, k === 'link' ? 'https://portal.test/x?a=1&b=2' : `<b>${k}</b>`])); const r = renderNotification(t.name, vars, { name: 'Demo Freight LLC', address: 'Dubai', trn: '1002' });
+      expect(r.email.subject.length).toBeGreaterThan(5); expect(r.email.html).toContain('cid:dbl-logo'); expect(r.email.html).toContain('One system. Every operation.'); expect(r.email.html).not.toContain('<b>customerName</b>'); expect(r.email.html).toContain('&lt;b&gt;'); expect(r.email.html).toContain('a=1&amp;b=2');
+      expect(r.whatsapp.name).toBe(`dbl_${t.name}`); expect(r.whatsapp.params).toHaveLength(t.vars.length); expect(r.whatsapp.params[0]).toBe('<b>customerName</b>'); expect(r.email.text).toContain('Demo Freight LLC');
+    }
+    expect(() => renderNotification('nope', {})).toThrow(/Unknown notification template/);
+  });
+  it('SMTP adapter delivers a real message (HTML + text + inline logo); 5xx is permanent, 4xx and network failure are retryable', async () => {
+    mails.length = 0; const r = renderNotification('invoice_posted', { customerName: 'Amal', invoiceRef: 'INV-1', amount: 'AED 105.00', dueDate: '2026-11-01', link: 'https://portal.test/invoices/1' }, { name: 'Demo Freight LLC' });
+    const out = await mail().send({ id: 'x', channel: 'email', to: 'amal@cust.test', toName: 'Amal', rendered: r }); expect(out.provider).toBe('smtp'); expect(out.providerMessageId).toBeTruthy();
+    const m = mails[0]; expect(m.subject).toBe('Invoice INV-1 from Demo Freight LLC'); expect(m.to).toMatchObject({ value: [{ address: 'amal@cust.test', name: 'Amal' }] }); expect(m.html).toContain('View and download invoice'); expect(m.text).toContain('https://portal.test/invoices/1'); expect(m.attachments.find((a) => a.cid === 'dbl-logo')?.contentType).toBe('image/png');
+    expect(m.headers.get('auto-submitted')).toBe('auto-generated');
+    rcptRule = () => ({ code: 550, msg: 'mailbox unavailable' }); await expect(mail().send({ id: 'x', channel: 'email', to: 'gone@cust.test', rendered: r })).rejects.toMatchObject({ retryable: false });
+    rcptRule = () => ({ code: 451, msg: 'try later' }); await expect(mail().send({ id: 'x', channel: 'email', to: 'busy@cust.test', rendered: r })).rejects.toMatchObject({ retryable: true });
+    rcptRule = () => null; await expect(new SmtpEmailAdapter('smtp://127.0.0.1:1', 'a@b.test').send({ id: 'x', channel: 'email', to: 'a@b.test', rendered: r })).rejects.toMatchObject({ retryable: true });
+  });
+  it('WhatsApp adapter posts a template message to the Graph API with bearer auth; 190/131047 are permanent, 429/5xx and network errors retryable', async () => {
+    calls.length = 0; const r = renderNotification('shipment_update', { customerName: 'Bilal', shipmentRef: 'SHP-9', milestone: 'DEPARTED', link: 'https://p.test/s/9' });
+    const out = await wa().send({ id: 'x', channel: 'whatsapp', to: '+971501112233', rendered: r }); expect(out.providerMessageId).toMatch(/^wamid\./);
+    expect(calls[0].path).toBe('/v21.0/1234567890/messages'); expect(calls[0].auth).toBe('Bearer TKN'); expect(calls[0].body).toMatchObject({ messaging_product: 'whatsapp', to: '971501112233', type: 'template', template: { name: 'dbl_shipment_update', language: { code: 'en' }, components: [{ type: 'body', parameters: [{ type: 'text', text: 'Bilal' }, { type: 'text', text: 'SHP-9' }, { type: 'text', text: 'DEPARTED' }, { type: 'text', text: 'https://p.test/s/9' }] }] } });
+    const fail = async (status: number, code: number) => { graphReply = () => ({ status, body: { error: { code, message: 'nope' } } }); try { await wa().send({ id: 'x', channel: 'whatsapp', to: '+971501112233', rendered: r }); } catch (e) { return e as SendError; } };
+    expect((await fail(401, 190))!.retryable).toBe(false); expect((await fail(400, 131047))!.retryable).toBe(false); expect((await fail(400, 132001))!.message).toMatch(/132001/); expect((await fail(429, 130429))!.retryable).toBe(true); expect((await fail(503, 2))!.retryable).toBe(true);
+    graphReply = () => ({ status: 200, body: { messages: [{ id: 'wamid.reset' }] } });
+    await expect(new WhatsAppCloudAdapter({ token: 't', phoneNumberId: '1', apiBase: 'http://127.0.0.1:1' }).send({ id: 'x', channel: 'whatsapp', to: '+9715', rendered: r })).rejects.toMatchObject({ retryable: true });
+  });
+  it('consent: one channel per contact — preference honoured only with opt-in, opt-outs respected, WhatsApp needs opt-in and a phone', () => {
+    const c = (o: Partial<Parameters<typeof pickChannel>[0]>) => ({ id: 'c', name: 'n', email: 'a@b.c', phone: '+971500000000', preferred_channel: null, whatsapp_opt_in: false, email_opt_out: false, ...o });
+    expect(pickChannel(c({}))).toBe('email'); expect(pickChannel(c({ preferred_channel: 'whatsapp' }))).toBe('email'); expect(pickChannel(c({ preferred_channel: 'whatsapp', whatsapp_opt_in: true }))).toBe('whatsapp');
+    expect(pickChannel(c({ email_opt_out: true }))).toBeNull(); expect(pickChannel(c({ email_opt_out: true, whatsapp_opt_in: true }))).toBe('whatsapp'); expect(pickChannel(c({ whatsapp_opt_in: true, phone: null, email_opt_out: true }))).toBeNull(); expect(pickChannel(c({ whatsapp_opt_in: true }), 'whatsapp')).toBe('whatsapp'); expect(pickChannel(c({}), 'whatsapp')).toBeNull();
+  });
+  it('a customer notification queues one message per eligible contact, never twice for the same key, then sends through the real adapters and records provider ids', async () => {
+    const q1 = await inTenant(pool, tenant, (q) => notifyCustomer(q, { tenantId: tenant, aggregateType: 'shipment', aggregateId: shipmentId, template: 'shipment_update', vars: { milestone: 'DEPARTED' }, dedupeKey: 'test:1' }));
+    expect(q1).toEqual({ queued: 4, skipped: 1 });                                                            // Chen opted out of email and has no WhatsApp consent
+    const again = await inTenant(pool, tenant, (q) => notifyCustomer(q, { tenantId: tenant, aggregateType: 'shipment', aggregateId: shipmentId, template: 'shipment_update', dedupeKey: 'test:1' })); expect(again.queued).toBe(0);
+    const byName = Object.fromEntries((await rows()).map((r) => [r.to_name, r.channel])); expect(byName).toEqual({ Amal: 'email', Bilal: 'whatsapp', Dina: 'email', Eli: 'email' });
+    mails.length = 0; calls.length = 0; expect(await sendDue(pool, adapters())).toBe(4);
+    const sent = await rows(); expect(sent.every((r) => r.status === 'sent' && r.attempts === 1 && r.provider_message_id)).toBe(true); expect(mails).toHaveLength(3); expect(calls).toHaveLength(1); expect(calls[0].body.template.components[0].parameters[0].text).toBe('Bilal');
+    expect(mails.map((m) => m.subject)).toEqual(Array(3).fill('Shipment SHP-N-1: DEPARTED')); expect(mails[0].html).toContain('Warehouse 14, Jebel Ali'); expect(mails[0].html).toContain('/shipments/' + shipmentId); expect(await sendDue(pool, adapters())).toBe(0);
+    await expect(inTenant(pool, tenant, (q) => notifyCustomer(q, { tenantId: tenant, aggregateType: 'shipment', aggregateId: shipmentId, template: 'bogus', dedupeKey: 'x' }))).rejects.toThrow(/Unknown notification template/);
+  });
+  it('transient failures back off and succeed later; permanent ones fail at once with the reason; attempts are capped; retry resets; not-configured fails visibly', async () => {
+    await su.query(`DELETE FROM integ.outbound_messages WHERE tenant_id=$1`, [tenant]);
+    const queue = (key: string) => inTenant(pool, tenant, (q) => notifyCustomer(q, { tenantId: tenant, aggregateType: 'shipment', aggregateId: shipmentId, template: 'delivery_completed', channel: 'whatsapp', dedupeKey: key })); await queue('t:1');
+    graphReply = () => ({ status: 503, body: { error: { code: 2, message: 'temporarily unavailable' } } }); await sendDue(pool, adapters());
+    let r = (await rows())[0]; expect(r).toMatchObject({ status: 'queued', attempts: 1 }); expect(r.last_error).toMatch(/503|WhatsApp 2/); expect(new Date(r.next_attempt_at).getTime()).toBeGreaterThan(Date.now() + 30_000); expect(await sendDue(pool, adapters())).toBe(0);      // backing off
+    await su.query(`UPDATE integ.outbound_messages SET next_attempt_at=now() WHERE tenant_id=$1`, [tenant]); graphReply = () => ({ status: 200, body: { messages: [{ id: 'wamid.second' }] } }); await sendDue(pool, adapters());
+    r = (await rows())[0]; expect(r).toMatchObject({ status: 'sent', attempts: 2, provider_message_id: 'wamid.second', last_error: null });
+    await su.query(`DELETE FROM integ.outbound_messages WHERE tenant_id=$1`, [tenant]); await queue('t:2'); graphReply = () => ({ status: 401, body: { error: { code: 190, message: 'Error validating access token' } } }); await sendDue(pool, adapters());
+    r = (await rows())[0]; expect(r.status).toBe('failed'); expect(r.last_error).toMatch(/190/);
+    await su.query(`UPDATE integ.outbound_messages SET status='queued', attempts=4, next_attempt_at=now() WHERE tenant_id=$1`, [tenant]); graphReply = () => ({ status: 500, body: {} }); await sendDue(pool, adapters()); r = (await rows())[0]; expect(r).toMatchObject({ status: 'failed', attempts: 5 });             // cap reached
+    await su.query(`UPDATE integ.outbound_messages SET status='queued', attempts=0, next_attempt_at=now() WHERE tenant_id=$1`, [tenant]); graphReply = () => ({ status: 200, body: { messages: [{ id: 'wamid.third' }] } }); await sendDue(pool, adapters()); expect((await rows())[0].status).toBe('sent');
+    await su.query(`DELETE FROM integ.outbound_messages WHERE tenant_id=$1`, [tenant]); await queue('t:3'); await sendDue(pool, pickAdapters({}).adapters); r = (await rows())[0]; expect(r.status).toBe('failed'); expect(r.last_error).toMatch(/not configured.*WHATSAPP_TOKEN/);
+    await su.query(`UPDATE integ.outbound_messages SET status='sending', claimed_at=now() - interval '30 minutes' WHERE tenant_id=$1`, [tenant]); await sendDue(pool, { email: mail(), whatsapp: wa() }); expect((await rows())[0].status).toBe('sent');                                  // crash recovery: stale claim is re-queued
+  });
+  it('workflow notify steps and built-in reactions deliver for real: milestone email, customer reply notification, staff task for inbound messages', async () => {
+    await su.query(`DELETE FROM integ.outbound_messages WHERE tenant_id=$1`, [tenant]); mails.length = 0; graphReply = () => ({ status: 200, body: { messages: [{ id: 'wamid.wf' }] } });
+    await su.query(`INSERT INTO automation.workflow_definitions(tenant_id,key,version,trigger_topic,definition,status,owner_user_id) VALUES ($1,'tell-customer',1,'ShipmentEventRecorded',$2::jsonb,'active',$3)`, [tenant, JSON.stringify({ actions: [{ type: 'notify', channel: 'email', template: 'shipment_update', recipient: 'customer' }, { type: 'notify', channel: 'whatsapp', template: 'shipment_update', recipient: 'customer' }] }), randomUUID()]);
+    const ev = (topic: string, payload: object, id = String(Math.floor(Math.random() * 1e12))) => ({ id, tenantId: tenant, topic, aggregateType: 'shipment', aggregateId: shipmentId, payload });
+    await handleEvent(pool, scanner, ev('ShipmentEventRecorded', { code: 'CUSTOMS_CLEARED' }));
+    const run = (await su.query(`SELECT r.status, r.log FROM automation.workflow_runs r JOIN automation.workflow_definitions d ON d.id=r.definition_id WHERE d.key='tell-customer'`)).rows[0]; expect(run.status).toBe('completed'); expect(run.log.map((l: any) => l.note)).toEqual(['3 email message(s) queued (shipment_update)', '2 whatsapp message(s) queued (shipment_update)']);
+    await sendDue(pool, adapters()); expect(mails.map((m) => m.subject)).toEqual(Array(3).fill('Shipment SHP-N-1: CUSTOMS CLEARED'));
+    await su.query(`DELETE FROM integ.outbound_messages WHERE tenant_id=$1`, [tenant]); const reply = ev('MessagePosted', { direction: 'outbound', excerpt: 'We booked the 14:30 slot.' }, '777001');
+    await handleEvent(pool, scanner, reply); await handleEvent(pool, scanner, reply); expect((await rows()).filter((r) => r.template === 'message_reply')).toHaveLength(4);                // duplicate delivery: no second notification
+    const before = await tasks('Customer message'); await handleEvent(pool, scanner, ev('MessagePosted', { direction: 'inbound', excerpt: 'Can you deliver after 14:00?' }, '777002')); expect(await tasks('Customer message')).toBe(before + 1);
+  });
+  it('WhatsApp receipts advance status without regressing; failures are recorded; inbound customer messages are filed on the party with a task; unknown senders are ignored', async () => {
+    await su.query(`DELETE FROM integ.outbound_messages WHERE tenant_id=$1`, [tenant]);
+    await inTenant(pool, tenant, (q) => notifyCustomer(q, { tenantId: tenant, aggregateType: 'shipment', aggregateId: shipmentId, template: 'delivery_completed', channel: 'whatsapp', dedupeKey: 'rcpt' })); graphReply = () => ({ status: 200, body: { messages: [{ id: 'wamid.rcpt1' }] } }); await sendDue(pool, adapters());
+    const inbox = async (type: string, payload: object, ext = Math.random().toString(36)) => { const id = (await su.query(`INSERT INTO integ.inbox_events(tenant_id,provider,external_event_id,event_type,payload) VALUES ($1,'whatsapp',$2,$3,$4::jsonb) RETURNING id`, [tenant, ext, type, JSON.stringify(payload)])).rows[0].id; await handleEvent(pool, scanner, { id: String(Math.floor(Math.random() * 1e12)), tenantId: tenant, topic: 'IntegrationEventReceived', aggregateType: 'inbox_event', aggregateId: id, payload: {} }); return id; };
+    const st = async () => (await rows())[0].status;
+    await inbox('whatsapp.status', { messageId: 'wamid.rcpt1', status: 'delivered' }); expect(await st()).toBe('delivered'); await inbox('whatsapp.status', { messageId: 'wamid.rcpt1', status: 'read' }); expect(await st()).toBe('read'); await inbox('whatsapp.status', { messageId: 'wamid.rcpt1', status: 'delivered' }); expect(await st()).toBe('read');
+    await su.query(`UPDATE integ.outbound_messages SET status='sent', provider_message_id='wamid.rcpt2' WHERE tenant_id=$1`, [tenant]); await inbox('whatsapp.status', { messageId: 'wamid.rcpt2', status: 'failed', error: '131026: Message undeliverable' }); expect((await rows())[0]).toMatchObject({ status: 'failed', last_error: '131026: Message undeliverable' });
+    const t0 = await tasks('WhatsApp from Bilal'); const mid = await inbox('whatsapp.message', { from: '971501112233', text: 'Please call me about SHP-N-1' });
+    expect(await tasks('WhatsApp from Bilal')).toBe(t0 + 1); expect((await su.query(`SELECT channel, direction, visibility, body FROM collab.messages WHERE related_id=$1`, [partyN])).rows[0]).toEqual({ channel: 'whatsapp', direction: 'inbound', visibility: 'internal', body: 'Please call me about SHP-N-1' });
+    const unknown = await inbox('whatsapp.message', { from: '971400000000', text: 'hello?' }); expect((await su.query(`SELECT status, error FROM integ.inbox_events WHERE id=$1`, [unknown])).rows[0]).toEqual({ status: 'ignored', error: 'unknown sender' }); void mid;
+  });
+});
+
+describe('ClamAV scanner (clamd INSTREAM)', () => {
+  const live = process.env.CLAMD_TEST_PORT ? Number(process.env.CLAMD_TEST_PORT) : 0;
+  const mem = (m: Record<string, Buffer>) => ({ read: async (k: string) => { if (!m[k]) throw new Error('missing'); return m[k]!; } });
+  it.skipIf(!live)('flags EICAR and passes clean bytes against a real clamd', async () => {
+    const { ClamdScanner, EICAR } = await import('../src/scanner');
+    const s = new ClamdScanner(mem({ bad: Buffer.from('hello ' + EICAR), good: Buffer.alloc(300_000, 'a') }), { host: '127.0.0.1', port: live });
+    expect(await s.ping()).toBe(true);
+    expect(await s.scan('bad')).toBe('infected');
+    expect(s.detail.get('bad')).toMatch(/^Eicar-Test-Signature/);
+    expect(await s.scan('good')).toBe('clean');
+    expect(await s.scan('absent')).toBe('failed');
+  });
+  it('throws (so the job retries) when clamd is unreachable, never clean', async () => {
+    const { ClamdScanner, ScannerUnavailable } = await import('../src/scanner');
+    const s = new ClamdScanner(mem({ a: Buffer.from('x') }), { host: '127.0.0.1', port: 1 }, 2000);
+    await expect(s.scan('a')).rejects.toBeInstanceOf(ScannerUnavailable);
   });
 });

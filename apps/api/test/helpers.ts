@@ -31,6 +31,8 @@ export class Client {
     return body === undefined ? r : r.send(body);
   }
   get = (p: string, h?: Record<string, string>) => this.req('get', p, undefined, h);
+  /** binary download: resolves to { status, headers, buffer } */
+  getBinary = async (p: string) => { const t = await token(this.sub); const r = await (request(this.app.getHttpServer()) as any).get(`/api/v1${p}`).set('Authorization', `Bearer ${t}`).set('X-Tenant-Id', this.tenantId).buffer(true).parse((res: any, cb: any) => { const c: Buffer[] = []; res.on('data', (d: Buffer) => c.push(d)); res.on('end', () => cb(null, Buffer.concat(c))); }); return { status: r.status as number, headers: r.headers as Record<string, string>, buffer: r.body as Buffer }; };
   post = (p: string, b: unknown = {}, h?: Record<string, string>) => this.req('post', p, b, h);
   /** command with Idempotency-Key */
   cmd = (p: string, b: unknown = {}, key = randomUUID(), extra: Record<string, string> = {}) => this.req('post', p, b, { 'Idempotency-Key': key, ...extra });

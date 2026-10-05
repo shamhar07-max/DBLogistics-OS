@@ -5,7 +5,7 @@ import { WorkflowBody } from './workflow';
 
 export interface RouteDef {
   method: 'GET' | 'POST'; path: string; operationId: string; tag: string; summary: string;
-  permission: Permission | null; idempotent?: boolean; ifMatch?: boolean; body?: ZodTypeAny; query?: ZodTypeAny; public?: boolean; status?: number;
+  permission: Permission | null; /** non-JSON success response (binary download) */ binary?: 'application/pdf'; idempotent?: boolean; ifMatch?: boolean; body?: ZodTypeAny; query?: ZodTypeAny; public?: boolean; status?: number;
 }
 const r = <const T extends RouteDef>(d: T): T => d;
 
@@ -14,6 +14,7 @@ export const ROUTE_TABLE = [
   r({ method: 'GET', path: '/me', operationId: 'getMe', tag: 'Session', summary: 'Current user, tenant and effective permissions', permission: null }),
   r({ method: 'GET', path: '/me/memberships', operationId: 'listMemberships', tag: 'Session', summary: 'Tenants the user belongs to', permission: null }),
   r({ method: 'GET', path: '/legal-entities', operationId: 'listLegalEntities', tag: 'Organization', summary: 'Legal entities', permission: 'parties.view' }),
+  r({ method: 'POST', path: '/legal-entities/:id', operationId: 'updateLegalEntity', tag: 'Organization', summary: 'Update the issuer profile printed on documents (address, contacts, bank details)', permission: 'admin.tenant', body: S.UpdateLegalEntityBody, ifMatch: false }),
   r({ method: 'GET', path: '/facilities', operationId: 'listFacilities', tag: 'Organization', summary: 'Facilities (warehouses, yards, offices) and their locations', permission: 'parties.view' }),
   r({ method: 'POST', path: '/facilities', operationId: 'createFacility', tag: 'Organization', summary: 'Create a facility', permission: 'admin.tenant', body: S.CreateFacilityBody, status: 201 }),
   r({ method: 'POST', path: '/facilities/:id/locations', operationId: 'createLocation', tag: 'Organization', summary: 'Add a storage location to a facility', permission: 'admin.tenant', body: S.CreateLocationBody, status: 201 }),
@@ -26,6 +27,7 @@ export const ROUTE_TABLE = [
   r({ method: 'POST', path: '/enquiries/:id/qualify', operationId: 'qualifyEnquiry', tag: 'Commercial', summary: 'Qualify enquiry; missing data becomes tasks', permission: 'enquiries.qualify', idempotent: true }),
   r({ method: 'GET', path: '/quotes', operationId: 'listQuotes', tag: 'Commercial', summary: 'List quotes', permission: 'quotes.view' }),
   r({ method: 'GET', path: '/quotes/:id', operationId: 'getQuote', tag: 'Commercial', summary: 'Quote with lines and margin (if permitted)', permission: 'quotes.view' }),
+  r({ method: 'GET', path: '/quotes/:id/pdf', operationId: 'getQuotePdf', tag: 'Commercial', summary: 'Quotation as a branded PDF (never includes internal cost or margin)', permission: 'quotes.view', binary: 'application/pdf' }),
   r({ method: 'POST', path: '/quotes', operationId: 'createQuote', tag: 'Commercial', summary: 'Create draft quote', permission: 'quotes.create', body: S.CreateQuoteBody, status: 201 }),
   r({ method: 'POST', path: '/quotes/:id/approve', operationId: 'approveQuote', tag: 'Commercial', summary: 'Approve quote (not by its author)', permission: 'quotes.approve', idempotent: true, ifMatch: true }),
   r({ method: 'POST', path: '/quotes/:id/accept', operationId: 'acceptQuote', tag: 'Commercial', summary: 'Accept quote → opens job', permission: 'quotes.accept', idempotent: true, ifMatch: true, body: S.AcceptQuoteBody }),
@@ -57,6 +59,7 @@ export const ROUTE_TABLE = [
   r({ method: 'POST', path: '/invoices/:id/post', operationId: 'postInvoice', tag: 'Finance', summary: 'Post invoice: one transaction, balanced journal, number allocation', permission: 'invoices.post', idempotent: true, ifMatch: true, body: S.PostInvoiceBody }),
   r({ method: 'GET', path: '/invoices', operationId: 'listInvoices', tag: 'Finance', summary: 'List invoices', permission: 'invoices.view' }),
   r({ method: 'GET', path: '/invoices/:id', operationId: 'getInvoice', tag: 'Finance', summary: 'Invoice with lines, tax and settlement', permission: 'invoices.view' }),
+  r({ method: 'GET', path: '/invoices/:id/pdf', operationId: 'getInvoicePdf', tag: 'Finance', summary: 'Invoice as a branded PDF (customers: posted invoices of their own company)', permission: 'invoices.view', binary: 'application/pdf' }),
   r({ method: 'POST', path: '/supplier-bills', operationId: 'recordSupplierBill', tag: 'Finance', summary: 'Record supplier bill; clears accrual; duplicate detection', permission: 'bills.record', idempotent: true, body: S.SupplierBillBody, status: 201 }),
   r({ method: 'POST', path: '/payments', operationId: 'recordPayment', tag: 'Finance', summary: 'Record customer receipt', permission: 'payments.record', body: S.PaymentBody, status: 201 }),
   r({ method: 'POST', path: '/payments/:id/allocate', operationId: 'allocatePayment', tag: 'Finance', summary: 'Allocate payment to invoice (never beyond available)', permission: 'payments.allocate', idempotent: true, body: S.AllocatePaymentBody }),
@@ -66,6 +69,8 @@ export const ROUTE_TABLE = [
   r({ method: 'POST', path: '/approval-requests/:id/reject', operationId: 'rejectRequest', tag: 'Collaboration', summary: 'Reject', permission: 'approvals.decide', body: S.DecideBody }),
   r({ method: 'POST', path: '/device/commands', operationId: 'syncDeviceCommands', tag: 'Mobile', summary: 'Offline command sync — one effect per commandId', permission: 'transport.pod.capture', body: S.DeviceCommandBatchBody }),
   r({ method: 'POST', path: '/webhooks/:provider', operationId: 'receiveWebhook', tag: 'Integrations', summary: 'Signed provider webhook; dedupes by external event id', permission: null, public: true }),
+  r({ method: 'GET', path: '/webhooks/whatsapp/:tenantId', operationId: 'verifyWhatsappWebhook', tag: 'Integrations', summary: 'WhatsApp Cloud API webhook verification handshake', permission: null, public: true }),
+  r({ method: 'POST', path: '/webhooks/whatsapp/:tenantId', operationId: 'receiveWhatsappWebhook', tag: 'Integrations', summary: 'WhatsApp Cloud API delivery statuses and inbound messages (X-Hub-Signature-256)', permission: null, public: true, status: 202 }),
   r({ method: 'POST', path: '/workflows', operationId: 'createWorkflow', tag: 'Automation', summary: 'Create workflow definition (draft)', permission: 'automation.manage', body: WorkflowBody, status: 201 }),
   r({ method: 'POST', path: '/workflows/:id/activate', operationId: 'activateWorkflow', tag: 'Automation', summary: 'Activate workflow version', permission: 'automation.manage' }),
   r({ method: 'POST', path: '/workflows/:id/retire', operationId: 'retireWorkflow', tag: 'Automation', summary: 'Retire an active workflow version (running instances finish)', permission: 'automation.manage' }),
@@ -73,14 +78,19 @@ export const ROUTE_TABLE = [
   r({ method: 'GET', path: '/reports/owner-overview', operationId: 'getOwnerOverview', tag: 'Intelligence', summary: 'Owner overview KPIs (live, drill-down ready)', permission: 'reports.owner.view' }),
   // ---- breadth release: remaining staff areas ----
   r({ method: 'GET', path: '/parties/:id', operationId: 'getParty', tag: 'Parties', summary: 'Party 360: roles, bank details, open work', permission: 'parties.view' }),
+  r({ method: 'POST', path: '/parties/:id', operationId: 'updateParty', tag: 'Parties', summary: 'Update a party profile (trading name, TRN, country, address)', permission: 'parties.create', body: S.UpdatePartyBody }),
+  r({ method: 'POST', path: '/parties/:id/contacts', operationId: 'addContact', tag: 'Parties', summary: 'Add a contact with consent flags for email / WhatsApp', permission: 'parties.create', body: S.AddContactBody, status: 201 }),
+  r({ method: 'POST', path: '/contacts/:id', operationId: 'updateContact', tag: 'Parties', summary: 'Update contact details and consent', permission: 'parties.create', body: S.UpdateContactBody }),
   r({ method: 'GET', path: '/bank-detail-changes', operationId: 'listBankChanges', tag: 'Parties', summary: 'Bank-detail change requests', permission: 'bank-details.change.propose' }),
   r({ method: 'GET', path: '/shipments', operationId: 'listShipments', tag: 'Logistics', summary: 'Shipments (optionally by job)', permission: 'shipments.view', query: S.JobQuery }),
   r({ method: 'GET', path: '/shipments/:id', operationId: 'getShipment', tag: 'Logistics', summary: 'Shipment with legs, cargo, bookings', permission: 'shipments.view' }),
+  r({ method: 'GET', path: '/shipments/:id/report', operationId: 'getShipmentReportPdf', tag: 'Logistics', summary: 'Shipment status report as a branded PDF', permission: 'shipments.view', binary: 'application/pdf' }),
   r({ method: 'GET', path: '/trips', operationId: 'listTrips', tag: 'Transport', summary: 'Trips with stops and POD state', permission: 'transport.view' }),
   r({ method: 'POST', path: '/trips', operationId: 'createTrip', tag: 'Transport', summary: 'Plan a trip', permission: 'transport.dispatch', body: S.CreateTripBody, status: 201 }),
   r({ method: 'POST', path: '/trips/:id/dispatch', operationId: 'dispatchTrip', tag: 'Transport', summary: 'Dispatch trip (driver must hold a valid driving qualification)', permission: 'transport.dispatch', idempotent: true }),
   r({ method: 'GET', path: '/customs-cases', operationId: 'listCustomsCases', tag: 'Trade', summary: 'Customs cases: authority vs internal status', permission: 'customs.view' }),
   r({ method: 'GET', path: '/documents', operationId: 'listDocuments', tag: 'Documents', summary: 'Document library', permission: 'documents.view', query: S.DocumentQuery }),
+  r({ method: 'GET', path: '/documents/:id/extraction', operationId: 'getDocumentExtraction', tag: 'Documents', summary: 'Text and fields extracted from the latest version (OCR / text layer); staff only', permission: 'documents.approve' }),
   r({ method: 'GET', path: '/documents/:id/download-url', operationId: 'getDocumentDownloadUrl', tag: 'Documents', summary: 'Short-lived signed download URL (clean documents only)', permission: 'documents.view' }),
   r({ method: 'GET', path: '/tasks', operationId: 'listTasks', tag: 'Collaboration', summary: 'Tasks', permission: 'tasks.view', query: S.RelatedQuery }),
   r({ method: 'POST', path: '/tasks', operationId: 'createTask', tag: 'Collaboration', summary: 'Create task', permission: 'tasks.manage', body: S.CreateTaskBody, status: 201 }),
@@ -114,6 +124,9 @@ export const ROUTE_TABLE = [
   r({ method: 'POST', path: '/workflow-runs/:id/cancel', operationId: 'cancelWorkflowRun', tag: 'Automation', summary: 'Cancel a running, waiting or failed run', permission: 'automation.manage' }),
   r({ method: 'POST', path: '/workflow-runs/:id/retry', operationId: 'retryWorkflowRun', tag: 'Automation', summary: 'Retry a failed run from its last durable step', permission: 'automation.manage' }),
   r({ method: 'GET', path: '/integrations', operationId: 'listIntegrations', tag: 'Integrations', summary: 'Connections and health (no secrets)', permission: 'integrations.manage' }),
+  r({ method: 'GET', path: '/outbound-messages', operationId: 'listOutboundMessages', tag: 'Integrations', summary: 'Email and WhatsApp delivery log', permission: 'integrations.manage', query: S.OutboundQuery }),
+  r({ method: 'POST', path: '/outbound-messages/:id/retry', operationId: 'retryOutboundMessage', tag: 'Integrations', summary: 'Re-queue a failed message', permission: 'integrations.manage' }),
+  r({ method: 'POST', path: '/outbound-messages/:id/cancel', operationId: 'cancelOutboundMessage', tag: 'Integrations', summary: 'Cancel a queued message', permission: 'integrations.manage' }),
   r({ method: 'GET', path: '/admin/members', operationId: 'listMembers', tag: 'Administration', summary: 'Tenant members and roles', permission: 'admin.tenant' }),
   r({ method: 'POST', path: '/admin/members', operationId: 'addMember', tag: 'Administration', summary: 'Add member with a role template', permission: 'admin.tenant', body: S.AddMemberBody, status: 201 }),
   r({ method: 'GET', path: '/admin/roles', operationId: 'listRoles', tag: 'Administration', summary: 'Roles and their permissions', permission: 'admin.tenant' }),

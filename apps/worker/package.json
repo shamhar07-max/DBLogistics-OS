@@ -3,7 +3,26 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "tsx watch src/main.ts", "start": "node dist/main.js", "build": "tsup", "typecheck": "tsc --noEmit -p .", "test": "vitest run" },
-  "dependencies": { "@dbl/contracts": "*", "bullmq": "^5.34.0", "ioredis": "^5.4.2", "pg": "^8.13.1" },
-  "devDependencies": { "tsup": "^8.3.5" }
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@dbl/contracts": "*",
+    "bullmq": "^5.34.0",
+    "ioredis": "^5.4.2",
+    "nodemailer": "^10.0.14",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/mailparser": "^3.9.0",
+    "@types/nodemailer": "^8.0.2",
+    "@types/smtp-server": "^3.5.13",
+    "mailparser": "^3.9.35",
+    "smtp-server": "^3.19.17",
+    "tsup": "^8.3.5"
+  }
 }

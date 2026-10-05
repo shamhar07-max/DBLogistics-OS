@@ -68,7 +68,9 @@ export function createGateway(env: Env, f: typeof fetch = fetch) {
       for (const k of ['content-type', 'idempotency-key', 'if-match', 'accept']) { const v = req.headers.get(k); if (v) h.set(k, v); }
       const url = new URL(req.url);
       const up = await f(`${apiUrl}${path}${url.search}`, { method: req.method, headers: h, body: req.method === 'GET' || req.method === 'HEAD' ? undefined : await req.text() });
-      return new Response(await up.text(), { status: up.status, headers: { 'Content-Type': up.headers.get('content-type') ?? 'application/json', 'X-Request-Id': up.headers.get('x-request-id') ?? '' } });
+      const headers: Record<string, string> = { 'Content-Type': up.headers.get('content-type') ?? 'application/json', 'X-Request-Id': up.headers.get('x-request-id') ?? '' };
+      const cd = up.headers.get('content-disposition'); if (cd) headers['Content-Disposition'] = cd;
+      return new Response(await up.arrayBuffer(), { status: up.status, headers });          // bytes, not text: PDFs and other binaries pass through intact
     },
     /** Safe, non-secret view for the browser: who am I, which tenant, CSRF token. */
     async whoami(req: Request) { const s = await getSession(req); return s ? json(200, { user: s.user, tenantId: s.tenantId, workspace: s.workspace, csrf: s.csrf }) : json(401, { code: 'UNAUTHENTICATED', message: 'Sign in required.' }); },

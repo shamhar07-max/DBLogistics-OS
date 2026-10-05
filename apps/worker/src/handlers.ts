@@ -1,6 +1,7 @@
 import type pg from 'pg';
 import { conditionsHold, renderTemplate, WORKFLOW_LIMITS, type WorkflowEventContext } from '@dbl/contracts';
 import { inTenant, type Q } from './db';
+import { notifyCustomer } from './notify/queue';
 
 export interface DomainEvent { id: string; tenantId: string; topic: string; aggregateType: string; aggregateId: string; payload: Record<string, any>; correlationId?: string }
 const SYSTEM = '00000000-0000-0000-0000-000000000000';
@@ -18,6 +19,10 @@ const task = (q: Q, e: DomainEvent, title: string, dueInHours?: number) => q.q(`
 export async function builtIns(q: Q, e: DomainEvent) {
   if (e.topic === 'DeliveryCompleted' && (await once(q, e.tenantId, 'billing-readiness', e.id))) { await task(q, e, 'Delivery completed — verify POD and prepare customer invoice'); await audit(q, e, 'automation.billing_readiness', { jobId: e.payload.jobId }); }
   if (e.topic === 'QuoteAccepted' && (await once(q, e.tenantId, 'job-handover', e.id))) { await task(q, e, 'Quote accepted — create operational plan and book carrier'); }
+  if (e.topic === 'MessagePosted' && (await once(q, e.tenantId, 'message-posted', e.id))) {
+    if (e.payload.direction === 'inbound') await task(q, e, `Customer message — reply in the conversation: “${String(e.payload.excerpt ?? '').slice(0, 80)}”`, 24);      // staff are told, never left to discover it
+    else await notifyCustomer(q, { tenantId: e.tenantId, aggregateType: e.aggregateType, aggregateId: e.aggregateId, template: 'message_reply', vars: { excerpt: String(e.payload.excerpt ?? '') }, dedupeKey: `msg:${e.id}` });
+  }
   if (e.topic === 'SupplierBillPosted' && Number(e.payload.variance) !== 0 && (await once(q, e.tenantId, 'bill-variance', e.id))) { await task(q, e, `Supplier bill variance ${e.payload.variance} — review recovery from customer`); }
 }
 
@@ -59,7 +64,15 @@ export async function advanceRun(pool: pg.Pool, runId: string, tenantId: string)
           await q.q(`UPDATE automation.workflow_runs SET status='waiting', resume_at = now() + ($2 || ' seconds')::interval, heartbeat_at=now(), last_error=NULL, state = jsonb_set(state, '{index}', to_jsonb($3::int)), log = log || $4::jsonb WHERE id=$1`, [runId, String(seconds), i + 1, JSON.stringify(log)]); return;
         }
         if (a.type === 'create_task') { const title = renderTemplate(String(a.title ?? ''), ctx).trim() || 'Workflow task'; await task(q, ev, title, a.dueInHours); log.push({ at: at(), index: i, type: a.type, note: `Task created: ${title}` }); }
-        else if (a.type === 'notify') { await audit(q, ev, 'automation.notify', { channel: a.channel, template: a.template }); log.push({ at: at(), index: i, type: a.type, note: `Notification queued (${a.channel}/${a.template})` }); }   // channel adapters plug in here
+        else if (a.type === 'notify') {
+          await audit(q, ev, 'automation.notify', { channel: a.channel, template: a.template });
+          if (a.channel === 'internal') log.push({ at: at(), index: i, type: a.type, note: `Internal notification recorded (${a.template})` });
+          else {                                                           // real delivery: queued per eligible contact, sent by the sender loop with retries
+            const vars: Record<string, string> = {}; for (const [k, val] of Object.entries(ctx.payload)) if (['string', 'number', 'boolean'].includes(typeof val)) vars[k] = String(val); if (ctx.payload.code) vars.milestone = String(ctx.payload.code).replace(/_/g, ' ');
+            const r = await notifyCustomer(q, { tenantId, aggregateType: ctx.aggregateType, aggregateId: ctx.aggregateId, template: a.template, channel: a.channel, vars, dedupeKey: `wf:${runId}:${i}` });
+            log.push({ at: at(), index: i, type: a.type, note: r.queued ? `${r.queued} ${a.channel} message(s) queued (${a.template})` : `No ${a.channel} message queued — no contact with ${a.channel === 'whatsapp' ? 'WhatsApp opt-in and a phone number' : 'an email address that has not opted out'}` });
+          }
+        }
         else throw new Error(`Unknown action type "${a.type}" at step ${i + 1}`);                  // never silently skip a step
         i++;
       }
@@ -90,6 +103,20 @@ export async function normalizeInbox(pool: pg.Pool, e: DomainEvent) {
       const s = (await q.q(`SELECT id FROM logistics.shipments WHERE ref=$1`, [p.shipmentRef]))[0];
       if (s) { await q.q(`INSERT INTO logistics.tracking_events(tenant_id, shipment_id, code, event_time, source, is_actual, external_event_id, detail) VALUES ($1,$2,$3,$4,'carrier',$5,$6,$7::jsonb) ON CONFLICT DO NOTHING`, [e.tenantId, s.id, p.code, p.occurredAt ?? ev.received_at, p.actual !== false, `${ev.provider}:${ev.external_event_id}`, JSON.stringify({ inboxEventId: ev.id })]); await q.q(`UPDATE integ.inbox_events SET status='processed', processed_at=now() WHERE id=$1`, [ev.id]); return; }
       await q.q(`UPDATE integ.inbox_events SET status='failed', error='shipment not found', processed_at=now() WHERE id=$1`, [ev.id]); return;
+    }
+    if (ev.event_type === 'whatsapp.status') {                         // delivery receipts: never move a message backwards (read > delivered > sent)
+      const rank = `CASE status WHEN 'queued' THEN 0 WHEN 'sending' THEN 0 WHEN 'sent' THEN 1 WHEN 'delivered' THEN 2 WHEN 'read' THEN 3 ELSE -1 END`;
+      if (p.status === 'failed') await q.q(`UPDATE integ.outbound_messages SET status='failed', last_error=$2 WHERE provider='whatsapp' AND provider_message_id=$1 AND status IN ('sent','sending','queued')`, [p.messageId, String(p.error ?? 'WhatsApp reported the message as failed').slice(0, 500)]);
+      else if (['delivered', 'read'].includes(p.status)) await q.q(`UPDATE integ.outbound_messages SET status=$2, delivered_at = COALESCE(delivered_at, now()) WHERE provider='whatsapp' AND provider_message_id=$1 AND ${rank} < (CASE $2::text WHEN 'delivered' THEN 2 ELSE 3 END)`, [p.messageId, p.status]);
+      await q.q(`UPDATE integ.inbox_events SET status='processed', processed_at=now() WHERE id=$1`, [ev.id]); return;
+    }
+    if (ev.event_type === 'whatsapp.message') {                        // a customer wrote to us on WhatsApp: file it on the party, tell staff
+      const digits = String(p.from ?? '').replace(/\D/g, '');
+      const c = digits ? (await q.q(`SELECT c.id, c.name, c.party_id FROM parties.contacts c WHERE regexp_replace(coalesce(c.phone,''), '\\D', '', 'g') = $1 LIMIT 1`, [digits]))[0] : null;
+      if (!c) { await q.q(`UPDATE integ.inbox_events SET status='ignored', error='unknown sender', processed_at=now() WHERE id=$1`, [ev.id]); return; }
+      await q.q(`INSERT INTO collab.messages(tenant_id, related_type, related_id, channel, direction, body, author_user_id, visibility) VALUES ($1,'party',$2,'whatsapp','inbound',$3,$4,'internal')`, [e.tenantId, c.party_id, String(p.text ?? '[non-text message]').slice(0, 4000), SYSTEM]);
+      await q.q(`INSERT INTO collab.tasks(tenant_id, title, related_type, related_id, origin, due_at) VALUES ($1,$2,'party',$3,'automation', now() + interval '4 hours')`, [e.tenantId, `WhatsApp from ${c.name}: “${String(p.text ?? '').slice(0, 80)}”`, c.party_id]);
+      await q.q(`UPDATE integ.inbox_events SET status='processed', processed_at=now() WHERE id=$1`, [ev.id]); return;
     }
     await q.q(`UPDATE integ.inbox_events SET status='ignored', processed_at=now() WHERE id=$1`, [ev.id]);
   });

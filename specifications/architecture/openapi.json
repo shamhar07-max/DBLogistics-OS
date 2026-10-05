@@ -199,6 +199,118 @@
         }
       }
     },
+    "/api/v1/legal-entities/{id}": {
+      "post": {
+        "operationId": "updateLegalEntity",
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Update the issuer profile printed on documents (address, contacts, bank details)",
+        "description": "Permission: admin.tenant",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2
+                  },
+                  "tradeLicense": {
+                    "type": "string",
+                    "maxLength": 60
+                  },
+                  "taxRegistrationNumber": {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  "address": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  "website": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "bankName": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "bankAccountName": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "bankIban": {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  "bankSwift": {
+                    "type": "string",
+                    "maxLength": 20
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/facilities": {
       "get": {
         "operationId": "listFacilities",
@@ -1157,6 +1269,71 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotes/{id}/pdf": {
+      "get": {
+        "operationId": "getQuotePdf",
+        "tags": [
+          "Commercial"
+        ],
+        "summary": "Quotation as a branded PDF (never includes internal cost or margin)",
+        "description": "Permission: quotes.view",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Binary document",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
           },
           "4XX": {
             "description": "Error",
@@ -3733,6 +3910,71 @@
         }
       }
     },
+    "/api/v1/invoices/{id}/pdf": {
+      "get": {
+        "operationId": "getInvoicePdf",
+        "tags": [
+          "Finance"
+        ],
+        "summary": "Invoice as a branded PDF (customers: posted invoices of their own company)",
+        "description": "Permission: invoices.view",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Binary document",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/supplier-bills": {
       "post": {
         "operationId": "recordSupplierBill",
@@ -4475,6 +4717,92 @@
         }
       }
     },
+    "/api/v1/webhooks/whatsapp/{tenantId}": {
+      "get": {
+        "operationId": "verifyWhatsappWebhook",
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "WhatsApp Cloud API webhook verification handshake",
+        "description": "Permission: public (signature verified)",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "tenantId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "receiveWhatsappWebhook",
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "WhatsApp Cloud API delivery statuses and inbound messages (X-Hub-Signature-256)",
+        "description": "Permission: public (signature verified)",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "tenantId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/workflows": {
       "post": {
         "operationId": "createWorkflow",
@@ -4537,7 +4865,8 @@
                       "IncidentResolved",
                       "HoldReleased",
                       "TripDispatched",
-                      "QualificationExpiring"
+                      "QualificationExpiring",
+                      "MessagePosted"
                     ]
                   },
                   "description": {
@@ -4641,6 +4970,13 @@
                                   "type": "string",
                                   "minLength": 2,
                                   "maxLength": 100
+                                },
+                                "recipient": {
+                                  "type": "string",
+                                  "enum": [
+                                    "customer"
+                                  ],
+                                  "default": "customer"
                                 }
                               },
                               "required": [
@@ -5030,6 +5366,270 @@
             }
           }
         }
+      },
+      "post": {
+        "operationId": "updateParty",
+        "tags": [
+          "Parties"
+        ],
+        "summary": "Update a party profile (trading name, TRN, country, address)",
+        "description": "Permission: parties.create",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tradingName": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "taxRegistrationNumber": {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  "country": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2
+                  },
+                  "address": {
+                    "type": "string",
+                    "maxLength": 300
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/parties/{id}/contacts": {
+      "post": {
+        "operationId": "addContact",
+        "tags": [
+          "Parties"
+        ],
+        "summary": "Add a contact with consent flags for email / WhatsApp",
+        "description": "Permission: parties.create",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "pattern": "^\\+[1-9]\\d{6,14}$"
+                  },
+                  "preferredChannel": {
+                    "type": "string",
+                    "enum": [
+                      "email",
+                      "whatsapp"
+                    ]
+                  },
+                  "whatsappOptIn": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "emailOptOut": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/contacts/{id}": {
+      "post": {
+        "operationId": "updateContact",
+        "tags": [
+          "Parties"
+        ],
+        "summary": "Update contact details and consent",
+        "description": "Permission: parties.create",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "whatsappOptIn": {
+                    "type": "boolean"
+                  },
+                  "emailOptOut": {
+                    "type": "boolean"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "pattern": "^\\+[1-9]\\d{6,14}$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/bank-detail-changes": {
@@ -5116,6 +5716,71 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipments/{id}/report": {
+      "get": {
+        "operationId": "getShipmentReportPdf",
+        "tags": [
+          "Logistics"
+        ],
+        "summary": "Shipment status report as a branded PDF",
+        "description": "Permission: shipments.view",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Binary document",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
           },
           "4XX": {
             "description": "Error",
@@ -5311,6 +5976,63 @@
             },
             "required": true,
             "name": "Idempotency-Key",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{id}/extraction": {
+      "get": {
+        "operationId": "getDocumentExtraction",
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Text and fields extracted from the latest version (OCR / text layer); staff only",
+        "description": "Permission: documents.approve",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
             "in": "header"
           }
         ],
@@ -5708,7 +6430,8 @@
                       "internal",
                       "email",
                       "whatsapp",
-                      "call"
+                      "call",
+                      "portal"
                     ],
                     "default": "internal"
                   },
@@ -5725,6 +6448,10 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 4000
+                  },
+                  "shared": {
+                    "type": "boolean",
+                    "default": false
                   }
                 },
                 "required": [
@@ -7050,6 +7777,190 @@
           }
         ],
         "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/outbound-messages": {
+      "get": {
+        "operationId": "listOutboundMessages",
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "Email and WhatsApp delivery log",
+        "description": "Permission: integrations.manage",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "queued",
+                "sending",
+                "sent",
+                "delivered",
+                "read",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "email",
+                "whatsapp"
+              ]
+            },
+            "required": false,
+            "name": "channel",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/outbound-messages/{id}/retry": {
+      "post": {
+        "operationId": "retryOutboundMessage",
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "Re-queue a failed message",
+        "description": "Permission: integrations.manage",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "X-Tenant-Id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "4XX": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/outbound-messages/{id}/cancel": {
+      "post": {
+        "operationId": "cancelOutboundMessage",
+        "tags": [
+          "Integrations"
+        ],
+        "summary": "Cancel a queued message",
+        "description": "Permission: integrations.manage",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
           {
             "schema": {
               "type": "string",

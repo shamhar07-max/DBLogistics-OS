@@ -13,7 +13,7 @@ export const Page = z.object({ limit: z.coerce.number().int().min(1).max(200).de
 // ---- Parties
 export const CreatePartyBody = z.object({
   legalName: z.string().min(1), tradingName: z.string().optional(), taxRegistrationNumber: z.string().optional(),
-  country: z.string().length(2).optional(), roles: z.array(PartyRole).min(1),
+  country: z.string().length(2).optional(), address: z.string().max(300).optional(), roles: z.array(PartyRole).min(1),
 });
 export const BankChangeBody = z.object({ accountName: z.string().min(1), iban: z.string().min(8), swift: z.string().optional(), currency: CurrencyCode });
 export const ApproveBankChangeBody = z.object({ callbackVerified: z.literal(true) });
@@ -104,7 +104,14 @@ export const CreateTripBody = z.object({
 });
 // ---- Collaboration
 export const CreateTaskBody = z.object({ title: z.string().min(3), relatedType: z.string().optional(), relatedId: Uuid.optional(), assigneeUserId: Uuid.optional(), dueAt: IsoDateTime.optional() });
-export const PostMessageBody = z.object({ relatedType: z.string(), relatedId: Uuid, channel: z.enum(['internal', 'email', 'whatsapp', 'call']).default('internal'), direction: z.enum(['inbound', 'outbound', 'internal']).default('internal'), body: z.string().min(1).max(4000) });
+export const PostMessageBody = z.object({ relatedType: z.string(), relatedId: Uuid, channel: z.enum(['internal', 'email', 'whatsapp', 'call', 'portal']).default('internal'), direction: z.enum(['inbound', 'outbound', 'internal']).default('internal'), body: z.string().min(1).max(4000),
+  shared: z.boolean().default(false) });           // staff: true = visible to the customer (and notifies them); portal users are always shared + inbound
+export const UpdateLegalEntityBody = z.object({ name: z.string().min(2).optional(), tradeLicense: z.string().max(60).optional(), taxRegistrationNumber: z.string().max(40).optional(), address: z.string().max(300).optional(), email: z.string().email().optional(), phone: z.string().max(40).optional(), website: z.string().max(120).optional(),
+  bankName: z.string().max(120).optional(), bankAccountName: z.string().max(120).optional(), bankIban: z.string().max(40).optional(), bankSwift: z.string().max(20).optional() });
+export const UpdatePartyBody = z.object({ tradingName: z.string().max(120).optional(), taxRegistrationNumber: z.string().max(40).optional(), country: z.string().length(2).optional(), address: z.string().max(300).optional() });
+export const AddContactBody = z.object({ name: z.string().min(2).max(120), email: z.string().email().optional(), phone: z.string().regex(/^\+[1-9]\d{6,14}$/, 'International format, e.g. +971501234567').optional(), preferredChannel: z.enum(['email', 'whatsapp']).optional(), whatsappOptIn: z.boolean().default(false), emailOptOut: z.boolean().default(false) });
+export const UpdateContactBody = z.object({ whatsappOptIn: z.boolean().optional(), emailOptOut: z.boolean().optional(), phone: z.string().regex(/^\+[1-9]\d{6,14}$/).optional(), email: z.string().email().optional() });
+export const OutboundQuery = z.object({ status: z.enum(['queued', 'sending', 'sent', 'delivered', 'read', 'failed', 'cancelled']).optional(), channel: z.enum(['email', 'whatsapp']).optional() });
 // ---- People & assets
 export const CreateEmployeeBody = z.object({ legalEntityId: Uuid, fullName: z.string().min(2), jobTitle: z.string().optional(), department: z.string().optional(), hiredOn: IsoDate.optional() });
 export const AddQualificationBody = z.object({ kind: z.enum(['forklift', 'dg_handling', 'driving', 'customs_broker', 'first_aid', 'reefer_handling']), reference: z.string().optional(), issuedOn: IsoDate, validTo: IsoDate });

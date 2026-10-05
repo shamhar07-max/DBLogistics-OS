@@ -119,3 +119,63 @@ describe('transporter portal scoping', () => {
     expect((await tr.get('/jobs')).status).toBe(403);
   });
 });
+
+import { execFileSync, spawnSync } from 'node:child_process';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+const havePdftotext = spawnSync('pdftotext', ['-v']).status !== null;
+const pdfText = (b: Buffer) => { const f = join(mkdtempSync(join(tmpdir(), 'api-pdf-')), 'x.pdf'); writeFileSync(f, b); return execFileSync('pdftotext', ['-layout', f, '-']).toString(); };
+
+describe('branded PDF documents', () => {
+  it('invoice PDF: customers get only their own posted invoices; staff can print drafts (watermarked); content carries issuer profile, TRNs, lines and totals', async () => {
+    const mine = await openJob(w); const theirs = await openJob(w); const cust = await ext('customer', 'customer_portal', mine.customer); const other = await ext('customer', 'customer_portal', theirs.customer);
+    await w.owner.post(`/legal-entities/${w.a.legalEntityId}`, { address: 'Warehouse 14, Jebel Ali Free Zone', email: 'accounts@demo.ae', taxRegistrationNumber: '100234567800003', bankIban: 'AE070331234567890123456', bankName: 'Emirates NBD' });
+    await w.owner.post(`/parties/${mine.customer}`, { address: 'Dubai Silicon Oasis', taxRegistrationNumber: '100998877600003' });
+    const acct = await w.member(w.a.tenantId, `ac${u()}`, ['accountant']); const fin = await w.member(w.a.tenantId, `fm${u()}`, ['finance_manager']);
+    const inv = await acct.post('/invoices', { jobId: mine.jobId }); expect(inv.status).toBe(201);
+    expect((await cust.getBinary(`/invoices/${inv.body.id}/pdf`)).status).toBe(404);                                                    // draft is internal
+    const draft = await acct.getBinary(`/invoices/${inv.body.id}/pdf`); expect(draft.status).toBe(200); expect(draft.headers['content-type']).toBe('application/pdf'); expect(draft.buffer.subarray(0, 5).toString()).toBe('%PDF-');
+    await fin.cmd(`/invoices/${inv.body.id}/approve`); await fin.cmd(`/invoices/${inv.body.id}/post`, { postingDate: new Date().toISOString().slice(0, 10) });
+    const pdf = await cust.getBinary(`/invoices/${inv.body.id}/pdf`); expect(pdf.status).toBe(200); expect(pdf.headers['content-disposition']).toMatch(/inline; filename="INV-/); expect(pdf.headers['cache-control']).toContain('no-store');
+    expect((await other.getBinary(`/invoices/${inv.body.id}/pdf`)).status).toBe(404);
+    if (havePdftotext) { const t = pdfText(pdf.buffer); for (const s of ['TAX INVOICE', 'TRN 100234567800003', 'TRN 100998877600003', 'Warehouse 14, Jebel Ali Free Zone', 'Dubai Silicon Oasis', 'AE070331234567890123456', 'Page 1 of 1', 'Road freight']) expect(t, s).toContain(s); expect(t).not.toContain('DRAFT'); expect(pdfText(draft.buffer)).toContain('NOT A TAX INVOICE'); }
+  });
+  it('quotation PDF never contains internal cost or margin and is hidden while a quote is a draft; shipment report hides the customer from agents', async () => {
+    const sales = await w.member(w.a.tenantId, `s${u()}`, ['sales']); const pricing = await w.member(w.a.tenantId, `p${u()}`, ['pricing']);
+    const customer = await makeParty(w.owner, `Cust ${u()}`, ['customer']); const cust = await ext('customer', 'customer_portal', customer);
+    const q = await sales.post('/quotes', { legalEntityId: w.a.legalEntityId, customerPartyId: customer, currency: 'AED', validUntil: '2099-01-01', mode: 'road', origin: 'Dubai', destination: 'Muscat', lines: [{ description: 'Road freight', chargeType: 'fixed', quantity: '1', unitPrice: '900.00', expectedUnitCost: '612.34', taxCode: 'SR5' }] });
+    expect((await cust.getBinary(`/quotes/${q.body.id}/pdf`)).status).toBe(404);
+    const staffDraft = await sales.getBinary(`/quotes/${q.body.id}/pdf`); expect(staffDraft.status).toBe(200);
+    await pricing.cmd(`/quotes/${q.body.id}/approve`); const pdf = await cust.getBinary(`/quotes/${q.body.id}/pdf`); expect(pdf.status).toBe(200);
+    expect(pdf.buffer.toString('latin1')).not.toContain('612.34');
+    if (havePdftotext) { const t = pdfText(pdf.buffer); expect(t).toContain('QUOTATION'); expect(t).toContain('Muscat'); expect(t).toContain('945.00'); expect(t).not.toContain('612.34'); expect(t).not.toContain('Margin'); }
+    const j = await openJob(w); const agentParty = await makeParty(w.owner, `Agent ${u()}`, ['agent']); const sh = await shipment(j.jobId, j.customer, agentParty); const agent = await ext('agent', 'agent_portal', agentParty);
+    const rep = await agent.getBinary(`/shipments/${sh.id}/report`); expect(rep.status).toBe(200);
+    if (havePdftotext) { const t = pdfText(rep.buffer); expect(t).toContain('SHIPMENT STATUS REPORT'); expect(t).not.toContain('Customer'); }
+    const stranger = await ext('agent', 'agent_portal', await makeParty(w.owner, `Agent ${u()}`, ['agent'])); expect((await stranger.getBinary(`/shipments/${sh.id}/report`)).status).toBe(404);
+    const custRep = await (await ext('customer', 'customer_portal', j.customer)).getBinary(`/shipments/${sh.id}/report`); expect(custRep.status).toBe(200);
+  });
+});
+
+describe('customer messaging', () => {
+  it('customers converse on their own records; staff choose what is shared; internal notes never leak; other customers and non-customers are refused; rate limit applies', async () => {
+    const mine = await openJob(w); const theirs = await openJob(w); const cust = await ext('customer', 'customer_portal', mine.customer); const other = await ext('customer', 'customer_portal', theirs.customer);
+    const sMine = await shipment(mine.jobId, mine.customer); const ops = sMine.ops;
+    expect((await cust.post('/messages', { relatedType: 'shipment', relatedId: sMine.id, body: 'Can you deliver after 14:00?', channel: 'internal', direction: 'internal' })).status).toBe(201);
+    const row = (await w.su.query(`SELECT channel, direction, visibility FROM collab.messages WHERE related_id=$1`, [sMine.id])).rows[0]; expect(row).toEqual({ channel: 'portal', direction: 'inbound', visibility: 'shared' });                      // forced by the server
+    expect((await ops.post('/messages', { relatedType: 'shipment', relatedId: sMine.id, body: 'INTERNAL: customer is a slow payer', channel: 'internal', direction: 'internal' })).status).toBe(201);
+    const reply = await ops.post('/messages', { relatedType: 'shipment', relatedId: sMine.id, body: 'Yes — we will book the 14:30 slot.', shared: true }); expect(reply.status).toBe(201);
+    const seen = (await cust.get(`/messages?relatedType=shipment&relatedId=${sMine.id}`)).body; expect(seen.map((m: any) => m.body)).toEqual(['Yes — we will book the 14:30 slot.', 'Can you deliver after 14:00?']); expect(seen.map((m: any) => m.author)).toEqual(['DigitalBurj team', 'You']);
+    expect(JSON.stringify(seen)).not.toMatch(/slow payer|subject|visibility/);
+    const staff = (await ops.get(`/messages?relatedType=shipment&relatedId=${sMine.id}`)).body; expect(staff).toHaveLength(3); expect(staff.filter((m: any) => m.visibility === 'internal')).toHaveLength(1);
+    expect((await w.su.query(`SELECT count(*)::int n FROM platform.outbox WHERE topic='MessagePosted' AND aggregate_id=$1`, [sMine.id])).rows[0].n).toBe(2);                                // both shared messages notify; the internal note does not
+    expect((await other.get(`/messages?relatedType=shipment&relatedId=${sMine.id}`)).status).toBe(404); expect((await other.post('/messages', { relatedType: 'shipment', relatedId: sMine.id, body: 'hello' })).status).toBe(404);
+    expect((await cust.post('/messages', { relatedType: 'party', relatedId: mine.customer, body: 'x' })).status).toBe(404); expect((await cust.get('/messages')).status).toBe(404);
+    expect((await ops.post('/messages', { relatedType: 'party', relatedId: mine.customer, body: 'x1', shared: true })).status).toBe(422);                                              // only customer-visible records can be shared
+    const agentParty = await makeParty(w.owner, `Agent ${u()}`, ['agent']); const agent = await ext('agent', 'agent_portal', agentParty); expect((await agent.get(`/messages?relatedType=shipment&relatedId=${sMine.id}`)).status).toBe(403);
+    for (let k = 0; k < 29; k++) await cust.post('/messages', { relatedType: 'shipment', relatedId: sMine.id, body: `spam ${k}` });
+    expect((await cust.post('/messages', { relatedType: 'shipment', relatedId: sMine.id, body: 'one too many' })).body.code).toBe('RATE_LIMITED');
+    await expect(w.su.query(`UPDATE collab.messages SET body='tampered' WHERE related_id=$1`, [sMine.id])).rejects.toThrow();                                                            // append-only
+  });
+});

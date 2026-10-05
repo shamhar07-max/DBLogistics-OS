@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EVENT_TOPICS } from './events';
+import { TEMPLATE_NAMES } from './notifications';
 
 /**
  * Workflow definition language — ONE implementation shared by the API (validation), the worker (execution) and the
@@ -17,13 +18,16 @@ export const WorkflowCondition = z.object({
 
 export const WorkflowAction = z.discriminatedUnion('type', [
   z.object({ type: z.literal('create_task'), title: z.string().min(3).max(WORKFLOW_LIMITS.maxTitle), dueInHours: z.number().int().min(1).max(8760).optional() }),
-  z.object({ type: z.literal('notify'), channel: z.enum(['internal', 'email', 'whatsapp']), template: z.string().min(2).max(100) }),
+  z.object({ type: z.literal('notify'), channel: z.enum(['internal', 'email', 'whatsapp']), template: z.string().min(2).max(100), recipient: z.enum(['customer']).default('customer') }),
   z.object({ type: z.literal('wait'), seconds: z.number().int().min(1).max(WORKFLOW_LIMITS.maxWaitSeconds) }),
 ]);
 export const WorkflowDefinition = z.object({
   conditions: z.array(WorkflowCondition).max(WORKFLOW_LIMITS.maxConditions).default([]),
   actions: z.array(WorkflowAction).min(1, 'Add at least one action').max(WORKFLOW_LIMITS.maxActions),
-}).refine((d) => d.actions[d.actions.length - 1]?.type !== 'wait', { message: 'A workflow cannot end with a wait', path: ['actions'] });
+}).superRefine((d, ctx) => {
+  if (d.actions[d.actions.length - 1]?.type === 'wait') ctx.addIssue({ code: 'custom', message: 'A workflow cannot end with a wait', path: ['actions'] });
+  d.actions.forEach((a, i) => { if (a.type === 'notify' && a.channel !== 'internal' && !(TEMPLATE_NAMES as readonly string[]).includes(a.template)) ctx.addIssue({ code: 'custom', message: 'Email and WhatsApp steps must use a template from the catalogue', path: ['actions', i, 'template'] }); });
+});
 export type WorkflowDefinitionT = z.infer<typeof WorkflowDefinition>;
 export type WorkflowActionT = z.infer<typeof WorkflowAction>;
 export type WorkflowConditionT = z.infer<typeof WorkflowCondition>;

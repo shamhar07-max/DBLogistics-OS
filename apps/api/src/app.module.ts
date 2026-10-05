@@ -17,6 +17,7 @@ import { IntegrationsModule } from './integrations';
 import { PeopleModule } from './people';
 import { QualityModule } from './quality';
 import { AdministrationModule } from './administration';
+import { PrintingModule } from './printing';
 
-@Module({ imports: [PlatformModule, IdentityModule, OrganizationsModule, PartiesModule, DocumentsModule, CollaborationModule, CommercialModule, LogisticsModule, TransportModule, WarehouseModule, TradeModule, FinanceModule, AutomationModule, IntelligenceModule, IntegrationsModule, PeopleModule, QualityModule, AdministrationModule] })
+@Module({ imports: [PlatformModule, IdentityModule, OrganizationsModule, PartiesModule, DocumentsModule, CollaborationModule, CommercialModule, LogisticsModule, TransportModule, WarehouseModule, TradeModule, FinanceModule, AutomationModule, IntelligenceModule, IntegrationsModule, PeopleModule, QualityModule, AdministrationModule, PrintingModule] })
 export class AppModule {}
