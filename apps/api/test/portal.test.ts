@@ -27,7 +27,7 @@ describe('customer portal scoping', () => {
     const cust = await ext('customer', 'customer_portal', mine.customer); const sMine = await shipment(mine.jobId, mine.customer); const sOther = await shipment(theirs.jobId, theirs.customer);
     expect((await cust.get('/shipments')).body.map((x: any) => x.id)).toEqual([sMine.id]);
     expect((await cust.get(`/shipments/${sOther.id}`)).status).toBe(404); expect((await cust.get(`/shipments/${sOther.id}/timeline`)).status).toBe(404);
-    expect((await cust.get(`/shipments/${sMine.id}`)).body.legal_entity_id).toBeUndefined();
+    expect((await cust.get(`/shipments/${sMine.id}`)).body.legal_entity_id).toBeUndefined(); expect((await cust.get(`/shipments/${sMine.id}`)).body.bookings).toEqual([]);
 
     const owner = w.owner; const docMine = await approvedDocument(w, owner, { docType: 'Bill of lading', issuerKind: 'carrier', relatedType: 'shipment', relatedId: sMine.id });
     const docOther = await approvedDocument(w, owner, { docType: 'Bill of lading', issuerKind: 'carrier', relatedType: 'shipment', relatedId: sOther.id });
@@ -53,6 +53,27 @@ describe('customer portal scoping', () => {
     await cleanDoc(w, ok.body.id); expect((await cust.get('/documents')).body.map((d: any) => d.id)).toContain(ok.body.id);                              // uploader sees own, even before approval
     expect((await upload(cust, { relatedType: 'trip', relatedId: randomUUID() })).status).toBe(404);
     const colleague = await ext('customer', 'customer_portal', mine.customer); expect((await colleague.get('/documents')).body.map((d: any) => d.id)).not.toContain(ok.body.id);   // not approved yet
+  });
+});
+
+describe('customer portal: quotes and enquiries', () => {
+  it('customers never see draft quotes or internal columns; they can raise an enquiry for themselves; acceptance evidence is server-set', async () => {
+    const sales = await w.member(w.a.tenantId, `s${u()}`, ['sales']); const pricing = await w.member(w.a.tenantId, `p${u()}`, ['pricing']);
+    const customer = await makeParty(w.owner, `Cust ${u()}`, ['customer']); const cust = await ext('customer', 'customer_portal', customer);
+    const q = await sales.post('/quotes', { legalEntityId: w.a.legalEntityId, customerPartyId: customer, currency: 'AED', validUntil: '2099-01-01', mode: 'road', origin: 'Dubai', destination: 'Muscat', lines: [{ description: 'Road freight', chargeType: 'fixed', quantity: '1', unitPrice: '900.00', expectedUnitCost: '600.00', taxCode: 'SR5' }] });
+    expect((await cust.get('/quotes')).body).toEqual([]); expect((await cust.get(`/quotes/${q.body.id}`)).status).toBe(404);                      // draft is internal
+    await pricing.cmd(`/quotes/${q.body.id}/approve`);
+    expect((await cust.get('/quotes')).body.map((x: any) => x.id)).toEqual([q.body.id]);
+    const det = (await cust.get(`/quotes/${q.body.id}`)).body; expect(Object.keys(det)).not.toEqual(expect.arrayContaining(['approved_by']));
+    for (const k of ['approved_by', 'created_by', 'accepted_by', 'acceptance_evidence', 'legal_entity_id']) expect(det).not.toHaveProperty(k);
+    expect(JSON.stringify(det)).not.toMatch(/expected_unit_cost/);
+    const enq = await cust.post('/enquiries', { mode: 'air', origin: 'Frankfurt', destination: 'Dubai', cargo: { commodity: 'Spare parts' } }); expect(enq.status).toBe(201);
+    const row = (await w.su.query(`SELECT customer_party_id, source FROM commercial.enquiries WHERE id=$1`, [enq.body.id])).rows[0]; expect(row).toEqual({ customer_party_id: customer, source: 'portal' });
+    expect((await cust.get('/enquiries')).body.map((x: any) => x.id)).toEqual([enq.body.id]);
+    expect((await sales.post('/enquiries', { mode: 'air', origin: 'A1', destination: 'B1' })).status).toBe(422);                               // staff must name the customer and entity
+    const acc = await cust.cmd(`/quotes/${q.body.id}/accept`, { acceptedByName: 'Ops lead', evidence: { channel: 'signed_pdf', reference: 'forged' } }); expect(acc.status).toBe(200);
+    expect((await w.su.query(`SELECT acceptance_evidence FROM commercial.quotes WHERE id=$1`, [q.body.id])).rows[0].acceptance_evidence.evidence).toEqual({ channel: 'portal', reference: expect.stringMatching(/^user:/) });
+    const me = await cust.get('/me'); expect(me.body).toMatchObject({ workspace: 'customer', partyId: customer, partyName: expect.stringContaining('Cust ') });
   });
 });
 

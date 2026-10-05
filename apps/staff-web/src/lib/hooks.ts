@@ -13,5 +13,4 @@ export function useCmd<Id extends OperationId>(op: Id, o: { invalidate?: Operati
     onSuccess: (d) => { o.invalidate?.forEach((k) => qc.invalidateQueries({ queryKey: [k] })); o.onSuccess?.(d); },
   });
 }
-export const errView = (e: unknown) => (e instanceof ApiError ? { status: e.status, code: e.code, message: e.message } : e ? { message: String(e) } : null);
-export const money = (v: string | number | null | undefined, cur = 'AED') => (v == null ? '—' : new Intl.NumberFormat('en-AE', { style: 'currency', currency: cur }).format(Number(v)));
+export { errView, money } from '@dbl/ui';

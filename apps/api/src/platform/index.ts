@@ -6,3 +6,4 @@ export * from './op';
 export * from './storage';
 export * from './platform.module';
 export * from './visibility';
+export * from './dev-files';

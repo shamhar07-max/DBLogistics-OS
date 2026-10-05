@@ -8,6 +8,8 @@ Base path `/api/v1`. Full schemas: [`openapi.json`](./openapi.json). Money is a 
 | `listMemberships` | GET `/api/v1/me/memberships` | authenticated | Tenants the user belongs to |
 | `listLegalEntities` | GET `/api/v1/legal-entities` | `parties.view` | Legal entities |
 | `listFacilities` | GET `/api/v1/facilities` | `parties.view` | Facilities (warehouses, yards, offices) and their locations |
+| `createFacility` | POST `/api/v1/facilities` | `admin.tenant` | Create a facility |
+| `createLocation` | POST `/api/v1/facilities/:id/locations` | `admin.tenant` | Add a storage location to a facility |
 | `listParties` | GET `/api/v1/parties` | `parties.view` | List parties |
 | `createParty` | POST `/api/v1/parties` | `parties.create` | Create party |
 | `proposeBankChange` | POST `/api/v1/parties/:id/bank-detail-changes` | `bank-details.change.propose` | Propose bank-detail change (maker) |
@@ -47,6 +49,7 @@ Base path `/api/v1`. Full schemas: [`openapi.json`](./openapi.json). Money is a 
 | `approveInvoice` | POST `/api/v1/invoices/:id/approve` | `invoices.approve` | 🔁 🏷 Approve invoice (not by its drafter) |
 | `postInvoice` | POST `/api/v1/invoices/:id/post` | `invoices.post` | 🔁 🏷 Post invoice: one transaction, balanced journal, number allocation |
 | `listInvoices` | GET `/api/v1/invoices` | `invoices.view` | List invoices |
+| `getInvoice` | GET `/api/v1/invoices/:id` | `invoices.view` | Invoice with lines, tax and settlement |
 | `recordSupplierBill` | POST `/api/v1/supplier-bills` | `bills.record` | 🔁 Record supplier bill; clears accrual; duplicate detection |
 | `recordPayment` | POST `/api/v1/payments` | `payments.record` | Record customer receipt |
 | `allocatePayment` | POST `/api/v1/payments/:id/allocate` | `payments.allocate` | 🔁 Allocate payment to invoice (never beyond available) |
@@ -58,6 +61,7 @@ Base path `/api/v1`. Full schemas: [`openapi.json`](./openapi.json). Money is a 
 | `receiveWebhook` | POST `/api/v1/webhooks/:provider` | public (HMAC) | Signed provider webhook; dedupes by external event id |
 | `createWorkflow` | POST `/api/v1/workflows` | `automation.manage` | Create workflow definition (draft) |
 | `activateWorkflow` | POST `/api/v1/workflows/:id/activate` | `automation.manage` | Activate workflow version |
+| `retireWorkflow` | POST `/api/v1/workflows/:id/retire` | `automation.manage` | Retire an active workflow version (running instances finish) |
 | `invokeAiTool` | POST `/api/v1/ai/tools/:name/invoke` | `ai.use` | Invoke a controlled AI tool as the calling user |
 | `getOwnerOverview` | GET `/api/v1/reports/owner-overview` | `reports.owner.view` | Owner overview KPIs (live, drill-down ready) |
 | `getParty` | GET `/api/v1/parties/:id` | `parties.view` | Party 360: roles, bank details, open work |
@@ -98,6 +102,9 @@ Base path `/api/v1`. Full schemas: [`openapi.json`](./openapi.json). Money is a 
 | `listAiTools` | GET `/api/v1/ai/tools` | `ai.use` | Controlled AI tools and whether the caller may use them |
 | `listWorkflows` | GET `/api/v1/workflows` | `automation.manage` | Workflow definitions (versioned) |
 | `listWorkflowRuns` | GET `/api/v1/workflow-runs` | `automation.manage` | Workflow executions |
+| `getWorkflowRun` | GET `/api/v1/workflow-runs/:id` | `automation.manage` | One run with its step log |
+| `cancelWorkflowRun` | POST `/api/v1/workflow-runs/:id/cancel` | `automation.manage` | Cancel a running, waiting or failed run |
+| `retryWorkflowRun` | POST `/api/v1/workflow-runs/:id/retry` | `automation.manage` | Retry a failed run from its last durable step |
 | `listIntegrations` | GET `/api/v1/integrations` | `integrations.manage` | Connections and health (no secrets) |
 | `listMembers` | GET `/api/v1/admin/members` | `admin.tenant` | Tenant members and roles |
 | `addMember` | POST `/api/v1/admin/members` | `admin.tenant` | Add member with a role template |

@@ -1,3 +1,4 @@
 export * from './primitives';
-export { Root as Tabs, List as TabsList, Trigger as TabsTrigger, Content as TabsContent } from '@radix-ui/react-tabs';
+export * from './kit';
+export * from './tabs';
 export * as Dialog from '@radix-ui/react-dialog';

@@ -2,10 +2,15 @@
   "name": "digitalburj-logistics-os",
   "private": true,
   "version": "0.1.0",
-  "description": "DigitalBurj Logistics OS — multi-tenant freight, customs & warehouse platform (Business OS core + Logistics industry pack)",
-  "engines": { "node": ">=22" },
+  "description": "DigitalBurj Logistics OS \u2014 multi-tenant freight, customs & warehouse platform (Business OS core + Logistics industry pack)",
+  "engines": {
+    "node": ">=22"
+  },
   "workspaces": [
-    "apps/api", "apps/worker", "apps/staff-web", "apps/partner-portal",
+    "apps/api",
+    "apps/worker",
+    "apps/staff-web",
+    "apps/partner-portal",
     "packages/*"
   ],
   "scripts": {
@@ -19,7 +24,8 @@
     "specs": "tsx tools/gen-specs.ts",
     "dev:api": "npm run dev -w @dbl/api",
     "dev:worker": "npm run dev -w @dbl/worker",
-    "dev:staff": "npm run dev -w @dbl/staff-web"
+    "dev:staff": "npm run dev -w @dbl/staff-web",
+    "e2e": "scripts/e2e.sh"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

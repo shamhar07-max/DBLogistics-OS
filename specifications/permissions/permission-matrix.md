@@ -8,7 +8,7 @@
 | `parties.create` | ● | ● |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `bank-details.change.propose` | ● |  |  |  |  |  |  |  |  |  | ● |  |  |  |  |  |  |  |
 | `bank-details.change.approve` | ● |  |  |  |  |  |  |  |  |  | ● |  |  |  |  |  |  |  |
-| `enquiries.view` | ● | ● | ● |  | ● |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `enquiries.view` | ● | ● | ● |  | ● |  |  |  |  |  |  |  |  |  | ● |  |  |  |
 | `enquiries.create` | ● | ● |  |  | ● |  |  |  |  |  |  |  |  |  | ● |  |  |  |
 | `enquiries.qualify` | ● | ● |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `quotes.view` | ● | ● | ● |  |  |  |  |  |  |  |  |  |  |  | ● |  |  |  |
@@ -20,7 +20,7 @@
 | `jobs.view` | ● | ● |  | ● | ● |  | ● |  | ● | ● | ● |  | ● | ● | ● |  |  |  |
 | `jobs.margin.view` | ● |  | ● |  |  |  |  |  |  | ● | ● |  |  |  |  |  |  |  |
 | `jobs.close` | ● |  |  |  |  |  |  |  |  |  | ● |  |  |  |  |  |  |  |
-| `shipments.view` | ● |  |  | ● | ● | ● | ● | ● | ● |  |  |  | ● |  | ● | ● |  |  |
+| `shipments.view` | ● |  |  | ● | ● | ● | ● | ● | ● |  |  |  | ● |  | ● | ● | ● | ● |
 | `shipments.create` | ● |  |  | ● |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `shipments.events.record` | ● |  |  | ● |  |  |  |  |  |  |  |  |  |  |  | ● |  |  |
 | `shipments.delivery.complete` | ● |  |  | ● |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
@@ -39,7 +39,7 @@
 | `customs.manage` | ● |  |  |  |  |  |  |  | ● |  |  |  |  |  |  |  |  |  |
 | `customs.release.record` | ● |  |  |  |  |  |  |  | ● |  |  |  |  |  |  |  |  |  |
 | `documents.view` | ● | ● |  | ● | ● | ● | ● |  | ● | ● |  |  | ● | ● | ● | ● |  |  |
-| `documents.upload` | ● |  |  | ● |  |  | ● | ● | ● |  |  |  |  |  |  | ● | ● | ● |
+| `documents.upload` | ● |  |  | ● |  |  | ● | ● | ● |  |  |  |  |  | ● | ● | ● | ● |
 | `documents.approve` | ● |  |  |  |  |  |  |  | ● |  |  |  |  |  |  |  |  |  |
 | `charges.create` | ● |  |  | ● |  |  |  |  |  | ● | ● |  |  |  |  |  |  |  |
 | `invoices.view` | ● |  |  |  |  |  |  |  |  | ● | ● |  |  | ● | ● |  |  |  |

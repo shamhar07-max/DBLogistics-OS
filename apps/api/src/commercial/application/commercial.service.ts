@@ -10,8 +10,12 @@ export class CommercialService {
 
   async createEnquiry(ctx: RequestContext, b: any) {
     return this.db.run(ctx, async (tx) => {
+      if (isExternal(ctx)) {                                                      // portal users raise enquiries for themselves, against the tenant's primary legal entity, as source 'portal'
+        const le = await tx.maybe<{ id: string }>(`SELECT id FROM org.legal_entities ORDER BY created_at LIMIT 1`); if (!le) throw new DomainError('VALIDATION_FAILED', 'No legal entity is configured.');
+        b = { ...b, legalEntityId: le.id, customerPartyId: ctx.partyId, source: 'portal' };
+      } else if (!b.legalEntityId || !b.customerPartyId) throw new DomainError('VALIDATION_FAILED', 'legalEntityId and customerPartyId are required.');
       assertScope(ctx, 'enquiries.create', b.legalEntityId);
-      const party = isExternal(ctx) ? ctx.partyId : b.customerPartyId;           // portal users can only raise enquiries for themselves
+      const party = b.customerPartyId;
       const ref = (await tx.one<{ r: string }>(`SELECT platform.next_ref('enquiry','ENQ') r`)).r;
       const e = await tx.one(`INSERT INTO commercial.enquiries(tenant_id, legal_entity_id, ref, customer_party_id, mode, origin, destination, incoterm, cargo, source, created_by)
                               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10,$11) RETURNING id, ref, status, version`,
@@ -50,8 +54,8 @@ export class CommercialService {
   }
   async getQuote(ctx: RequestContext, id: string) {
     return this.db.run(ctx, async (tx) => {
-      const q = await tx.maybe(`SELECT * FROM commercial.quotes WHERE id=$1`, [id]);
-      if (!q || (isExternal(ctx) && q.customer_party_id !== ctx.partyId)) throw new DomainError('NOT_FOUND', 'Quote not found.');
+      const q = await tx.maybe(`SELECT ${isExternal(ctx) ? 'id, ref, revision, status, customer_party_id, currency, valid_until, mode, origin, destination, incoterm, accepted_at, version' : '*'} FROM commercial.quotes WHERE id=$1 ${isExternal(ctx) ? `AND status IN ('approved','sent','accepted','expired')` : ''}`, [id]);
+      if (!q || (isExternal(ctx) && q.customer_party_id !== ctx.partyId)) throw new DomainError('NOT_FOUND', 'Quote not found.');          // customers never see drafts, internal approvals or superseded revisions
       const lines = await tx.q(`SELECT seq, description, charge_type, charge_group, quantity, unit, unit_price, expected_unit_cost, tax_code, tax_rationale FROM commercial.quote_lines WHERE quote_id=$1 ORDER BY seq`, [id]);
       const t = quoteTotals(lines as any);
       const showMargin = !isExternal(ctx) && can(ctx, 'jobs.margin.view');          // internal margin never leaves the staff workspace
@@ -59,7 +63,7 @@ export class CommercialService {
       return { ...q, lines: visibleLines, totals: showMargin ? t : { net: t.net, tax: t.tax, total: t.total } };
     });
   }
-  async listQuotes(ctx: RequestContext) { return this.db.run(ctx, (tx) => tx.q(`SELECT id, ref, revision, status, customer_party_id, currency, valid_until, version FROM commercial.quotes ${isExternal(ctx) ? 'WHERE customer_party_id=$1' : ''} ORDER BY created_at DESC LIMIT 200`, isExternal(ctx) ? [ctx.partyId] : [])); }
+  async listQuotes(ctx: RequestContext) { return this.db.run(ctx, (tx) => tx.q(`SELECT id, ref, revision, status, customer_party_id, currency, valid_until, version FROM commercial.quotes ${isExternal(ctx) ? `WHERE customer_party_id=$1 AND status IN ('approved','sent','accepted','expired')` : ''} ORDER BY created_at DESC LIMIT 200`, isExternal(ctx) ? [ctx.partyId] : [])); }
   async approveQuote(ctx: RequestContext, id: string) {
     return this.db.run(ctx, async (tx) => {
       const q = await tx.maybe(`SELECT * FROM commercial.quotes WHERE id=$1 FOR UPDATE`, [id]);
@@ -78,6 +82,7 @@ export class CommercialService {
       const q = await tx.maybe(`SELECT * FROM commercial.quotes WHERE id=$1 FOR UPDATE`, [id]);
       if (!q || (isExternal(ctx) && q.customer_party_id !== ctx.partyId)) throw new DomainError('NOT_FOUND', 'Quote not found.');
       assertScope(ctx, 'quotes.accept', q.legal_entity_id); expectVersion(q.version, ctx);
+      if (isExternal(ctx)) b = { ...b, evidence: { channel: 'portal', reference: `user:${ctx.userId}` } };      // portal acceptance is evidenced by the authenticated session, not by client-supplied text
       if (!canTransition(q.status, 'accepted')) throw new DomainError('INVALID_STATE_TRANSITION', `Quote is ${q.status}; only an approved quote can be accepted.`);
       if (new Date(q.valid_until) < new Date(new Date().toISOString().slice(0, 10))) throw new DomainError('INVALID_STATE_TRANSITION', 'Quote validity has expired.');
       await tx.q(`UPDATE commercial.quotes SET status='accepted', accepted_by=$2, accepted_at=now(), acceptance_evidence=$3::jsonb WHERE id=$1`, [id, ctx.userId, JSON.stringify(b)]);

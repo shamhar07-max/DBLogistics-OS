@@ -43,7 +43,7 @@ export class LogisticsService {
       const legs = await tx.q(`SELECT l.id, l.seq, l.mode, l.origin, l.destination, l.planned_departure, l.planned_arrival, l.estimated_arrival, l.actual_arrival, p.legal_name AS operator FROM logistics.legs l LEFT JOIN parties.parties p ON p.id = l.operator_party_id WHERE l.shipment_id=$1 ORDER BY l.seq`, [id]);
       const cargo = await tx.q(`SELECT c.id, c.kind, c.description, c.quantity, c.gross_weight_kg, c.volume_cbm, c.hs_code, c.batch, p.legal_name AS owner FROM logistics.cargo_units c JOIN parties.parties p ON p.id = c.owner_party_id WHERE c.shipment_id=$1`, [id]);
       const bookings = await tx.q(`SELECT b.id, b.status, b.external_ref, b.outcome_unknown, b.version, b.created_at, p.legal_name AS carrier FROM logistics.bookings b JOIN parties.parties p ON p.id = b.carrier_party_id WHERE b.shipment_id=$1 ORDER BY b.created_at`, [id]);
-      return { ...s, legs, cargo, bookings };
+      return { ...s, legs, cargo, bookings: isExternal(ctx) ? [] : bookings };          // carrier bookings are internal commercial detail
     });
   }
   async createShipment(ctx: RequestContext, b: any) {

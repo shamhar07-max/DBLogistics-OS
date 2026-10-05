@@ -17,8 +17,8 @@ export default function PartyDetail() {
   return (<>
     <PageTitle title={p?.legal_name ?? 'Party'} sub="Customer 360">{p && <div className="flex gap-1.5">{p.roles.map((r: string) => <Chip key={r} tone="info">{r}</Chip>)}</div>}</PageTitle>
     <QueryBoundary status={q.status} error={errView(q.error)}>{p && <>
-      <section className="grid grid-cols-4 gap-4"><Kpi label="Active jobs" value={p.work.active_jobs} hint={`${p.work.jobs} jobs in total`} /><Kpi label="Open quotes" value={p.work.open_quotes} /><Kpi label="Outstanding" value={money(p.work.outstanding)} /><Kpi label="Overdue" value={money(p.work.overdue)} tone={Number(p.work.overdue) > 0 ? 'risk' : undefined} /></section>
-      <div className="grid grid-cols-2 gap-5">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4"><Kpi label="Active jobs" value={p.work.active_jobs} hint={`${p.work.jobs} jobs in total`} /><Kpi label="Open quotes" value={p.work.open_quotes} /><Kpi label="Outstanding" value={money(p.work.outstanding)} /><Kpi label="Overdue" value={money(p.work.overdue)} tone={Number(p.work.overdue) > 0 ? 'risk' : undefined} /></section>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card title="Registration"><dl className="grid grid-cols-[140px_1fr] gap-y-2 text-sm"><dt className="text-steel">Tax reg. no.</dt><dd className="font-mono">{p.tax_registration_number ?? '—'}</dd><dt className="text-steel">Country</dt><dd>{p.country ?? '—'}</dd><dt className="text-steel">Status</dt><dd><StatusChip s={p.status} /></dd><dt className="text-steel">Credit limit</dt><dd>{p.credit_limit ? money(p.credit_limit, p.credit_currency ?? 'AED') : 'Not set'}</dd></dl>
           <h4 className="mb-2 mt-5 font-display text-sm font-semibold">Contacts</h4>{p.contacts.length ? p.contacts.map((c: any) => <div key={c.id} className="text-sm">{c.name} · {c.email ?? c.phone}</div>) : <p className="text-sm text-steel">No contacts recorded.</p>}</Card>
         <Card title="Bank details · maker-checker">

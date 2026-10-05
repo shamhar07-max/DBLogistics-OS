@@ -45,7 +45,7 @@ function Tracking({ shipmentId }: { shipmentId?: string }) {
 }
 function Margin({ jobId }: { jobId: string }) {
   const q = useOp('getJobMargin', { params: { id: jobId } }); const m = q.data as any;
-  return <Card title="Cost & margin — four separate views"><QueryBoundary status={q.status} error={errView(q.error)}>{m && <div className="grid grid-cols-4 gap-4">
+  return <Card title="Cost & margin — four separate views"><QueryBoundary status={q.status} error={errView(q.error)}>{m && <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
     {[['Quoted', m.quoted], ['Expected', m.expected], ['Accounting (posted)', m.accounting]].map(([l, v]: any) => <div key={l} className="rounded-md bg-paper p-4"><div className="font-label text-xs uppercase tracking-wider text-steel">{l}</div><div className="mt-1 font-label text-2xl font-bold tabular-nums">{money(v.amount, m.currency)}</div><div className="text-xs text-steel">{v.percent ?? '—'}%</div></div>)}
     <div className="rounded-md bg-paper p-4"><div className="font-label text-xs uppercase tracking-wider text-steel">Cash collected</div><div className="mt-1 font-label text-2xl font-bold tabular-nums">{money(m.cash.collected, m.currency)}</div><div className="text-xs text-steel">Unbilled {money(m.unbilledRevenue, m.currency)} · {m.costChargesNotYetAccrued} cost(s) not accrued</div></div></div>}</QueryBoundary></Card>;
 }

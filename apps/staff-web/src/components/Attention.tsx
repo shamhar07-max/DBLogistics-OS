@@ -18,6 +18,6 @@ export function Attention() {
     !forbidden(quals) && { key: 'quals', title: 'Qualifications expiring (30 days)', href: '/people', empty: 'None expiring.', items: expiring.map((x) => ({ id: x.id, text: `${x.full_name} · ${x.kind.replace('_', ' ')}`, chip: <Chip tone={x.expired ? 'stop' : 'hold'}>{x.expired ? 'expired' : `${x.days_left}d left`}</Chip> })) }]
     .filter(Boolean) as Array<{ key: string; title: string; href: string; empty: string; items: Array<{ id: string; text: string; chip: React.ReactNode }> }>;
   if (!cards.length) return null;
-  return <section aria-label="Needs attention" className="grid grid-cols-3 gap-4">{cards.map((c) => <Card key={c.key} title={c.title} actions={<Link href={c.href} className="text-xs underline">Open</Link>}>
+  return <section aria-label="Needs attention" className="grid grid-cols-1 md:grid-cols-3 gap-4">{cards.map((c) => <Card key={c.key} title={c.title} actions={<Link href={c.href} className="text-xs underline">Open</Link>}>
     {c.items.length ? <ul className="divide-y divide-line">{c.items.map((i) => <li key={i.id} className="flex items-center gap-2 py-2 text-sm"><span className="flex-1">{i.text}</span>{i.chip}</li>)}</ul> : <p className="text-sm text-steel">{c.empty}</p>}</Card>)}</section>;
 }

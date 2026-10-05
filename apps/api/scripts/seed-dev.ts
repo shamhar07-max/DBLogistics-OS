@@ -24,6 +24,10 @@ async function main() {
   const [owner, omar, nadia, faisal, sana, yusuf, hamad, rami, hana, qadir] = ['layla', 'omar', 'nadia', 'faisal', 'sana', 'yusuf', 'hamad', 'rami', 'hana', 'qadir'].map(as);
   const party = (n: string, roles: string[]) => owner('POST', '/parties', { legalName: n, roles }).then((p) => p.id as string);
   const [pharma, foods, line, haulier] = await Promise.all([party('Gulf Pharma Distribution', ['customer']), party('Al Noor Foods Trading', ['customer']), party('Ocean Line One', ['carrier', 'supplier']), party('Desert Haulage', ['transporter', 'supplier'])]);
+  // portal users: two customers (isolation demo), an air agent, and the haulier
+  const agent = await party('Rhein-Main Air Agents', ['agent']);
+  for (const [sub, role, ws, p] of [['pharma-user', 'customer_portal', 'customer', pharma], ['foods-user', 'customer_portal', 'customer', foods], ['agent-user', 'agent_portal', 'agent', agent], ['haulier-user', 'transporter_portal', 'transporter', haulier]] as const)
+    await addMemberToTenant(pool, t.tenantId, { subject: sub, roles: [role], workspace: ws, partyId: p });
   const today = new Date().toISOString().slice(0, 10);
 
   async function wonJob(customer: string, price: string, cost: string, origin: string, destination: string, mode = 'ocean_fcl') {
@@ -38,8 +42,10 @@ async function main() {
   const j1 = await wonJob(pharma, '10000.00', '7000.00', 'Shanghai', 'Jebel Ali');
   const j2 = await wonJob(foods, '6400.00', '4200.00', 'Mundra', 'Jebel Ali');
   const j3 = await wonJob(pharma, '2300.00', '1500.00', 'Frankfurt', 'Dubai', 'air');
+  let firstShipment: string | undefined;
   for (const [job, o, d, mode] of [[j1, 'Shanghai', 'Jebel Ali', 'ocean_fcl'], [j2, 'Mundra', 'Jebel Ali', 'ocean_fcl'], [j3, 'Frankfurt', 'Dubai', 'air']] as const) {
-    const s = await rami('POST', '/shipments', { jobId: job, mode, origin: o, destination: d, cargo: [{ description: 'Palletised cargo', quantity: '22', ownerPartyId: pharma }], legs: [{ mode, origin: o, destination: d, operatorPartyId: line }] });
+    const s = await rami('POST', '/shipments', { jobId: job, mode, origin: o, destination: d, cargo: [{ description: 'Palletised cargo', quantity: '22', ownerPartyId: pharma }], legs: [{ mode, origin: o, destination: d, operatorPartyId: mode === 'air' ? agent : line }] });
+    firstShipment ??= s.id;
     const bk = await rami('POST', '/bookings', { shipmentId: s.id, carrierPartyId: line, requestKey: `seed-${s.id}` }); await rami('POST', `/bookings/${bk.id}/confirm`, { externalRef: `BKG-${s.ref}` }, randomUUID());
     await rami('POST', `/shipments/${s.id}/events`, { code: 'DEPARTED', eventTime: new Date(Date.now() - 4 * 864e5).toISOString(), source: 'carrier', isActual: true, externalEventId: `dep-${s.id}` });
     await rami('POST', `/shipments/${s.id}/events`, { code: 'ETA_JEBEL_ALI', eventTime: new Date(Date.now() + 3 * 864e5).toISOString(), source: 'inferred', isActual: false });
@@ -50,6 +56,9 @@ async function main() {
   const lot = await yusuf('POST', '/receipts', { facilityId: t.facilityId, ownerPartyId: pharma, description: 'Insulin pens 2–8 °C', batch: 'B-2210', quantity: '120', customsStatus: 'duty_paid', commandKey: randomUUID() });
   await yusuf('POST', '/receipts', { facilityId: t.facilityId, ownerPartyId: foods, description: 'Canned goods', quantity: '800', customsStatus: 'bonded', commandKey: randomUUID() });
   await hamad('POST', '/release-orders', { lotId: lot.lotId, qty: '20' });
+  // a quotation waiting for the pharma customer to accept in the portal
+  const oq = await omar('POST', '/quotes', { legalEntityId: t.legalEntityId, customerPartyId: pharma, currency: 'AED', validUntil: '2099-12-31', mode: 'road', origin: 'Dubai', destination: 'Riyadh', incoterm: 'DAP', lines: [{ description: 'Road freight Dubai–Riyadh', chargeType: 'fixed', quantity: '1', unitPrice: '4200.00', expectedUnitCost: '3100.00', taxCode: 'ZR', taxRationale: 'International transport' }] });
+  await nadia('POST', `/quotes/${oq.id}/approve`, {}, randomUUID());
   // people & quality: a driver with a valid licence, one without, an expiring forklift ticket, a trip, a task, a conversation, and a quality hold awaiting separate release
   const plusDays = (n: number) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
   const karim = await hana('POST', '/employees', { legalEntityId: t.legalEntityId, fullName: 'Karim Haddad', jobTitle: 'Driver', department: 'Transport' });
@@ -58,12 +67,13 @@ async function main() {
   await hana('POST', `/employees/${karim.id}/qualifications`, { kind: 'driving', reference: 'DL-77120', issuedOn: plusDays(-400), validTo: plusDays(300) });
   await hana('POST', `/employees/${sami.id}/qualifications`, { kind: 'forklift', reference: 'FLT-5521', issuedOn: plusDays(-700), validTo: plusDays(20) });
   await hana('POST', '/assets', { kind: 'forklift', code: 'FLT-01', nextServiceDue: plusDays(14) });
-  await rami('POST', '/trips', { transporterPartyId: haulier, driverEmployeeId: karim.id, vehicleRef: 'DXB A-48213', stops: [{ kind: 'pickup', address: 'Jebel Ali Port, Gate 4' }, { kind: 'delivery', address: 'Dubai Investments Park' }] });
+  const trip = await rami('POST', '/trips', { transporterPartyId: haulier, driverEmployeeId: karim.id, vehicleRef: 'DXB A-48213', stops: [{ kind: 'pickup', address: 'Jebel Ali Port, Gate 4', ...(firstShipment ? { shipmentId: firstShipment } : {}) }, { kind: 'delivery', address: 'Dubai Investments Park', ...(firstShipment ? { shipmentId: firstShipment } : {}) }] });
+  await owner('POST', `/trips/${trip.id}/dispatch`, {}, randomUUID());
   await rami('POST', '/tasks', { title: 'Chase carrier for amended bill of lading', relatedType: 'job', relatedId: j1, dueAt: new Date(Date.now() + 864e5).toISOString() });
   await rami('POST', '/messages', { relatedType: 'job', relatedId: j1, channel: 'email', direction: 'inbound', body: 'Consignee asks to deliver after 14:00 — gate pass issued for Thursday.' });
   await qadir('POST', '/incidents', { kind: 'temperature_excursion', severity: 'high', description: 'Logger shows 11 °C for 40 minutes during unloading', jobId: j1, lotId: lot.lotId, placeHold: true });
   await owner('POST', '/ai/tools/propose_payment_batch/invoke', { args: { summary: 'Pay Ocean Line One and Desert Haulage — AED 48,200', supplierPartyIds: [line, haulier] } });
-  console.log(JSON.stringify({ tenantId: t.tenantId, login: 'layla (owner) · omar sales · nadia pricing · faisal finance_manager · sana accountant · yusuf warehouse_supervisor · hamad warehouse_operator · rami freight_ops · hana hr · qadir quality_manager', jobs: [j1, j2, j3] }, null, 2));
+  console.log(JSON.stringify({ tenantId: t.tenantId, login: 'layla (owner) · omar sales · nadia pricing · faisal finance_manager · sana accountant · yusuf warehouse_supervisor · hamad warehouse_operator · rami freight_ops · hana hr · qadir quality_manager · portal: pharma-user & foods-user (customers), agent-user (agent), haulier-user (transporter)', jobs: [j1, j2, j3] }, null, 2));
   await pool.end();
 }
 main().catch((e) => { console.error(e); process.exit(1); });

@@ -6,7 +6,7 @@ import { Button, Card, Chip } from '@dbl/ui';
 import { useCmd, useOp } from '@/lib/hooks';
 import { ErrorNote, PageTitle, StatusChip } from '@/components/bits';
 import { DataTable, Mono, fmtDate } from '@/components/DataTable';
-import { EmployeePicker, EntityPicker, FormGrid, SelectField, TextField } from '@/components/fields';
+import { EmployeePicker, EntityPicker, FacilityPicker, FormGrid, SelectField, TextField } from '@/components/fields';
 import { SectionTabs } from '@/components/SectionTabs';
 
 const KINDS = ['forklift', 'dg_handling', 'driving', 'customs_broker', 'first_aid', 'reefer_handling'] as const;
@@ -21,7 +21,7 @@ function Employees() {
   const f = useForm<any>(); const g = useForm<any>({ defaultValues: { kind: 'driving' } });
   const columns = useMemo(() => [ec.accessor('full_name', { header: 'Employee', cell: (c) => <b className="font-display">{c.getValue()}</b> }), ec.accessor('job_title', { header: 'Role', cell: (c) => c.getValue() ?? '—' }), ec.accessor('department', { header: 'Dept.', cell: (c) => c.getValue() ?? '—' }),
     ec.accessor('qualifications', { header: 'Qualifications', enableSorting: false, cell: (c) => <span className="flex flex-wrap gap-1">{c.getValue().length ? c.getValue().map((x) => <Chip key={x.kind} tone={x.valid ? 'ok' : 'stop'}>{x.kind.replace('_', ' ')}{!x.valid && ' · expired'}</Chip>) : <span className="text-xs text-steel">none</span>}</span> }), ec.accessor('status', { header: 'Status', cell: (c) => <StatusChip s={c.getValue()} /> })], []);
-  return (<div className="grid grid-cols-[1fr_340px] items-start gap-5">
+  return (<div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] items-start gap-5">
     <Card title="Employees"><DataTable q={q} columns={columns} empty="No employees yet." label="Filter employees" /></Card>
     <div className="grid gap-5">
       <Card title="Add employee"><form className="grid gap-3" onSubmit={f.handleSubmit((b) => create.mutate({ body: b }, { onSuccess: () => f.reset() } as any))}>
@@ -44,9 +44,9 @@ function Assets() {
   const q = useOp('listAssets'); const create = useCmd('createAsset', { invalidate: ['listAssets'] }); const f = useForm<any>({ defaultValues: { kind: 'forklift' } });
   const columns = useMemo(() => [ac.accessor('code', { header: 'Asset', cell: (c) => <Mono>{c.getValue()}</Mono> }), ac.accessor('kind', { header: 'Type', cell: (c) => c.getValue().replace('_', ' ') }), ac.accessor('facility', { header: 'Facility', cell: (c) => c.getValue() ?? '—' }), ac.accessor('status', { header: 'Status', cell: (c) => <StatusChip s={c.getValue()} /> }),
     ac.accessor('next_service_due', { header: 'Service due', cell: (c) => fmtDate(c.getValue()) }), ac.accessor('calibration_due', { header: 'Calibration due', cell: (c) => fmtDate(c.getValue()) })], []);
-  return (<div className="grid grid-cols-[1fr_340px] items-start gap-5"><Card title="Equipment & vehicles"><DataTable q={q} columns={columns} empty="No assets registered." label="Filter assets" /></Card>
+  return (<div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] items-start gap-5"><Card title="Equipment & vehicles"><DataTable q={q} columns={columns} empty="No assets registered." label="Filter assets" /></Card>
     <Card title="Register asset"><form className="grid gap-3" onSubmit={f.handleSubmit((b) => create.mutate({ body: Object.fromEntries(Object.entries(b).filter(([, v]) => v !== '')) as any }, { onSuccess: () => f.reset({ kind: 'forklift' }) } as any))}>
-      <SelectField label="Type" {...f.register('kind')}>{AK.map((k) => <option key={k}>{k}</option>)}</SelectField><TextField label="Code" {...f.register('code', { required: true })} />
+      <SelectField label="Type" {...f.register('kind')}>{AK.map((k) => <option key={k}>{k}</option>)}</SelectField><TextField label="Code" {...f.register('code', { required: true })} /><FacilityPicker label="Facility" {...f.register('facilityId')} />
       <FormGrid><TextField label="Service due" type="date" {...f.register('nextServiceDue')} /><TextField label="Calibration due" type="date" {...f.register('calibrationDue')} /></FormGrid>
       <Button type="submit" disabled={create.isPending}>Register</Button><ErrorNote e={create.error} /></form></Card></div>);
 }

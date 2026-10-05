@@ -29,7 +29,7 @@ export default function Customers() {
   ], []);
   return (<>
     <PageTitle title="Customers & partners" sub="Commercial · one identity, many roles" />
-    <div className="grid grid-cols-[1fr_340px] items-start gap-5">
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] items-start gap-5">
       <Card title="Parties"><DataTable q={q} columns={columns} empty="No parties yet — create the first on the right." label="Filter parties" /></Card>
       <Card title="New party"><form className="grid gap-3" onSubmit={handleSubmit(({ role, ...b }) => create.mutate({ body: { ...b, roles: [role] } as any }, { onSuccess: () => reset() } as any))}>
         <TextField label="Legal name" error={errors.legalName?.message} {...register('legalName')} />

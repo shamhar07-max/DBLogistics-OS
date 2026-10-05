@@ -9,3 +9,4 @@ apps/staff-web/e2e/artifacts/
 apps/*/test-results/
 playwright-report/
 seed.json
+apps/partner-portal/e2e/artifacts/

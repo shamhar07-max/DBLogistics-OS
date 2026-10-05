@@ -807,8 +807,6 @@
                   }
                 },
                 "required": [
-                  "legalEntityId",
-                  "customerPartyId",
                   "mode",
                   "origin",
                   "destination"

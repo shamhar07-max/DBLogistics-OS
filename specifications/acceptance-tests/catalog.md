@@ -36,3 +36,15 @@ Run: `npm test` (needs PostgreSQL 16 + Redis; see README). "Real DB" = executed 
 | New people/quality tables are tenant-isolated; facilities list is tenant-scoped | `breadth` › *new tenant-scoped tables…*, *facilities list…* | ✅ |
 | Every navigation item opens a real screen (no placeholders) | `screens.spec` › *every navigation item…* | browser |
 | Receive cargo through the form; job tasks and messages persist | `screens.spec` › *warehouse: receive…*, *job workspace…* | browser |
+| Customer sees only own shipments/documents/invoices; drafts and internal documents hidden | `portal` › *customer portal scoping*; `portal.spec` › *isolation* | ✅ / browser |
+| Portal uploads attach only to own records; issuer is forced (never authority/internal) | `portal` › *portal uploads…* | ✅ |
+| Agent limited to shipments they operate; reports recorded as supplier-sourced | `portal` › *agent portal scoping*; `portal.spec` › *agent* | ✅ / browser |
+| Transporter limited to own dispatched trips; POD only on open trips; trip completes with last stop | `portal` › *transporter portal scoping*; `portal.spec` › *transporter* | ✅ / browser |
+| Customers never see draft quotes or internal columns; acceptance evidence is server-set; portal enquiry for self | `portal` › *quotes and enquiries* | ✅ |
+| Workflow definitions validated; versions immutable; one active version | `workflow` › *definitions*; `screens.spec` › *automation designer* | ✅ / browser |
+| Workflow conditions, templates, failure rollback, retry, poller isolation, crash recovery | `worker` › *workflow engine* | ✅ |
+| Failed runs retried/cancelled through API and UI | `workflow` › *runs…*; `screens.spec` › *failed runs…* | ✅ / browser |
+| Facilities and locations managed in admin and usable when receiving | `workflow` › *facilities and locations*; `screens.spec` › *admin: create a facility…* | ✅ / browser |
+| Dev disk storage: signed, expiring, method-bound URLs | `devfiles` | ✅ |
+| Document preview only after scan (staff and portal) | `screens.spec` › *documents…*; `portal.spec` › *documents…* | browser |
+| Phone layout: drawer navigation, no horizontal scrolling (staff and portal) | `screens.spec` / `portal.spec` › *phone layout* | browser |

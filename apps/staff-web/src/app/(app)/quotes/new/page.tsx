@@ -21,8 +21,8 @@ export default function NewQuote() {
   const t = lines.reduce((a, l) => { try { const n = roundMoney(D(l.quantity || '0').mul(l.unitPrice || '0')); return { net: a.net.plus(n), tax: a.tax.plus(taxFor(n, l.taxCode ?? 'SR5')), cost: a.cost.plus(roundMoney(D(l.quantity || '0').mul(l.expectedUnitCost || '0'))) }; } catch { return a; } }, { net: D(0), tax: D(0), cost: D(0) });
   const margin = t.net.isZero() ? null : t.net.minus(t.cost).div(t.net).mul(100).toFixed(1);
   return (<><PageTitle title="New quotation" sub="Commercial · quote builder" />
-    <form onSubmit={handleSubmit((v) => create.mutate({ body: v as any }))} className="grid grid-cols-[1fr_320px] gap-5">
-      <Card title="Route & parties"><div className="grid grid-cols-2 gap-3">
+    <form onSubmit={handleSubmit((v) => create.mutate({ body: v as any }))} className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5">
+      <Card title="Route & parties"><div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="Legal entity" error={errors.legalEntityId?.message}><select className={inputCls} {...register('legalEntityId')}><option value="">Select…</option>{((le.data as any[]) ?? []).map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}</select></Field>
         <Field label="Customer" error={errors.customerPartyId?.message}><select className={inputCls} {...register('customerPartyId')}><option value="">Select…</option>{((parties.data as any[]) ?? []).map((p) => <option key={p.id} value={p.id}>{p.legal_name}</option>)}</select></Field>
         <Field label="Origin" error={errors.origin?.message}><input className={inputCls} {...register('origin')} /></Field><Field label="Destination" error={errors.destination?.message}><input className={inputCls} {...register('destination')} /></Field>

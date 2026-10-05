@@ -116,3 +116,15 @@ describe('workflow engine (validated language, failure handling, recovery)', () 
 });
 });
 void QueueEvents;
+
+describe('document scanner', () => {
+  it('flags the EICAR signature, passes clean files, and treats unreadable files as failed — never clean; storage layout is pinned to the API', async () => {
+    const { mkdtempSync, writeFileSync } = await import('node:fs'); const { tmpdir } = await import('node:os'); const { join } = await import('node:path');
+    const { DiskScanner, EICAR, diskPath, pickScanner } = await import('../src/scanner');
+    const dir = mkdtempSync(join(tmpdir(), 'scan-')); writeFileSync(diskPath(dir, 'k/clean'), 'hello'); writeFileSync(diskPath(dir, 'k/bad'), `pre ${EICAR} post`);
+    const s = new DiskScanner(dir); expect(await s.scan('k/clean')).toBe('clean'); expect(await s.scan('k/bad')).toBe('infected'); expect(await s.scan('k/missing')).toBe('failed');
+    expect(diskPath('/d', 't1/incoming/abc')).toBe('/d/499a6a003dee3817acc4eecd02ad76cd1bb7859ac791faf29261d5db3b8887e9');                  // same literal as apps/api/test/devfiles.test.ts
+    expect(await pickScanner({}).scanner.scan('x')).toBe('failed'); expect(pickScanner({ DEV_STORAGE_DIR: dir }).scanner).toBeInstanceOf(DiskScanner);
+    expect(await pickScanner({ ALLOW_UNSCANNED_DOCUMENTS: 'true', NODE_ENV: 'production' }).scanner.scan('x')).toBe('failed');
+  });
+});

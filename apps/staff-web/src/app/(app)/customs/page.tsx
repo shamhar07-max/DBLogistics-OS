@@ -24,7 +24,7 @@ export default function Customs() {
   return (<>
     <PageTitle title="Customs & trade" sub="Operations · authority status and internal status are never conflated" />
     <Card title="Cases"><DataTable q={q} columns={columns} empty="No customs cases." label="Filter cases" /></Card>
-    <div className="grid grid-cols-2 gap-5">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
       <Card title="Open a case"><div className="grid gap-3"><JobPicker label="Job" value={job} onChange={(e) => setJob(e.target.value)} /><PartyPicker label="Importer / exporter" value={importer} onChange={(e) => setImporter(e.target.value)} />
         <SelectField label="Procedure" value={procedure} onChange={(e) => setProcedure(e.target.value)}>{['import', 'export', 'transit', 're_export', 'warehouse_entry'].map((p) => <option key={p}>{p}</option>)}</SelectField>
         <Button disabled={!job || !importer} onClick={() => create.mutate({ body: { jobId: job, importerPartyId: importer, procedure: procedure as any } })}>Open case</Button><ErrorNote e={create.error} /></div></Card>

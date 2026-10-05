@@ -1,18 +1,18 @@
 import { Global, Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
-import { CONFIG, loadConfig } from './config';
+import { CONFIG, loadConfig, type Config } from './config';
 import { Db } from './db.service';
 import { AuthService } from './auth.service';
 import { OpGuard } from './op';
 import { ApiExceptionFilter } from './errors';
-import { S3Storage, STORAGE } from './storage';
+import { DiskStorage, S3Storage, STORAGE } from './storage';
 
 @Global()
 @Module({
   providers: [
     { provide: CONFIG, useFactory: () => loadConfig() }, Db, AuthService,
     { provide: APP_GUARD, useClass: OpGuard }, { provide: APP_FILTER, useClass: ApiExceptionFilter },
-    { provide: STORAGE, useClass: S3Storage },
+    { provide: STORAGE, inject: [CONFIG], useFactory: (c: Config) => (c.DEV_AUTH_SECRET && !c.S3_ENDPOINT ? new DiskStorage(c) : new S3Storage(c)) },
   ],
   exports: [CONFIG, Db, AuthService, STORAGE],
 })

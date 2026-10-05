@@ -20,7 +20,8 @@ export const ApproveBankChangeBody = z.object({ callbackVerified: z.literal(true
 
 // ---- Commercial
 export const CreateEnquiryBody = z.object({
-  legalEntityId: Uuid, customerPartyId: Uuid, mode: Mode, origin: z.string().min(2), destination: z.string().min(2),
+  legalEntityId: Uuid.optional(), customerPartyId: Uuid.optional(),             // staff must supply both; portal users never do (the server fills them)
+  mode: Mode, origin: z.string().min(2), destination: z.string().min(2),
   incoterm: z.string().optional(), cargo: z.record(z.unknown()).default({}),
   source: z.enum(['staff', 'email', 'whatsapp', 'portal', 'api', 'website']).default('staff'),
 });
