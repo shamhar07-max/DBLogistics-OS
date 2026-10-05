@@ -26,7 +26,7 @@ export class S3Reader implements ObjectReader {
   constructor(private bucket: string, private client?: { send(c: unknown): Promise<{ Body?: { transformToByteArray(): Promise<Uint8Array> } }> }) {}
   async read(key: string) {
     const sdk = await import('@aws-sdk/client-s3');
-    const c = this.client ?? new sdk.S3Client({});
+    const c = this.client ?? new sdk.S3Client({ region: process.env.AWS_REGION ?? 'auto', endpoint: process.env.S3_ENDPOINT, forcePathStyle: !!process.env.S3_ENDPOINT });
     const r = await c.send(new sdk.GetObjectCommand({ Bucket: this.bucket, Key: key }));
     return Buffer.from(await r.Body!.transformToByteArray());
   }
