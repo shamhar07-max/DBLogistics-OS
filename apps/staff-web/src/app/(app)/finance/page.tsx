@@ -9,6 +9,7 @@ import { ErrorNote, PageTitle, StatusChip } from '@/components/bits';
 import { DataTable, Mono, RefLink, fmtDate } from '@/components/DataTable';
 import { EntityPicker, FormGrid, JobPicker, PartyPicker, SelectField, TextField } from '@/components/fields';
 import { SectionTabs } from '@/components/SectionTabs';
+import {AccountingPeriods} from '@/components/AccountingPeriods';
 
 const ic = createColumnHelper<any>(), pc = createColumnHelper<any>(), bc = createColumnHelper<any>(), cc = createColumnHelper<any>();
 const today = () => new Date().toISOString().slice(0, 10);
@@ -51,5 +52,5 @@ function Charges() {
 }
 export default function Finance() {
   return (<><PageTitle title="Money" sub="Billing → ledger → e-invoice are separate states"><Link href="/intelligence" className="text-sm underline">Receivables ageing &amp; profitability →</Link></PageTitle>
-    <SectionTabs sections={[{ id: 'invoices', label: 'Invoices', content: <Invoices /> }, { id: 'payments', label: 'Receipts', content: <Payments /> }, { id: 'bills', label: 'Supplier bills', content: <Bills /> }, { id: 'charges', label: 'Charges', content: <Charges /> }]} /></>);
+    <SectionTabs sections={[{ id: 'invoices', label: 'Invoices', content: <Invoices /> }, { id: 'payments', label: 'Receipts', content: <Payments /> }, { id: 'bills', label: 'Supplier bills', content: <Bills /> }, { id: 'charges', label: 'Charges', content: <Charges /> }, {id:'periods',label:'Accounting periods',content:<AccountingPeriods/>}]} /></>);
 }

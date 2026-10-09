@@ -17,7 +17,7 @@ export async function seedLedger(tx: Tx, tenantId: string, legalEntityId: string
   }
 }
 export async function assertOpenPeriod(tx: Tx, legalEntityId: string, date: string) {
-  const p = await tx.maybe(`SELECT status FROM finance.accounting_periods WHERE legal_entity_id=$1 AND $2::date BETWEEN start_date AND end_date`, [legalEntityId, date]);
+  const p = await tx.maybe(`SELECT status FROM finance.accounting_periods WHERE legal_entity_id=$1 AND $2::date BETWEEN start_date AND end_date FOR SHARE`, [legalEntityId, date]);
   if (!p) throw new DomainError('PERIOD_NOT_FOUND', 'No accounting period covers the posting date.', { postingDate: date });
   if (p.status !== 'open') throw new DomainError('ACCOUNTING_PERIOD_CLOSED', 'Select a posting date in an open period.', { postingDate: date });
 }

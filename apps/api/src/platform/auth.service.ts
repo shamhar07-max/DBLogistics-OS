@@ -4,7 +4,7 @@ import { CONFIG, type Config } from './config';
 import { DomainError } from './errors';
 import { Db } from './db.service';
 
-export interface Identity { sub: string; email?: string; name?: string }
+export interface Identity { sub: string; email?: string; name?: string; issuedAt?: number }
 
 @Injectable()
 export class AuthService {
@@ -19,7 +19,7 @@ export class AuthService {
         ? (await jwtVerify(token, this.jwks, { issuer: this.cfg.OIDC_ISSUER_URL, audience: this.cfg.OIDC_AUDIENCE })).payload
         : (await jwtVerify(token, new TextEncoder().encode(this.requireDevSecret()), { audience: this.cfg.OIDC_AUDIENCE })).payload;
       if (!p.sub) throw new Error('no sub');
-      return { sub: p.sub, email: p.email as string | undefined, name: p.name as string | undefined };
+      return { sub: p.sub, email: p.email as string | undefined, name: p.name as string | undefined, issuedAt: p.iat };
     } catch { throw new DomainError('UNAUTHENTICATED', 'Invalid or expired access token.'); }
   }
   private requireDevSecret() { if (!this.cfg.DEV_AUTH_SECRET) throw new Error('no auth configured'); return this.cfg.DEV_AUTH_SECRET; }

@@ -1,0 +1,2320 @@
+{
+  "product": "DBLogistics-OS",
+  "reviewDate": "2026-10-09",
+  "reference": {
+    "repository": "elvorashippingllc/ElvoraLogisticsOS",
+    "commit": "19d333806a044f194d50f624d87d0a4b6d434ffc",
+    "register": "src/shared/enterprise-scope.json",
+    "registerSha256": "63164036e423790cdca76cef2ed250e0c4db5271c7728f5931efd7361e44bf38"
+  },
+  "notice": "Source assessment, not certification. Candidate evidence identifies a domain foundation and does not prove every requirement in the area. Enterprise acceptance requires the referenced full specification, workflow tests, deployment evidence and business sign-off. Partial areas are not complete. Local delivery evidence describes verified workflows; it does not certify the full area.",
+  "areas": [
+    {
+      "id": 1,
+      "area": "Corporate Administration",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Organization & identity",
+      "candidateEvidence": [
+        "apps/api/src/provisioning.ts",
+        "apps/api/src/platform/context.ts",
+        "apps/api/src/platform/op.ts",
+        "packages/gateway/src"
+      ],
+      "nextAcceptanceGate": "Validate entity/branch/field scopes, session revocation, authority assignments and isolated release promotion.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 2,
+      "area": "Enterprise Identity & Security",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Organization & identity",
+      "candidateEvidence": [
+        "apps/api/src/provisioning.ts",
+        "apps/api/src/platform/context.ts",
+        "apps/api/src/platform/op.ts",
+        "packages/gateway/src",
+        "apps/api/src/administration/access.service.ts",
+        "apps/api/test/enterprise-access.test.ts",
+        "packages/gateway/src/gateway.test.ts"
+      ],
+      "nextAcceptanceGate": "Validate entity/branch/field scopes, session revocation, authority assignments and isolated release promotion.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0",
+      "deliveryEvidence": {
+        "implementedLocalWorkflow": "Tenant token revocation, membership lifecycle and scoped role grant replacement",
+        "sourceAndTests": [
+          "apps/api/src/administration/access.service.ts",
+          "apps/api/test/enterprise-access.test.ts",
+          "packages/gateway/src/gateway.test.ts"
+        ],
+        "guide": "specifications/enterprise/work-control.md"
+      }
+    },
+    {
+      "id": 3,
+      "area": "Enterprise User Roles",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Organization & identity",
+      "candidateEvidence": [
+        "apps/api/src/provisioning.ts",
+        "apps/api/src/platform/context.ts",
+        "apps/api/src/platform/op.ts",
+        "packages/gateway/src",
+        "apps/api/src/administration/access.service.ts",
+        "apps/api/test/enterprise-access.test.ts"
+      ],
+      "nextAcceptanceGate": "Validate entity/branch/field scopes, session revocation, authority assignments and isolated release promotion.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0",
+      "deliveryEvidence": {
+        "implementedLocalWorkflow": "Role grant replacement validates entity/branch and portal templates",
+        "sourceAndTests": [
+          "apps/api/src/administration/access.service.ts",
+          "apps/api/test/enterprise-access.test.ts"
+        ],
+        "guide": "specifications/enterprise/work-control.md"
+      }
+    },
+    {
+      "id": 4,
+      "area": "Owner / CEO Command Center",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Management & analytics",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/kpi-dictionary.md"
+      ],
+      "nextAcceptanceGate": "Define reconciled metrics, accountable exceptions, permission-filtered datasets and tested reporting performance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 5,
+      "area": "Executive Exception Center",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Management & analytics",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/kpi-dictionary.md"
+      ],
+      "nextAcceptanceGate": "Define reconciled metrics, accountable exceptions, permission-filtered datasets and tested reporting performance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 6,
+      "area": "CRM",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 7,
+      "area": "Customer 360°",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 8,
+      "area": "Customer Onboarding",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 9,
+      "area": "KYC / Compliance",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 10,
+      "area": "Key Account Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 11,
+      "area": "Pricing Department",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 12,
+      "area": "Tariff Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 13,
+      "area": "Carrier RFQ",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 14,
+      "area": "Rate Intelligence",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 15,
+      "area": "Quotations",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 16,
+      "area": "Margin Controls",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 17,
+      "area": "Booking Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 18,
+      "area": "Master Job / House Job",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 19,
+      "area": "Freight Departments",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 20,
+      "area": "Shipment / Job Record",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 21,
+      "area": "Separate Status Models",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0"
+    },
+    {
+      "id": 22,
+      "area": "Routing Engine",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 23,
+      "area": "Ocean Freight",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 24,
+      "area": "Air Freight",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 25,
+      "area": "Road Freight",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 26,
+      "area": "NVOCC / Consolidation",
+      "referenceStatus": "Missing",
+      "dbLogisticsStatus": "not implemented",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 27,
+      "area": "Containers",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 28,
+      "area": "Detention / Demurrage",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 29,
+      "area": "Container Deposit",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 30,
+      "area": "BL / AWB Engine",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 31,
+      "area": "Original Document Custody",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 32,
+      "area": "Documentation Department",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 33,
+      "area": "Manifest Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 34,
+      "area": "Customs",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Trade & regulatory",
+      "candidateEvidence": [
+        "apps/api/src/trade",
+        "specifications/integrations/integration-register.md"
+      ],
+      "nextAcceptanceGate": "Version jurisdiction-specific rules and prove authority/provider acceptance; manual evidence cannot imply an API integration.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 35,
+      "area": "Customs Integration Layer",
+      "referenceStatus": "External validation",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Trade & regulatory",
+      "candidateEvidence": [
+        "apps/api/src/trade",
+        "specifications/integrations/integration-register.md"
+      ],
+      "nextAcceptanceGate": "Version jurisdiction-specific rules and prove authority/provider acceptance; manual evidence cannot imply an API integration.",
+      "externalAcceptanceRequired": true,
+      "priority": "P1"
+    },
+    {
+      "id": 36,
+      "area": "MPCI / Future Compliance Requirements",
+      "referenceStatus": "Missing",
+      "dbLogisticsStatus": "not implemented",
+      "workstream": "Trade & regulatory",
+      "candidateEvidence": [
+        "apps/api/src/trade",
+        "specifications/integrations/integration-register.md"
+      ],
+      "nextAcceptanceGate": "Version jurisdiction-specific rules and prove authority/provider acceptance; manual evidence cannot imply an API integration.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 37,
+      "area": "Dangerous Goods",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 38,
+      "area": "Reefer / Cold Chain",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 39,
+      "area": "Project Cargo",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 40,
+      "area": "Insurance",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 41,
+      "area": "Claims",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 42,
+      "area": "Transport Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 43,
+      "area": "Dispatch Board",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 44,
+      "area": "Driver Application",
+      "referenceStatus": "Missing",
+      "dbLogisticsStatus": "not implemented",
+      "workstream": "UX & mobile",
+      "candidateEvidence": [
+        "apps/staff-web/src",
+        "apps/logistics-mobile",
+        "packages/offline-sync"
+      ],
+      "nextAcceptanceGate": "Validate every role on desktop and phone; implement device identity, offline conflicts, scanning and POD acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 45,
+      "area": "Fleet",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 46,
+      "area": "Warehouse Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Warehouse",
+      "candidateEvidence": [
+        "apps/api/src/warehouse",
+        "database/invariants.sql"
+      ],
+      "nextAcceptanceGate": "Validate putaway, picking, counts, serial/batch controls, storage accrual and reconciled custody.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 47,
+      "area": "Advanced Warehouse",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Warehouse",
+      "candidateEvidence": [
+        "apps/api/src/warehouse",
+        "database/invariants.sql"
+      ],
+      "nextAcceptanceGate": "Validate putaway, picking, counts, serial/batch controls, storage accrual and reconciled custody.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 48,
+      "area": "Barcode / QR",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Warehouse",
+      "candidateEvidence": [
+        "apps/api/src/warehouse",
+        "database/invariants.sql"
+      ],
+      "nextAcceptanceGate": "Validate putaway, picking, counts, serial/batch controls, storage accrual and reconciled custody.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 49,
+      "area": "Warehouse Billing",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Warehouse",
+      "candidateEvidence": [
+        "apps/api/src/warehouse",
+        "database/invariants.sql"
+      ],
+      "nextAcceptanceGate": "Validate putaway, picking, counts, serial/batch controls, storage accrual and reconciled custody.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 50,
+      "area": "Vendor / Carrier / Agent Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 51,
+      "area": "Vendor Onboarding",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 52,
+      "area": "Vendor Performance",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 53,
+      "area": "Overseas Agent Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 54,
+      "area": "Job Costing",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0"
+    },
+    {
+      "id": 55,
+      "area": "Cost Allocation",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 56,
+      "area": "Accrual Accounting",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 57,
+      "area": "WIP / Revenue Recognition",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 58,
+      "area": "Double-Entry Accounting",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md",
+        "apps/api/src/finance/application/period.service.ts",
+        "apps/api/test/period-control.test.ts",
+        "database/migrations/022_period_control.sql",
+        "apps/staff-web/src/components/AccountingPeriods.tsx"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0",
+      "deliveryEvidence": {
+        "implementedLocalWorkflow": "Independent close/reopen approval of immutable period reconciliation snapshots with database posting locks",
+        "sourceAndTests": [
+          "apps/api/src/finance/application/period.service.ts",
+          "apps/api/test/period-control.test.ts",
+          "database/migrations/022_period_control.sql",
+          "apps/staff-web/src/components/AccountingPeriods.tsx"
+        ],
+        "guide": "specifications/enterprise/period-control.md"
+      }
+    },
+    {
+      "id": 59,
+      "area": "Accounts Receivable",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 60,
+      "area": "Accounts Payable",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 61,
+      "area": "Credit Control",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0"
+    },
+    {
+      "id": 62,
+      "area": "Credit Limits",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 63,
+      "area": "Treasury",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 64,
+      "area": "Cheque / PDC",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 65,
+      "area": "Bank Reconciliation",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 66,
+      "area": "Multicurrency",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 67,
+      "area": "UAE VAT",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Trade & regulatory",
+      "candidateEvidence": [
+        "apps/api/src/trade",
+        "specifications/integrations/integration-register.md"
+      ],
+      "nextAcceptanceGate": "Version jurisdiction-specific rules and prove authority/provider acceptance; manual evidence cannot imply an API integration.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 68,
+      "area": "UAE e-Invoicing",
+      "referenceStatus": "External validation",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Trade & regulatory",
+      "candidateEvidence": [
+        "apps/api/src/trade",
+        "specifications/integrations/integration-register.md"
+      ],
+      "nextAcceptanceGate": "Version jurisdiction-specific rules and prove authority/provider acceptance; manual evidence cannot imply an API integration.",
+      "externalAcceptanceRequired": true,
+      "priority": "P1"
+    },
+    {
+      "id": 69,
+      "area": "Corporate Tax Support",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Trade & regulatory",
+      "candidateEvidence": [
+        "apps/api/src/trade",
+        "specifications/integrations/integration-register.md"
+      ],
+      "nextAcceptanceGate": "Version jurisdiction-specific rules and prove authority/provider acceptance; manual evidence cannot imply an API integration.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 70,
+      "area": "Fixed Assets",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 71,
+      "area": "Budgeting",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 72,
+      "area": "Financial Consolidation",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "not implemented",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 73,
+      "area": "Procurement",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 74,
+      "area": "Operational Advances",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 75,
+      "area": "Approval Engine",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Workflow & work",
+      "candidateEvidence": [
+        "apps/api/src/automation",
+        "apps/worker/src",
+        "packages/contracts/src/workflow.ts"
+      ],
+      "nextAcceptanceGate": "Add authority matrices, human approval steps, working calendars, scoped queues, reassignment and continuity acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0"
+    },
+    {
+      "id": 76,
+      "area": "Workflow Engine",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Workflow & work",
+      "candidateEvidence": [
+        "apps/api/src/automation",
+        "apps/worker/src",
+        "packages/contracts/src/workflow.ts"
+      ],
+      "nextAcceptanceGate": "Add authority matrices, human approval steps, working calendars, scoped queues, reassignment and continuity acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 77,
+      "area": "SLA Engine",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Workflow & work",
+      "candidateEvidence": [
+        "apps/api/src/automation",
+        "apps/worker/src",
+        "packages/contracts/src/workflow.ts",
+        "packages/contracts/src/business-clock.ts",
+        "apps/api/test/work-control.test.ts",
+        "apps/worker/test/work-slas.test.ts"
+      ],
+      "nextAcceptanceGate": "Add authority matrices, human approval steps, working calendars, scoped queues, reassignment and continuity acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1",
+      "deliveryEvidence": {
+        "implementedLocalWorkflow": "Versioned business calendars, paused SLA clock and exactly-once breach records",
+        "sourceAndTests": [
+          "packages/contracts/src/business-clock.ts",
+          "apps/api/test/work-control.test.ts",
+          "apps/worker/test/work-slas.test.ts"
+        ],
+        "guide": "specifications/enterprise/work-control.md"
+      }
+    },
+    {
+      "id": 78,
+      "area": "Department Work Queues",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Workflow & work",
+      "candidateEvidence": [
+        "apps/api/src/automation",
+        "apps/worker/src",
+        "packages/contracts/src/workflow.ts",
+        "apps/api/src/work/work.service.ts",
+        "apps/api/test/work-control.test.ts"
+      ],
+      "nextAcceptanceGate": "Add authority matrices, human approval steps, working calendars, scoped queues, reassignment and continuity acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1",
+      "deliveryEvidence": {
+        "implementedLocalWorkflow": "Scoped department work queues and explicit audited lifecycle",
+        "sourceAndTests": [
+          "apps/api/src/work/work.service.ts",
+          "apps/api/test/work-control.test.ts"
+        ],
+        "guide": "specifications/enterprise/work-control.md"
+      }
+    },
+    {
+      "id": 79,
+      "area": "Workload Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Workflow & work",
+      "candidateEvidence": [
+        "apps/api/src/automation",
+        "apps/worker/src",
+        "packages/contracts/src/workflow.ts",
+        "apps/api/src/work/work.service.ts",
+        "apps/api/test/work-control.test.ts"
+      ],
+      "nextAcceptanceGate": "Add authority matrices, human approval steps, working calendars, scoped queues, reassignment and continuity acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1",
+      "deliveryEvidence": {
+        "implementedLocalWorkflow": "Scoped capacity, availability, points and utilization summaries",
+        "sourceAndTests": [
+          "apps/api/src/work/work.service.ts",
+          "apps/api/test/work-control.test.ts"
+        ],
+        "guide": "specifications/enterprise/work-control.md"
+      }
+    },
+    {
+      "id": 80,
+      "area": "Shift Handover",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Workflow & work",
+      "candidateEvidence": [
+        "apps/api/src/automation",
+        "apps/worker/src",
+        "packages/contracts/src/workflow.ts",
+        "apps/api/src/work/work.service.ts",
+        "apps/api/test/work-control.test.ts"
+      ],
+      "nextAcceptanceGate": "Add authority matrices, human approval steps, working calendars, scoped queues, reassignment and continuity acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1",
+      "deliveryEvidence": {
+        "implementedLocalWorkflow": "Recipient-only acknowledgement atomically transfers unchanged assigned work",
+        "sourceAndTests": [
+          "apps/api/src/work/work.service.ts",
+          "apps/api/test/work-control.test.ts"
+        ],
+        "guide": "specifications/enterprise/work-control.md"
+      }
+    },
+    {
+      "id": 81,
+      "area": "Customer SOP Engine",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 82,
+      "area": "Route / Lane SOP",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 83,
+      "area": "Workflow Templates",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Workflow & work",
+      "candidateEvidence": [
+        "apps/api/src/automation",
+        "apps/worker/src",
+        "packages/contracts/src/workflow.ts",
+        "apps/api/src/work/work.service.ts",
+        "apps/api/test/work-control.test.ts"
+      ],
+      "nextAcceptanceGate": "Add authority matrices, human approval steps, working calendars, scoped queues, reassignment and continuity acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1",
+      "deliveryEvidence": {
+        "implementedLocalWorkflow": "Immutable dependency templates instantiate gated work with step SLAs",
+        "sourceAndTests": [
+          "apps/api/src/work/work.service.ts",
+          "apps/api/test/work-control.test.ts"
+        ],
+        "guide": "specifications/enterprise/work-control.md"
+      }
+    },
+    {
+      "id": 84,
+      "area": "Cut-Off Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 85,
+      "area": "Pre-Alert Automation",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 86,
+      "area": "Unified Inbox",
+      "referenceStatus": "Missing",
+      "dbLogisticsStatus": "not implemented",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 87,
+      "area": "WhatsApp Business",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 88,
+      "area": "WhatsApp Automation",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 89,
+      "area": "Daily Owner WhatsApp Brief",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 90,
+      "area": "Email Automation",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 91,
+      "area": "Communication Timeline",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 92,
+      "area": "Universal Side Panel",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 93,
+      "area": "Document Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0"
+    },
+    {
+      "id": 94,
+      "area": "OCR",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 95,
+      "area": "Document Matching",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 96,
+      "area": "Customer Portal",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 97,
+      "area": "Agent Portal",
+      "referenceStatus": "Missing",
+      "dbLogisticsStatus": "not implemented",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 98,
+      "area": "Vendor Portal",
+      "referenceStatus": "Missing",
+      "dbLogisticsStatus": "not implemented",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 99,
+      "area": "Employee Portal",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P1"
+    },
+    {
+      "id": 100,
+      "area": "HRMS",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "People & quality",
+      "candidateEvidence": [
+        "apps/api/src/people",
+        "apps/api/src/quality",
+        "apps/api/src/collaboration"
+      ],
+      "nextAcceptanceGate": "Define skills, training, CAPA, risk ownership, independent evidence review and immutable retention policies.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 101,
+      "area": "UAE Payroll",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 102,
+      "area": "WPS",
+      "referenceStatus": "External validation",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Trade & regulatory",
+      "candidateEvidence": [
+        "apps/api/src/trade",
+        "specifications/integrations/integration-register.md"
+      ],
+      "nextAcceptanceGate": "Version jurisdiction-specific rules and prove authority/provider acceptance; manual evidence cannot imply an API integration.",
+      "externalAcceptanceRequired": true,
+      "priority": "P2"
+    },
+    {
+      "id": 103,
+      "area": "EOSB",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Finance",
+      "candidateEvidence": [
+        "apps/api/src/finance",
+        "specifications/accounting/accounting-manual.md"
+      ],
+      "nextAcceptanceGate": "Agree accounting policies and prove multicurrency, posting, reconciliation, fiscal close and independent authority.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 104,
+      "area": "Employee Documents",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "People & quality",
+      "candidateEvidence": [
+        "apps/api/src/people",
+        "apps/api/src/quality",
+        "apps/api/src/collaboration"
+      ],
+      "nextAcceptanceGate": "Define skills, training, CAPA, risk ownership, independent evidence review and immutable retention policies.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 105,
+      "area": "Training & Competency",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "People & quality",
+      "candidateEvidence": [
+        "apps/api/src/people",
+        "apps/api/src/quality",
+        "apps/api/src/collaboration"
+      ],
+      "nextAcceptanceGate": "Define skills, training, CAPA, risk ownership, independent evidence review and immutable retention policies.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 106,
+      "area": "Knowledge Base",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "People & quality",
+      "candidateEvidence": [
+        "apps/api/src/people",
+        "apps/api/src/quality",
+        "apps/api/src/collaboration",
+        "apps/api/src/governance/governance.service.ts",
+        "apps/api/test/governance.test.ts"
+      ],
+      "nextAcceptanceGate": "Define skills, training, CAPA, risk ownership, independent evidence review and immutable retention policies.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2",
+      "deliveryEvidence": {
+        "implementedLocalWorkflow": "Controlled knowledge revisions, independent publication and per-hash acknowledgements",
+        "sourceAndTests": [
+          "apps/api/src/governance/governance.service.ts",
+          "apps/api/test/governance.test.ts"
+        ],
+        "guide": "specifications/enterprise/work-control.md"
+      }
+    },
+    {
+      "id": 107,
+      "area": "Internal Helpdesk",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "People & quality",
+      "candidateEvidence": [
+        "apps/api/src/people",
+        "apps/api/src/quality",
+        "apps/api/src/collaboration"
+      ],
+      "nextAcceptanceGate": "Define skills, training, CAPA, risk ownership, independent evidence review and immutable retention policies.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 108,
+      "area": "Customer Helpdesk",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "People & quality",
+      "candidateEvidence": [
+        "apps/api/src/people",
+        "apps/api/src/quality",
+        "apps/api/src/collaboration"
+      ],
+      "nextAcceptanceGate": "Define skills, training, CAPA, risk ownership, independent evidence review and immutable retention policies.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 109,
+      "area": "Complaint Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "People & quality",
+      "candidateEvidence": [
+        "apps/api/src/people",
+        "apps/api/src/quality",
+        "apps/api/src/collaboration"
+      ],
+      "nextAcceptanceGate": "Define skills, training, CAPA, risk ownership, independent evidence review and immutable retention policies.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 110,
+      "area": "Quality Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "People & quality",
+      "candidateEvidence": [
+        "apps/api/src/people",
+        "apps/api/src/quality",
+        "apps/api/src/collaboration"
+      ],
+      "nextAcceptanceGate": "Define skills, training, CAPA, risk ownership, independent evidence review and immutable retention policies.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 111,
+      "area": "HSE",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "People & quality",
+      "candidateEvidence": [
+        "apps/api/src/people",
+        "apps/api/src/quality",
+        "apps/api/src/collaboration"
+      ],
+      "nextAcceptanceGate": "Define skills, training, CAPA, risk ownership, independent evidence review and immutable retention policies.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 112,
+      "area": "Compliance Calendar",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Trade & regulatory",
+      "candidateEvidence": [
+        "apps/api/src/trade",
+        "specifications/integrations/integration-register.md"
+      ],
+      "nextAcceptanceGate": "Version jurisdiction-specific rules and prove authority/provider acceptance; manual evidence cannot imply an API integration.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 113,
+      "area": "Risk Register",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "People & quality",
+      "candidateEvidence": [
+        "apps/api/src/people",
+        "apps/api/src/quality",
+        "apps/api/src/collaboration",
+        "apps/api/src/governance/governance.service.ts",
+        "apps/api/test/governance.test.ts"
+      ],
+      "nextAcceptanceGate": "Define skills, training, CAPA, risk ownership, independent evidence review and immutable retention policies.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2",
+      "deliveryEvidence": {
+        "implementedLocalWorkflow": "Formal scored risk register, independent immutable reviews and evidence-gated closure",
+        "sourceAndTests": [
+          "apps/api/src/governance/governance.service.ts",
+          "apps/api/test/governance.test.ts"
+        ],
+        "guide": "specifications/enterprise/work-control.md"
+      }
+    },
+    {
+      "id": 114,
+      "area": "Audit Module",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "People & quality",
+      "candidateEvidence": [
+        "apps/api/src/people",
+        "apps/api/src/quality",
+        "apps/api/src/collaboration"
+      ],
+      "nextAcceptanceGate": "Define skills, training, CAPA, risk ownership, independent evidence review and immutable retention policies.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 115,
+      "area": "Immutable Audit Trail",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "People & quality",
+      "candidateEvidence": [
+        "apps/api/src/people",
+        "apps/api/src/quality",
+        "apps/api/src/collaboration"
+      ],
+      "nextAcceptanceGate": "Define skills, training, CAPA, risk ownership, independent evidence review and immutable retention policies.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0"
+    },
+    {
+      "id": 116,
+      "area": "Reports",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Management & analytics",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/kpi-dictionary.md"
+      ],
+      "nextAcceptanceGate": "Define reconciled metrics, accountable exceptions, permission-filtered datasets and tested reporting performance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 117,
+      "area": "Profitability Analytics",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Management & analytics",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/kpi-dictionary.md"
+      ],
+      "nextAcceptanceGate": "Define reconciled metrics, accountable exceptions, permission-filtered datasets and tested reporting performance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 118,
+      "area": "Staff Productivity",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Management & analytics",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/kpi-dictionary.md"
+      ],
+      "nextAcceptanceGate": "Define reconciled metrics, accountable exceptions, permission-filtered datasets and tested reporting performance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 119,
+      "area": "Carrier Performance",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Management & analytics",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/kpi-dictionary.md"
+      ],
+      "nextAcceptanceGate": "Define reconciled metrics, accountable exceptions, permission-filtered datasets and tested reporting performance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 120,
+      "area": "Customer Churn / Growth",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Management & analytics",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/kpi-dictionary.md"
+      ],
+      "nextAcceptanceGate": "Define reconciled metrics, accountable exceptions, permission-filtered datasets and tested reporting performance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 121,
+      "area": "Report Builder",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "not implemented",
+      "workstream": "Management & analytics",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/kpi-dictionary.md"
+      ],
+      "nextAcceptanceGate": "Define reconciled metrics, accountable exceptions, permission-filtered datasets and tested reporting performance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 122,
+      "area": "Scheduled Reports",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Management & analytics",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/kpi-dictionary.md"
+      ],
+      "nextAcceptanceGate": "Define reconciled metrics, accountable exceptions, permission-filtered datasets and tested reporting performance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 123,
+      "area": "BI Layer",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "not implemented",
+      "workstream": "Management & analytics",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/kpi-dictionary.md"
+      ],
+      "nextAcceptanceGate": "Define reconciled metrics, accountable exceptions, permission-filtered datasets and tested reporting performance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 124,
+      "area": "Universal Search",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Management & analytics",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/kpi-dictionary.md"
+      ],
+      "nextAcceptanceGate": "Define reconciled metrics, accountable exceptions, permission-filtered datasets and tested reporting performance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 125,
+      "area": "EDI",
+      "referenceStatus": "External validation",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": true,
+      "priority": "P2"
+    },
+    {
+      "id": 126,
+      "area": "Integration Hub",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 127,
+      "area": "Integration Monitoring",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 128,
+      "area": "API Platform",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Communications & partners",
+      "candidateEvidence": [
+        "apps/api/src/documents",
+        "apps/api/src/integrations",
+        "apps/partner-portal/src",
+        "apps/worker/src/notify",
+        "packages/contracts/src/routes.ts",
+        "specifications/architecture/openapi.json"
+      ],
+      "nextAcceptanceGate": "Prove channel consent, delivery/receipt semantics, private storage, partner scopes and durable connector recovery.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0",
+      "deliveryEvidence": {
+        "implementedLocalWorkflow": "Contract-generated health, work and governance APIs",
+        "sourceAndTests": [
+          "packages/contracts/src/routes.ts",
+          "specifications/architecture/openapi.json"
+        ],
+        "guide": "specifications/enterprise/work-control.md"
+      }
+    },
+    {
+      "id": 129,
+      "area": "AI Operations Copilot",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "AI",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/ai-tool-policy.md"
+      ],
+      "nextAcceptanceGate": "Ground every response in permission-scoped evidence, audit actions and prevent direct financial/customs/cargo-release decisions.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 130,
+      "area": "AI Pricing Assistant",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "AI",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/ai-tool-policy.md"
+      ],
+      "nextAcceptanceGate": "Ground every response in permission-scoped evidence, audit actions and prevent direct financial/customs/cargo-release decisions.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 131,
+      "area": "AI Documentation QA",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "AI",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/ai-tool-policy.md"
+      ],
+      "nextAcceptanceGate": "Ground every response in permission-scoped evidence, audit actions and prevent direct financial/customs/cargo-release decisions.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 132,
+      "area": "AI Finance Analyst",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "AI",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/ai-tool-policy.md"
+      ],
+      "nextAcceptanceGate": "Ground every response in permission-scoped evidence, audit actions and prevent direct financial/customs/cargo-release decisions.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 133,
+      "area": "AI Management Analyst",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "AI",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/ai-tool-policy.md"
+      ],
+      "nextAcceptanceGate": "Ground every response in permission-scoped evidence, audit actions and prevent direct financial/customs/cargo-release decisions.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 134,
+      "area": "AI Guardrails",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "AI",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/ai-tool-policy.md"
+      ],
+      "nextAcceptanceGate": "Ground every response in permission-scoped evidence, audit actions and prevent direct financial/customs/cargo-release decisions.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0"
+    },
+    {
+      "id": 135,
+      "area": "Master Data Governance",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 136,
+      "area": "Data Quality",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Commercial & procurement",
+      "candidateEvidence": [
+        "apps/api/src/commercial",
+        "apps/api/src/parties",
+        "database/migrations/017_rate_procurement.sql"
+      ],
+      "nextAcceptanceGate": "Enforce counterparty onboarding, governed pricing, contractual validity and supplier execution with reviewer acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 137,
+      "area": "Job Closure",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0"
+    },
+    {
+      "id": 138,
+      "area": "Controlled Reopening",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Freight execution",
+      "candidateEvidence": [
+        "apps/api/src/logistics",
+        "apps/api/src/transport",
+        "database/migrations/004_logistics_transport.sql"
+      ],
+      "nextAcceptanceGate": "Prove full movement, equipment, custody and exception lifecycles; require evidence for releases and closure.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0"
+    },
+    {
+      "id": 139,
+      "area": "Production Environments",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Organization & identity",
+      "candidateEvidence": [
+        "apps/api/src/provisioning.ts",
+        "apps/api/src/platform/context.ts",
+        "apps/api/src/platform/op.ts",
+        "packages/gateway/src"
+      ],
+      "nextAcceptanceGate": "Validate entity/branch/field scopes, session revocation, authority assignments and isolated release promotion.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0"
+    },
+    {
+      "id": 140,
+      "area": "Backup & Disaster Recovery",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Recovery & migration",
+      "candidateEvidence": [
+        "specifications/recovery/recovery-plan.md",
+        "database/invariants.sql"
+      ],
+      "nextAcceptanceGate": "Measure restore and rollback outcomes, validate customer-data reconciliation and wire service-level monitoring.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0"
+    },
+    {
+      "id": 141,
+      "area": "Monitoring",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Recovery & migration",
+      "candidateEvidence": [
+        "specifications/recovery/recovery-plan.md",
+        "database/invariants.sql",
+        "apps/api/src/platform/health.controller.ts",
+        "apps/api/src/administration/access.service.ts",
+        "apps/api/test/enterprise-access.test.ts"
+      ],
+      "nextAcceptanceGate": "Measure restore and rollback outcomes, validate customer-data reconciliation and wire service-level monitoring.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0",
+      "deliveryEvidence": {
+        "implementedLocalWorkflow": "API/database readiness and scoped tenant queue health counters",
+        "sourceAndTests": [
+          "apps/api/src/platform/health.controller.ts",
+          "apps/api/src/administration/access.service.ts",
+          "apps/api/test/enterprise-access.test.ts"
+        ],
+        "guide": "specifications/enterprise/work-control.md"
+      }
+    },
+    {
+      "id": 142,
+      "area": "Release Management",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Organization & identity",
+      "candidateEvidence": [
+        "apps/api/src/provisioning.ts",
+        "apps/api/src/platform/context.ts",
+        "apps/api/src/platform/op.ts",
+        "packages/gateway/src"
+      ],
+      "nextAcceptanceGate": "Validate entity/branch/field scopes, session revocation, authority assignments and isolated release promotion.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0"
+    },
+    {
+      "id": 143,
+      "area": "Migration from Fresa",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "not implemented",
+      "workstream": "Recovery & migration",
+      "candidateEvidence": [
+        "specifications/recovery/recovery-plan.md",
+        "database/invariants.sql"
+      ],
+      "nextAcceptanceGate": "Measure restore and rollback outcomes, validate customer-data reconciliation and wire service-level monitoring.",
+      "externalAcceptanceRequired": false,
+      "priority": "P0"
+    },
+    {
+      "id": 144,
+      "area": "UX — do NOT copy Fresa visually",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "UX & mobile",
+      "candidateEvidence": [
+        "apps/staff-web/src",
+        "apps/logistics-mobile",
+        "packages/offline-sync"
+      ],
+      "nextAcceptanceGate": "Validate every role on desktop and phone; implement device identity, offline conflicts, scanning and POD acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 145,
+      "area": "Staff Homepage",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Management & analytics",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/kpi-dictionary.md"
+      ],
+      "nextAcceptanceGate": "Define reconciled metrics, accountable exceptions, permission-filtered datasets and tested reporting performance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 146,
+      "area": "Management Homepage",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "Management & analytics",
+      "candidateEvidence": [
+        "apps/api/src/intelligence",
+        "specifications/architecture/kpi-dictionary.md"
+      ],
+      "nextAcceptanceGate": "Define reconciled metrics, accountable exceptions, permission-filtered datasets and tested reporting performance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    },
+    {
+      "id": 147,
+      "area": "Mobile",
+      "referenceStatus": "Partial",
+      "dbLogisticsStatus": "partial foundation",
+      "workstream": "UX & mobile",
+      "candidateEvidence": [
+        "apps/staff-web/src",
+        "apps/logistics-mobile",
+        "packages/offline-sync"
+      ],
+      "nextAcceptanceGate": "Validate every role on desktop and phone; implement device identity, offline conflicts, scanning and POD acceptance.",
+      "externalAcceptanceRequired": false,
+      "priority": "P2"
+    }
+  ]
+}

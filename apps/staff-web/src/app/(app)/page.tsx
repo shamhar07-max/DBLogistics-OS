@@ -13,7 +13,7 @@ export default function Today() {
   const active = d ? d.jobsByStatus.filter((j: any) => !['closed', 'cancelled'].includes(j.status)).reduce((a: number, j: any) => a + j.n, 0) : 0;
   return (
     <>
-      <PageTitle title="Owner overview" sub="Today · what is moving, at risk, earning, waiting for you" />
+      <PageTitle title="Owner overview" sub="Today · what is moving, at risk, earning, waiting for you"><Link href="/work" className="text-sm font-semibold underline">Work control</Link><Link href="/governance" className="text-sm font-semibold underline">Knowledge & risk</Link></PageTitle>
       <QueryBoundary status={ov.status} error={errView(ov.error)} stale={ov.isFetching && !!d}>
         {d && <>
           <section className="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-label="Owner questions">

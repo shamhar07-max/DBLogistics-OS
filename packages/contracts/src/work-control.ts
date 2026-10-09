@@ -1,0 +1,16 @@
+import { z } from 'zod';
+const uuid=z.string().uuid(),label=z.string().trim().min(2).max(120),text=z.string().trim().min(5).max(4000);
+export const BusinessCalendar=z.object({timezone:z.string().max(80).refine(v=>{try{new Intl.DateTimeFormat('en',{timeZone:v});return true;}catch{return false;}},'Unknown timezone'),weekdays:z.array(z.number().int().min(1).max(7)).min(1).max(7).refine(a=>new Set(a).size===a.length),startMinute:z.number().int().min(0).max(1439),endMinute:z.number().int().min(1).max(1440),holidays:z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(v=>!Number.isNaN(Date.parse(v))&&new Date(v).toISOString().slice(0,10)===v)).max(366).default([])}).strict().refine(c=>c.endMinute>c.startMinute,'Working hours must end after they start');
+export type Calendar= z.infer<typeof BusinessCalendar>;
+export const CreateCalendarBody=z.object({key:z.string().regex(/^[a-z][a-z0-9_-]{1,50}$/),name:label,calendar:BusinessCalendar}).strict();
+const scope={legalEntityId:uuid,branchId:uuid.nullable().default(null)};
+const step=z.object({key:z.string().regex(/^[a-z][a-z0-9_-]{1,50}$/),title:label,department:label,slaMinutes:z.number().int().min(1).max(43200),complexity:z.number().int().min(1).max(100).default(1),dependsOn:z.array(z.string().max(51)).max(20).default([])}).strict();
+export const CreateWorkTemplateBody=z.object({...scope,key:z.string().regex(/^[a-z][a-z0-9_-]{1,50}$/),name:label,calendarId:uuid,steps:z.array(step).min(1).max(30)}).strict().superRefine((b,c)=>{const keys=b.steps.map(s=>s.key);if(new Set(keys).size!==keys.length)c.addIssue({code:'custom',message:'Step keys must be unique'});const seen=new Set<string>();for(const s of b.steps){if(s.dependsOn.some(k=>!seen.has(k)))c.addIssue({code:'custom',message:'Dependencies must refer to an earlier step'});seen.add(s.key);}});
+export const StartWorkTemplateBody=z.object({templateId:uuid,title:label,assigneeMembershipId:uuid.nullable().default(null)}).strict();
+export const CreateWorkItemBody=z.object({...scope,title:label,description:text,department:label,calendarId:uuid,slaMinutes:z.number().int().min(1).max(43200),complexity:z.number().int().min(1).max(100).default(1),priority:z.enum(['low','normal','high','critical']).default('normal'),assigneeMembershipId:uuid.nullable().default(null)}).strict();
+export const WorkTransitionBody=z.object({action:z.enum(['start','pause','resume','complete','cancel']),note:text}).strict();
+export const AssignWorkBody=z.object({assigneeMembershipId:uuid.nullable(),reason:text}).strict();
+export const WorkListQuery=z.object({department:z.string().max(120).optional(),status:z.enum(['blocked','open','in_progress','waiting','done','cancelled']).optional(),mine:z.enum(['true','false']).optional()});
+export const CapacityBody=z.object({...scope,membershipId:uuid,department:label,capacityPoints:z.number().int().min(1).max(1000),available:z.boolean().default(true)}).strict();
+export const CreateHandoverBody=z.object({recipientMembershipId:uuid,itemIds:z.array(uuid).min(1).max(100).refine(a=>new Set(a).size===a.length),note:text}).strict();
+export const AcknowledgeHandoverBody=z.object({note:text}).strict();

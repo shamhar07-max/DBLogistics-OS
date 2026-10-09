@@ -78,7 +78,7 @@ test('finance: tabs for invoices, receipts, supplier bills and charges', async (
   for (const t of ['Receipts', 'Supplier bills', 'Charges']) { await page.getByRole('tab', { name: t }).click(); await expect(page.getByTestId('error')).toHaveCount(0); }
 });
 test('today: attention strip shows tasks, incidents and expiring qualifications', async ({ page }) => {
-  await login(page, 'layla'); await expect(page.getByText('Open incidents')).toBeVisible(); await expect(page.getByText(/Qualifications expiring/)).toBeVisible(); await page.waitForTimeout(800); await shot(page, '19-today-attention');
+  await login(page, 'layla'); await expect(page.getByRole('heading', { name: 'Open incidents', exact: true })).toBeVisible(); await expect(page.getByText(/Qualifications expiring/)).toBeVisible(); await page.waitForTimeout(800); await shot(page, '19-today-attention');
 });
 
 test('automation designer: validates as you type, previews with a sample event, saves a draft version, activates and retires it', async ({ page }) => {

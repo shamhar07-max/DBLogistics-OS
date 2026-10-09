@@ -4,6 +4,14 @@ Published through the **transactional outbox** (`platform.outbox`) in the same t
 
 | Topic | Producer module(s) | Built-in consumers |
 |---|---|---|
+| `AccountingPeriodDecided` | — (reserved) | — |
+| `RfqIssued` | commercial | — |
+| `RfqAwarded` | commercial | — |
+| `WorkCreated` | — (reserved) | — |
+| `WorkStateChanged` | — (reserved) | — |
+| `WorkSlaBreached` | — (reserved) | — |
+| `WorkHandoverRequested` | — (reserved) | — |
+| `WorkHandoverAcknowledged` | — (reserved) | — |
 | `EnquiryQualified` | commercial | — |
 | `QuoteApproved` | commercial | — |
 | `QuoteAccepted` | commercial | job-handover task |

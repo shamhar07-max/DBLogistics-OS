@@ -6,6 +6,7 @@ import { handleEvent, resumeDueRuns } from './handlers';
 import { pickScanner, pickReader } from './scanner';
 import { pickAdapters } from './notify/adapters';
 import { sendDue } from './notify/queue';
+import { recordWorkBreaches } from './work-slas';
 
 const { scanner, name: scannerName } = pickScanner();
 const reader = pickReader();
@@ -17,7 +18,7 @@ const queue = new Queue(EVENTS_QUEUE, { connection });
 const worker = new Worker(EVENTS_QUEUE, async (job) => handleEvent(pool, scanner, job.data, reader), { connection, concurrency: 8 });
 worker.on('failed', (j, err) => console.error('event failed', j?.id, err.message));
 let busy = false;                                                   // a slow tick must never overlap the next one
-const tick = async () => { if (busy) return; busy = true; try { await relayOutbox(pool, queue); await resumeDueRuns(pool); await sendDue(pool, adapters); } catch (e) { console.error('relay error', e); } finally { busy = false; } };
+const tick = async () => { if (busy) return; busy = true; try { await relayOutbox(pool, queue); await resumeDueRuns(pool); await sendDue(pool, adapters); await recordWorkBreaches(pool); } catch (e) { console.error('relay error', e); } finally { busy = false; } };
 const timer = setInterval(tick, 1000);
 console.log(`DigitalBurj worker running (outbox relay + event consumers + workflow timers) · document scanner: ${scannerName} · ${channelSummary}`);
 for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, async () => { clearInterval(timer); await worker.close(); await queue.close(); await pool.end(); process.exit(0); });

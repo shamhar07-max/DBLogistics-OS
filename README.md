@@ -6,6 +6,8 @@ This repository contains the **brand & design system**, the **dashboard designs*
 
 > **Read first:** [`specifications/architecture/status.md`](specifications/architecture/status.md) — an honest ledger of what is built/verified, scaffolded, and not started.
 
+**Enterprise scope:** [147-area assessment and delivery plan](specifications/enterprise/README.md), using ElvoraLogisticsOS as a reference. [Carrier rate procurement](specifications/enterprise/rate-procurement.md) is available through **Enquiries & quotes → Rate procurement**: prepare/issue RFQs, preserve supplier response revisions, compare current rates and independently award an approved rate. [Work control and governance](specifications/enterprise/work-control.md) adds business-calendar SLAs, department queues, capacity, handover, controlled knowledge, a formal risk register, membership/token revocation and operational health. Open **Today → Work control / Knowledge & risk** and **Administration → Access control / Operations health**. [Reviewed accounting periods](specifications/enterprise/period-control.md) are available in **Money → Accounting periods**, with exact period movement and independent close/reopen decisions. The enterprise scope remains partially implemented; provider and production acceptance are tracked separately.
+
 ## Quickstart (no Docker needed)
 ```bash
 npm install

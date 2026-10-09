@@ -16,7 +16,7 @@ export default function Enquiries() {
   const { register, handleSubmit, formState: { errors }, reset } = useForm<F>({ resolver: zodResolver(Form), defaultValues: { mode: 'ocean_fcl', source: 'staff', cargo: {} } });
   const rows = (q.data as any[]) ?? [];
   return (<>
-    <PageTitle title="Enquiries & quotes" sub="Commercial"><div className="flex items-center gap-3"><Link href="/quotes" className="text-sm underline">All quotes</Link><Link href="/quotes/new"><Button variant="signal">New quote</Button></Link></div></PageTitle>
+    <PageTitle title="Enquiries & quotes" sub="Commercial"><div className="flex flex-wrap items-center gap-3"><Link href="/quotes" className="text-sm underline">All quotes</Link><Link href="/procurement" className="text-sm underline">Rate procurement</Link><Link href="/quotes/new"><Button variant="signal">New quote</Button></Link></div></PageTitle>
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-5">
       <Card title="Intake inbox"><QueryBoundary status={q.status} error={errView(q.error)} isEmpty={!rows.length} empty="No enquiries yet.">
         <table className="w-full text-sm"><tbody>{rows.map((e) => <tr key={e.id} className="border-b border-line"><td className="py-2.5 font-mono font-semibold">{e.ref}</td><td>{e.origin} → {e.destination}</td><td><StatusChip s={e.status} /></td><td className="text-xs text-steel">{(e.missing_information ?? []).length ? `missing: ${e.missing_information.join(', ')}` : ''}</td><td className="text-right"><Button size="sm" variant="ghost" onClick={() => qualify.mutate({ params: { id: e.id } })}>Qualify</Button></td></tr>)}</tbody></table></QueryBoundary><ErrorNote e={qualify.error} /></Card>

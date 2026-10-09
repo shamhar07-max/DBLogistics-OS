@@ -25,7 +25,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <div className="relative w-full overflow-hidden" style={{ aspectRatio: '1760/480' }}><img src="/logo.png" alt="DigitalBurj Logistics OS — One system. Every operation." className="absolute max-w-none" style={{ width: '112.67%', left: '-7.67%', top: '-29.17%' }} /></div>
         </div>
         <nav className="flex-1 space-y-0.5 overflow-auto px-2.5" aria-label="Primary">
-          {NAV.map(([label, href, Icon]) => { const active = href === '/' ? path === '/' : href === '/enquiries' ? ['/enquiries', '/quotes'].some((x) => path.startsWith(x)) : path.startsWith(href); return <Link key={href} href={href} aria-current={active ? 'page' : undefined}
+          {NAV.map(([label, href, Icon]) => { const active = href === '/' ? path === '/' || path.startsWith('/work') || path.startsWith('/governance') : href === '/enquiries' ? ['/enquiries', '/quotes', '/procurement'].some((x) => path.startsWith(x)) : path.startsWith(href); return <Link key={href} href={href} aria-current={active ? 'page' : undefined}
               className={clsx('relative flex items-center gap-3 rounded-sm px-2.5 py-2 text-[13.5px] transition hover:translate-x-0.5 hover:bg-white/5', active && 'bg-gradient-to-r from-signal/25 to-transparent text-white')}>
               {active && <i className="absolute -left-2.5 top-1.5 bottom-1.5 w-1 rounded-r bg-signal" />}<Icon size={17} className={active ? 'text-white' : 'text-[#7FA79C]'} />{label}</Link>; })}
         </nav>

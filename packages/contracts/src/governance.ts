@@ -1,0 +1,8 @@
+import {z} from 'zod';
+const uuid=z.string().uuid(),text=z.string().trim().min(10).max(20000),scope={legalEntityId:uuid,branchId:uuid.nullable().default(null)};
+export const CreateKnowledgeBody=z.object({...scope,key:z.string().regex(/^[a-z][a-z0-9_-]{1,80}$/),title:z.string().trim().min(3).max(200),category:z.enum(['sop','policy','manual','customer_sop','carrier_instruction','customs_guide','training']),content:text,changeNote:z.string().trim().min(10).max(2000)}).strict();
+export const PublishKnowledgeBody=z.object({reviewNote:z.string().trim().min(10).max(2000)}).strict();
+export const KnowledgeQuery=z.object({search:z.string().max(200).optional(),category:z.enum(['sop','policy','manual','customer_sop','carrier_instruction','customs_guide','training']).optional()});
+const date=z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(s=>!Number.isNaN(Date.parse(s))&&new Date(s).toISOString().slice(0,10)===s),score=z.number().int().min(1).max(5);
+export const CreateRiskBody=z.object({...scope,title:z.string().trim().min(3).max(200),category:z.enum(['financial','operational','customer','carrier','compliance','security','legal']),description:text,likelihood:score,impact:score,mitigation:text,ownerMembershipId:uuid,nextReviewOn:date}).strict();
+export const ReviewRiskBody=z.object({outcome:z.enum(['open','mitigating','closed']),residualLikelihood:score,residualImpact:score,reviewNote:z.string().trim().min(10).max(4000),mitigation:text,nextReviewOn:date,evidenceDocumentId:uuid.nullable().default(null)}).strict().refine(b=>b.outcome!=='closed'||!!b.evidenceDocumentId,'Closing a risk requires approved evidence');

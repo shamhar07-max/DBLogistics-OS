@@ -10,7 +10,10 @@ export function useCmd<Id extends OperationId>(op: Id, o: { invalidate?: Operati
   const qc = useQueryClient();
   return useMutation<any, ApiError, { params?: ParamsOf<Id>; body?: BodyOf<Id>; ifMatch?: number }>({
     mutationFn: (v) => call(op, v as any),
-    onSuccess: (d) => { o.invalidate?.forEach((k) => qc.invalidateQueries({ queryKey: [k] })); o.onSuccess?.(d); },
+    onSuccess: async (d) => {
+      await Promise.all((o.invalidate ?? []).map(k => qc.invalidateQueries({ queryKey: [k] })));
+      o.onSuccess?.(d);
+    },
   });
 }
 export { errView, money } from '@dbl/ui';

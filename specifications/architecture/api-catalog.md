@@ -4,6 +4,47 @@ Base path `/api/v1`. Full schemas: [`openapi.json`](./openapi.json). Money is a 
 
 | Operation | Method & path | Permission | Notes |
 |---|---|---|---|
+| `listAccountingPeriods` | GET `/api/v1/accounting-periods` | `finance.period.view` | Scoped accounting periods |
+| `getAccountingPeriod` | GET `/api/v1/accounting-periods/:id` | `finance.period.view` | Period trial balance and reviewed change history |
+| `requestPeriodChange` | POST `/api/v1/accounting-periods/:id/requests` | `finance.period.request` | 🔁 🏷 Request reconciled period close or controlled reopening |
+| `decidePeriodChange` | POST `/api/v1/period-requests/:id/decide` | `finance.period.decide` | 🔁 🏷 Independently approve or reject a period change |
+| `listKnowledge` | GET `/api/v1/knowledge` | `work.view` | Search scoped knowledge revisions |
+| `createKnowledge` | POST `/api/v1/knowledge` | `work.manage` | 🔁 Create an immutable draft revision |
+| `publishKnowledge` | POST `/api/v1/knowledge/:id/publish` | `work.configure` | 🔁 Independently publish a knowledge revision |
+| `acknowledgeKnowledge` | POST `/api/v1/knowledge/:id/acknowledge` | `work.view` | 🔁 Acknowledge a specific published revision and content hash |
+| `listRisks` | GET `/api/v1/risks` | `quality.view` | Scoped risk register ranked by residual score |
+| `createRisk` | POST `/api/v1/risks` | `quality.manage` | 🔁 Register owned and scored risk with mitigation |
+| `getRisk` | GET `/api/v1/risks/:id` | `quality.view` | Risk and immutable review history |
+| `reviewRisk` | POST `/api/v1/risks/:id/reviews` | `quality.hold.release` | 🔁 🏷 Independent risk review with closure evidence |
+| `listWorkCalendars` | GET `/api/v1/work/calendars` | `work.view` | List immutable calendar versions |
+| `createWorkCalendar` | POST `/api/v1/work/calendars` | `work.configure` | 🔁 Publish a business calendar version |
+| `listWorkTemplates` | GET `/api/v1/work/templates` | `work.view` | List scoped workflow templates |
+| `createWorkTemplate` | POST `/api/v1/work/templates` | `work.configure` | 🔁 Publish an immutable dependency template |
+| `startWorkTemplate` | POST `/api/v1/work/instances` | `work.manage` | 🔁 Start template work with dependency gates |
+| `listWorkItems` | GET `/api/v1/work/items` | `work.view` | Department queue with entity and branch scopes |
+| `createWorkItem` | POST `/api/v1/work/items` | `work.manage` | 🔁 Create assigned work with a business calendar SLA |
+| `getWorkItem` | GET `/api/v1/work/items/:id` | `work.view` | Work detail and audit history |
+| `transitionWorkItem` | POST `/api/v1/work/items/:id/transition` | `work.manage` | 🔁 🏷 Start pause resume complete or cancel work |
+| `assignWorkItem` | POST `/api/v1/work/items/:id/assign` | `work.manage` | 🔁 🏷 Reassign to qualified scoped staff |
+| `getWorkDirectory` | GET `/api/v1/work/directory` | `work.view` | Scoped entities branches and active staff directory |
+| `setWorkCapacity` | POST `/api/v1/work/capacity` | `work.configure` | 🔁 Configure department capacity and availability |
+| `getWorkload` | GET `/api/v1/work/workload` | `work.view` | Scoped capacity utilization and overdue work |
+| `checkWorkSlas` | POST `/api/v1/work/check-slas` | `work.manage` | 🔁 Record newly breached SLAs exactly once |
+| `listHandovers` | GET `/api/v1/work/handovers` | `work.view` | My sent and received handovers with current access filtering |
+| `createHandover` | POST `/api/v1/work/handovers` | `work.manage` | 🔁 Prepare shift handover of assigned outstanding work |
+| `acknowledgeHandover` | POST `/api/v1/work/handovers/:id/acknowledge` | `work.manage` | 🔁 🏷 Recipient acknowledges and atomically receives work |
+| `getHealth` | GET `/api/v1/health` | public (HMAC) | API liveness |
+| `getReadiness` | GET `/api/v1/health/ready` | public (HMAC) | Database readiness |
+| `getOperationsHealth` | GET `/api/v1/admin/operations` | `admin.tenant` | Tenant queue and service operations |
+| `changeMemberStatus` | POST `/api/v1/admin/members/:id/status` | `admin.tenant` | 🔁 🏷 Suspend, revoke or reactivate a membership |
+| `revokeMemberSessions` | POST `/api/v1/admin/members/:id/revoke-sessions` | `admin.tenant` | 🔁 🏷 Invalidate previously issued access tokens |
+| `replaceMemberGrants` | POST `/api/v1/admin/members/:id/grants` | `admin.tenant` | 🔁 🏷 Replace role grants with validated entity and branch scopes |
+| `listRfqs` | GET `/api/v1/rfqs` | `rates.view` | Legal-entity scoped carrier rate requests |
+| `getRfq` | GET `/api/v1/rfqs/:id` | `rates.view` | Compare current supplier revisions with immutable history |
+| `createRfq` | POST `/api/v1/rfqs` | `rates.manage` | 🔁 Prepare a carrier rate request with invited suppliers |
+| `issueRfq` | POST `/api/v1/rfqs/:id/issue` | `rates.manage` | 🔁 🏷 Issue and freeze a request for manual supplier distribution |
+| `recordRfqOffer` | POST `/api/v1/rfqs/:id/offers` | `rates.manage` | 🔁 Record an invited supplier response as an immutable revision |
+| `awardRfq` | POST `/api/v1/rfqs/:id/award` | `rates.manage` | 🔁 🏷 Independently award a valid latest offer and publish an approved rate |
 | `getMe` | GET `/api/v1/me` | authenticated | Current user, tenant and effective permissions |
 | `listMemberships` | GET `/api/v1/me/memberships` | authenticated | Tenants the user belongs to |
 | `listLegalEntities` | GET `/api/v1/legal-entities` | `parties.view` | Legal entities |

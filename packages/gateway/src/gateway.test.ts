@@ -35,3 +35,11 @@ describe('session gateway', () => {
     void COOKIE;
   });
 });
+
+it('revalidates membership before showing browser identity and clears a revoked cookie',async()=>{
+ const cookie=await seal({accessToken:'revoked',accessExpiresAt:Date.now()+60000,tenantId:'t',user:{sub:'s'},csrf:'c'},env.SESSION_SECRET);
+ const blocked=createGateway(env,(async()=>new Response('{}',{status:403})) as typeof fetch);
+ const r=await blocked.whoami(new Request('http://web.test/api/auth/me',{headers:{cookie:`${COOKIE}=${cookie}`}}));expect(r.status).toBe(401);expect(r.headers.get('set-cookie')).toContain('Max-Age=0');
+ const unavailable=createGateway(env,(async()=>{throw new Error('offline')}) as typeof fetch);expect((await unavailable.whoami(new Request('http://web.test/x',{headers:{cookie:`${COOKIE}=${cookie}`}}))).status).toBe(503);
+ const expired=await seal({accessToken:'expired',accessExpiresAt:0,tenantId:'t',user:{sub:'s'},csrf:'c'},env.SESSION_SECRET);expect((await blocked.whoami(new Request('http://web.test/x',{headers:{cookie:`${COOKIE}=${expired}`}}))).status).toBe(401);
+});

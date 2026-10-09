@@ -9,6 +9,7 @@ import { DataTable, Mono, fmtDateTime } from '@/components/DataTable';
 import { EntityPicker, FormGrid, PartyPicker, SelectField, TextField } from '@/components/fields';
 import { SectionTabs } from '@/components/SectionTabs';
 import { CompanyProfile, DeliveryLog } from '@/components/Messaging';
+import { AccessControl, OperationsHealth } from '@/components/AccessControl';
 
 type M = { id: string; workspace: string; status: string; subject: string; email?: string; display_name?: string; roles: Array<{ role: string; name: string }> };
 type A = { id: string; at: string; action: string; entity_type: string; entity_id: string; actor?: string; actor_kind: string; request_id?: string };
@@ -54,5 +55,5 @@ function Facilities() {
 }
 export default function Admin() {
   return (<><PageTitle title="Administration" sub="Members, roles, audit and integrations for this tenant" />
-    <SectionTabs sections={[{ id: 'members', label: 'Members', content: <Members /> }, { id: 'roles', label: 'Roles', content: <Roles /> }, { id: 'audit', label: 'Audit log', content: <Audit /> }, { id: 'facilities', label: 'Facilities', content: <Facilities /> }, { id: 'company', label: 'Company profile', content: <CompanyProfile /> }, { id: 'delivery', label: 'Delivery log', content: <DeliveryLog /> }, { id: 'integrations', label: 'Integrations', content: <Integrations /> }]} /></>);
+    <SectionTabs sections={[{ id: 'members', label: 'Members', content: <Members /> }, { id: 'roles', label: 'Roles', content: <Roles /> }, {id:'access',label:'Access control',content:<AccessControl/>}, {id:'operations',label:'Operations health',content:<OperationsHealth/>}, { id: 'audit', label: 'Audit log', content: <Audit /> }, { id: 'facilities', label: 'Facilities', content: <Facilities /> }, { id: 'company', label: 'Company profile', content: <CompanyProfile /> }, { id: 'delivery', label: 'Delivery log', content: <DeliveryLog /> }, { id: 'integrations', label: 'Integrations', content: <Integrations /> }]} /></>);
 }

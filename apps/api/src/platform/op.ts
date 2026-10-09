@@ -40,7 +40,7 @@ export class OpGuard implements CanActivate {
     if (!tenantId || !/^[0-9a-f-]{36}$/i.test(tenantId)) throw new DomainError('TENANT_REQUIRED', 'Send a valid X-Tenant-Id header.');
     const { membership, rows } = await this.db.asUser(userId, async (tx) => {
       await tx.q(`SELECT set_config('app.tenant_id', $1, true)`, [tenantId]);
-      const membership = await tx.maybe(`SELECT id, workspace, party_id FROM platform.memberships WHERE tenant_id=$1 AND user_id=$2 AND status='active'`, [tenantId, userId]);
+      const membership = await tx.maybe(`SELECT id, workspace, party_id, token_valid_after FROM platform.memberships WHERE tenant_id=$1 AND user_id=$2 AND status='active'`, [tenantId, userId]);
       if (!membership) return { membership: undefined, rows: [] as any[] };
       const rows = await tx.q(`SELECT rp.permission, mr.legal_entity_id, mr.branch_id FROM platform.membership_roles mr
                                JOIN platform.role_permissions rp ON rp.tenant_id = mr.tenant_id AND rp.role_id = mr.role_id
@@ -48,6 +48,8 @@ export class OpGuard implements CanActivate {
       return { membership, rows };
     });
     if (!membership) throw new DomainError('FORBIDDEN', 'You are not a member of this tenant.');   // identical response for unknown/foreign tenants
+    if (membership.token_valid_after !== null && (!ident.issuedAt || ident.issuedAt <= Number(membership.token_valid_after)))
+      throw new DomainError('UNAUTHENTICATED', 'Access was revoked. Sign in again.');
     const permissions = new Map<Permission, Grant[]>();
     for (const r of rows) { const g = permissions.get(r.permission) ?? []; g.push({ legalEntityId: r.legal_entity_id, branchId: r.branch_id }); permissions.set(r.permission, g); }
     if (route.permission && !permissions.has(route.permission)) throw new DomainError('FORBIDDEN', `Missing permission ${route.permission}`);

@@ -1,5 +1,7 @@
 /** Permission catalogue + default role templates (seeded per tenant). Scope (entity/branch/party) is attached to the GRANT, not the permission. */
 export const PERMISSIONS = [
+  'work.view', 'work.manage', 'work.configure',
+  'finance.period.view','finance.period.request','finance.period.decide',
   'parties.view', 'parties.create', 'bank-details.change.propose', 'bank-details.change.approve',
   'enquiries.view', 'enquiries.create', 'enquiries.qualify',
   'quotes.view', 'quotes.create', 'quotes.approve', 'quotes.accept',
@@ -44,3 +46,11 @@ export const ROLE_TEMPLATES: Record<string, { name: string; permissions: Permiss
   transporter_portal: { name: 'Transporter (portal)', permissions: pick('transport.view', 'shipments.view', 'transport.pod.capture', 'documents.upload') },
   driver: { name: 'Driver', permissions: pick('transport.view', 'shipments.view', 'transport.pod.capture', 'documents.upload') },
 };
+for (const [key,role] of Object.entries(ROLE_TEMPLATES)) {
+  if (!['owner','customer_portal','agent_portal','transporter_portal','driver'].includes(key) && role.permissions.includes('tasks.manage'))
+    role.permissions.push('work.view','work.manage');
+}
+
+for(const key of ['accountant','finance_manager','auditor'])ROLE_TEMPLATES[key].permissions.push('finance.period.view');
+for(const key of ['accountant','finance_manager'])ROLE_TEMPLATES[key].permissions.push('finance.period.request');
+ROLE_TEMPLATES.finance_manager.permissions.push('finance.period.decide');

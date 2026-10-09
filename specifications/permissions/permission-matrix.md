@@ -4,6 +4,12 @@
 
 | Permission | owner | sales | pricing | freight_ops | customer_service | dispatcher | warehouse_supervisor | warehouse_operator | customs_specialist | accountant | finance_manager | hr | quality_manager | auditor | customer_portal | agent_portal | transporter_portal | driver |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| `work.view` | ● | ● | ● | ● | ● | ● | ● | ● | ● | ● | ● | ● | ● |  |  |  |  |  |
+| `work.manage` | ● | ● | ● | ● | ● | ● | ● | ● | ● | ● | ● | ● | ● |  |  |  |  |  |
+| `work.configure` | ● |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `finance.period.view` | ● |  |  |  |  |  |  |  |  | ● | ● |  |  | ● |  |  |  |  |
+| `finance.period.request` | ● |  |  |  |  |  |  |  |  | ● | ● |  |  |  |  |  |  |  |
+| `finance.period.decide` | ● |  |  |  |  |  |  |  |  |  | ● |  |  |  |  |  |  |  |
 | `parties.view` | ● | ● | ● | ● | ● |  | ● | ● |  | ● | ● | ● |  |  |  |  |  |  |
 | `parties.create` | ● | ● |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `bank-details.change.propose` | ● |  |  |  |  |  |  |  |  |  | ● |  |  |  |  |  |  |  |

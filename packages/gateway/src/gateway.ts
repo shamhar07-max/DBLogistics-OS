@@ -28,7 +28,7 @@ export function createGateway(env: Env, f: typeof fetch = fetch) {
       if (!sameOrigin(req)) return json(403, { code: 'FORBIDDEN', message: 'Cross-origin request refused' });
       const { subject, tenantId } = await req.json().catch(() => ({}));
       if (!subject || !tenantId) return json(422, { code: 'VALIDATION_FAILED', message: 'subject and tenantId required' });
-      const token = await new SignJWT({ email: `${subject}@dev.local` }).setProtectedHeader({ alg: 'HS256' }).setSubject(subject).setAudience('dbl-api').setExpirationTime('8h').sign(new TextEncoder().encode(env.DEV_AUTH_SECRET));
+      const token = await new SignJWT({ email: `${subject}@dev.local` }).setProtectedHeader({ alg: 'HS256' }).setSubject(subject).setAudience('dbl-api').setIssuedAt().setExpirationTime('8h').sign(new TextEncoder().encode(env.DEV_AUTH_SECRET));
       const me = await f(`${apiUrl}/api/v1/me`, { headers: { Authorization: `Bearer ${token}`, 'X-Tenant-Id': tenantId } });
       if (!me.ok) return json(me.status, await me.json());
       const m = await me.json();
@@ -73,6 +73,17 @@ export function createGateway(env: Env, f: typeof fetch = fetch) {
       return new Response(await up.arrayBuffer(), { status: up.status, headers });          // bytes, not text: PDFs and other binaries pass through intact
     },
     /** Safe, non-secret view for the browser: who am I, which tenant, CSRF token. */
-    async whoami(req: Request) { const s = await getSession(req); return s ? json(200, { user: s.user, tenantId: s.tenantId, workspace: s.workspace, csrf: s.csrf }) : json(401, { code: 'UNAUTHENTICATED', message: 'Sign in required.' }); },
+    async whoami(req: Request) {
+      const s = await getSession(req);
+      const rejected = () => json(401, { code: 'UNAUTHENTICATED', message: 'Sign in required.' }, { 'Set-Cookie': clearCookie(COOKIE, secure), 'Cache-Control': 'no-store' });
+      if (!s || s.accessExpiresAt <= Date.now()) return rejected();
+      try {
+        const me = await f(`${apiUrl}/api/v1/me`, { headers: { Authorization: `Bearer ${s.accessToken}`, 'X-Tenant-Id': s.tenantId }, signal: AbortSignal.timeout(5000) });
+        if (me.status === 401 || me.status === 403) return rejected();
+        if (!me.ok) return json(503, { code: 'INTERNAL', message: 'Identity service unavailable.' });
+        const current = await me.json();
+        return json(200, { user: s.user, tenantId: s.tenantId, workspace: current.workspace, csrf: s.csrf }, { 'Cache-Control': 'no-store' });
+      } catch { return json(503, { code: 'INTERNAL', message: 'Identity service unavailable.' }); }
+    },
   };
 }

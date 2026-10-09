@@ -6,9 +6,11 @@ import { AuthService } from './auth.service';
 import { OpGuard } from './op';
 import { ApiExceptionFilter } from './errors';
 import { DiskStorage, S3Storage, STORAGE } from './storage';
+import { HealthController } from './health.controller';
 
 @Global()
 @Module({
+  controllers: [HealthController],
   providers: [
     { provide: CONFIG, useFactory: () => loadConfig() }, Db, AuthService,
     { provide: APP_GUARD, useClass: OpGuard }, { provide: APP_FILTER, useClass: ApiExceptionFilter },

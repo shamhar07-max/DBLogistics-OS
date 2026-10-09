@@ -1,0 +1,30 @@
+import {beforeAll,afterAll,it,expect} from 'vitest';
+import {world,close,makeParty,type World,type Client} from './helpers';
+import {randomUUID} from 'node:crypto';
+let w:World,accountant:Client,manager:Client,period:string,entity:string,date:string,party:string;
+beforeAll(async()=>{w=await world();entity=w.a.legalEntityId;accountant=await w.member(w.a.tenantId,'close-accountant',['accountant']);manager=await w.member(w.a.tenantId,'close-manager',['finance_manager']);party=await makeParty(w.owner,'Period test customer',['customer']);const p=(await w.su.query(`SELECT * FROM finance.accounting_periods WHERE legal_entity_id=$1 AND end_date<CURRENT_DATE ORDER BY end_date DESC LIMIT 1`,[entity])).rows[0];period=p.id;date=p.start_date.toISOString().slice(0,10);});afterAll(async()=>close(w));
+const payment=()=>accountant.cmd('/payments',{legalEntityId:entity,partyId:party,currency:'AED',amount:'100.00',receivedOn:date,bankReference:randomUUID()});
+const req=(kind='close')=>accountant.cmd(`/accounting-periods/${period}/requests`,{kind,reason:'Reconciled ledger and supporting documents for the period'});
+const decide=(id:string,approve=true)=>manager.cmd(`/period-requests/${id}/decide`,{approve,note:approve?'Independently reviewed the reconciliation and change reason':'Reject stale reconciliation; prepare a new request'});
+it('returns exact per-currency trial balance and refuses future-period closing and overlap',async()=>{
+ expect((await payment()).status).toBe(201);const p=(await accountant.get(`/accounting-periods/${period}`)).body;expect(p.trialBalance.journalCount).toBe(1);expect(p.trialBalance.balances.find((r:any)=>r.code==='1000').debit).toBe('100.0000');expect(p.trialBalance.balances.find((r:any)=>r.code==='2300').credit).toBe('100.0000');
+ const current=(await w.su.query(`SELECT id FROM finance.accounting_periods WHERE legal_entity_id=$1 AND CURRENT_DATE BETWEEN start_date AND end_date`,[entity])).rows[0].id;expect((await accountant.cmd(`/accounting-periods/${current}/requests`,{kind:'close',reason:'Attempt to prematurely close the current financial period'})).status).toBe(409);
+ await expect(w.su.query(`INSERT INTO finance.accounting_periods(tenant_id,legal_entity_id,start_date,end_date) VALUES($1,$2,$3::date+1,$3::date+1)`,[w.a.tenantId,entity,date])).rejects.toThrow(/conflicting key/);
+});
+it('requires an independent decision and rejects snapshots changed by a later posting',async()=>{
+ const r=await req();expect(r.status).toBe(201);expect((await accountant.cmd(`/period-requests/${r.body.id}/decide`,{approve:true,note:'Attempt to approve my own close request'})).status).toBe(403);
+ expect((await manager.cmd(`/accounting-periods/${period}/requests`,{kind:'close',reason:'Duplicate pending request should not be accepted'})).status).toBe(409);await payment();expect((await decide(r.body.id)).body.code).toBe('VERSION_CONFLICT');expect((await decide(r.body.id,false)).status).toBe(200);
+ const own=await manager.cmd(`/accounting-periods/${period}/requests`,{kind:'close',reason:'Manager proposes a reviewed close but requires another decision maker'});expect(own.status).toBe(201);expect((await decide(own.body.id)).body.code).toBe('SEPARATION_OF_DUTIES');expect((await w.owner.cmd(`/period-requests/${own.body.id}/decide`,{approve:false,note:'Reject manager proposal to retain the existing test period'})).status).toBe(200);
+});
+it('locks posting against period close and retains controlled independent reopening',async()=>{
+ const r=await req();const key=randomUUID(),body={approve:true,note:'Independent finance approval after complete reconciliation'};const [a,b]=await Promise.all([manager.cmd(`/period-requests/${r.body.id}/decide`,body,key),manager.cmd(`/period-requests/${r.body.id}/decide`,body,key)]);expect(a.status).toBe(200);expect(b.body).toEqual(a.body);expect((await payment()).body.code).toBe('ACCOUNTING_PERIOD_CLOSED');
+ const reopen=await req('reopen');expect(reopen.status).toBe(201);expect((await decide(reopen.body.id)).status).toBe(200);expect((await payment()).status).toBe(201);expect((await w.su.query(`SELECT count(*)::int n FROM finance.period_requests WHERE period_id=$1 AND status='approved'`,[period])).rows[0].n).toBe(2);
+});
+it('database guards forbid direct runtime period changes and adding lines to committed journals',async()=>{
+ const c=await w.appPool.connect();try{await c.query('BEGIN');await c.query(`SELECT set_config('app.tenant_id',$1,true)`,[w.a.tenantId]);await expect(c.query(`UPDATE finance.accounting_periods SET status='closed' WHERE id=$1`,[period])).rejects.toThrow(/approved independent request/);}finally{await c.query('ROLLBACK');c.release();}
+ const journal=(await w.su.query(`SELECT id FROM finance.journals WHERE legal_entity_id=$1 LIMIT 1`,[entity])).rows[0].id;const account=(await w.su.query(`SELECT id FROM finance.accounts WHERE legal_entity_id=$1 LIMIT 1`,[entity])).rows[0].id;await expect(w.su.query(`INSERT INTO finance.journal_lines(tenant_id,journal_id,account_id,debit,credit) VALUES($1,$2,$3,1,0)`,[w.a.tenantId,journal,account])).rejects.toThrow(/committed with their new journal/);
+});
+it('blocks customer/foreign access and scoped users outside their legal entity',async()=>{
+ const foreign=await w.member(w.b.tenantId,'foreign-periods',['owner']);expect((await foreign.get(`/accounting-periods/${period}`)).status).toBe(404);const scoped=await w.member(w.a.tenantId,'scoped-periods',['accountant']);const m=(await scoped.get('/me')).body.membershipId;const other=(await w.su.query(`INSERT INTO org.legal_entities(tenant_id,name,base_currency) VALUES($1,'Other period entity','AED') RETURNING id`,[w.a.tenantId])).rows[0].id;await w.su.query(`UPDATE platform.membership_roles SET legal_entity_id=$2 WHERE membership_id=$1`,[m,other]);expect((await scoped.get('/accounting-periods')).body).toEqual([]);expect((await scoped.get(`/accounting-periods/${period}`)).status).toBe(403);
+ const portal=await w.member(w.a.tenantId,'portal-periods',['owner'],{workspace:'customer',partyId:party});expect((await portal.get('/accounting-periods')).status).toBe(403);
+});

@@ -29,7 +29,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const requestId = req.requestId ?? 'req_unknown';
     let code: ErrorCode = 'INTERNAL', message = 'Unexpected error.', details: Record<string, unknown> | undefined;
     if (ex instanceof DomainError) { code = ex.code; message = ex.message; details = ex.details; }
-    else if (ex instanceof HttpException) { const s = ex.getStatus(); code = s === 404 ? 'NOT_FOUND' : s === 401 ? 'UNAUTHENTICATED' : s === 403 ? 'FORBIDDEN' : 'VALIDATION_FAILED'; message = ex.message; }
+    else if (ex instanceof HttpException) { const s = ex.getStatus(); code = s === 503 ? 'SERVICE_UNAVAILABLE' : s === 404 ? 'NOT_FOUND' : s === 401 ? 'UNAUTHENTICATED' : s === 403 ? 'FORBIDDEN' : 'VALIDATION_FAILED'; message = ex.message; }
     else console.error(`[${requestId}]`, ex);
     res.status(HTTP_STATUS[code]).json({ code, message, requestId, ...(details ? { details } : {}) });
   }

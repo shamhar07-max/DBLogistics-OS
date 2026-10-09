@@ -1,7 +1,12 @@
 import type { ZodTypeAny } from 'zod';
 import type { Permission } from './permissions';
 import * as S from './schemas';
+import * as Enterprise from './enterprise';
+import * as Work from './work-control';
+import * as Governance from './governance';
+import {PeriodRequestBody,PeriodDecisionBody} from './period-control';
 import { WorkflowBody } from './workflow';
+import { CreateRfqBody, RecordRfqOfferBody, AwardRfqBody } from './procurement';
 
 export interface RouteDef {
   method: 'GET' | 'POST'; path: string; operationId: string; tag: string; summary: string;
@@ -11,6 +16,47 @@ const r = <const T extends RouteDef>(d: T): T => d;
 
 /** Single source of truth: controllers are verified against this table by a conformance test; OpenAPI + typed client derive from it. */
 export const ROUTE_TABLE = [
+  r({method:'GET',path:'/accounting-periods',operationId:'listAccountingPeriods',tag:'Finance',summary:'Scoped accounting periods',permission:'finance.period.view'}),
+  r({method:'GET',path:'/accounting-periods/:id',operationId:'getAccountingPeriod',tag:'Finance',summary:'Period trial balance and reviewed change history',permission:'finance.period.view'}),
+  r({method:'POST',path:'/accounting-periods/:id/requests',operationId:'requestPeriodChange',tag:'Finance',summary:'Request reconciled period close or controlled reopening',permission:'finance.period.request',body:PeriodRequestBody,idempotent:true,ifMatch:true,status:201}),
+  r({method:'POST',path:'/period-requests/:id/decide',operationId:'decidePeriodChange',tag:'Finance',summary:'Independently approve or reject a period change',permission:'finance.period.decide',body:PeriodDecisionBody,idempotent:true,ifMatch:true}),
+  r({method:'GET',path:'/knowledge',operationId:'listKnowledge',tag:'Governance',summary:'Search scoped knowledge revisions',permission:'work.view',query:Governance.KnowledgeQuery}),
+  r({method:'POST',path:'/knowledge',operationId:'createKnowledge',tag:'Governance',summary:'Create an immutable draft revision',permission:'work.manage',body:Governance.CreateKnowledgeBody,idempotent:true,status:201}),
+  r({method:'POST',path:'/knowledge/:id/publish',operationId:'publishKnowledge',tag:'Governance',summary:'Independently publish a knowledge revision',permission:'work.configure',body:Governance.PublishKnowledgeBody,idempotent:true}),
+  r({method:'POST',path:'/knowledge/:id/acknowledge',operationId:'acknowledgeKnowledge',tag:'Governance',summary:'Acknowledge a specific published revision and content hash',permission:'work.view',idempotent:true}),
+  r({method:'GET',path:'/risks',operationId:'listRisks',tag:'Governance',summary:'Scoped risk register ranked by residual score',permission:'quality.view'}),
+  r({method:'POST',path:'/risks',operationId:'createRisk',tag:'Governance',summary:'Register owned and scored risk with mitigation',permission:'quality.manage',body:Governance.CreateRiskBody,idempotent:true,status:201}),
+  r({method:'GET',path:'/risks/:id',operationId:'getRisk',tag:'Governance',summary:'Risk and immutable review history',permission:'quality.view'}),
+  r({method:'POST',path:'/risks/:id/reviews',operationId:'reviewRisk',tag:'Governance',summary:'Independent risk review with closure evidence',permission:'quality.hold.release',body:Governance.ReviewRiskBody,idempotent:true,ifMatch:true}),
+  r({method:'GET',path:'/work/calendars',operationId:'listWorkCalendars',tag:'Work',summary:'List immutable calendar versions',permission:'work.view'}),
+  r({method:'POST',path:'/work/calendars',operationId:'createWorkCalendar',tag:'Work',summary:'Publish a business calendar version',permission:'work.configure',body:Work.CreateCalendarBody,idempotent:true,status:201}),
+  r({method:'GET',path:'/work/templates',operationId:'listWorkTemplates',tag:'Work',summary:'List scoped workflow templates',permission:'work.view'}),
+  r({method:'POST',path:'/work/templates',operationId:'createWorkTemplate',tag:'Work',summary:'Publish an immutable dependency template',permission:'work.configure',body:Work.CreateWorkTemplateBody,idempotent:true,status:201}),
+  r({method:'POST',path:'/work/instances',operationId:'startWorkTemplate',tag:'Work',summary:'Start template work with dependency gates',permission:'work.manage',body:Work.StartWorkTemplateBody,idempotent:true,status:201}),
+  r({method:'GET',path:'/work/items',operationId:'listWorkItems',tag:'Work',summary:'Department queue with entity and branch scopes',permission:'work.view',query:Work.WorkListQuery}),
+  r({method:'POST',path:'/work/items',operationId:'createWorkItem',tag:'Work',summary:'Create assigned work with a business calendar SLA',permission:'work.manage',body:Work.CreateWorkItemBody,idempotent:true,status:201}),
+  r({method:'GET',path:'/work/items/:id',operationId:'getWorkItem',tag:'Work',summary:'Work detail and audit history',permission:'work.view'}),
+  r({method:'POST',path:'/work/items/:id/transition',operationId:'transitionWorkItem',tag:'Work',summary:'Start pause resume complete or cancel work',permission:'work.manage',body:Work.WorkTransitionBody,idempotent:true,ifMatch:true}),
+  r({method:'POST',path:'/work/items/:id/assign',operationId:'assignWorkItem',tag:'Work',summary:'Reassign to qualified scoped staff',permission:'work.manage',body:Work.AssignWorkBody,idempotent:true,ifMatch:true}),
+  r({method:'GET',path:'/work/directory',operationId:'getWorkDirectory',tag:'Work',summary:'Scoped entities branches and active staff directory',permission:'work.view'}),
+  r({method:'POST',path:'/work/capacity',operationId:'setWorkCapacity',tag:'Work',summary:'Configure department capacity and availability',permission:'work.configure',body:Work.CapacityBody,idempotent:true}),
+  r({method:'GET',path:'/work/workload',operationId:'getWorkload',tag:'Work',summary:'Scoped capacity utilization and overdue work',permission:'work.view'}),
+  r({method:'POST',path:'/work/check-slas',operationId:'checkWorkSlas',tag:'Work',summary:'Record newly breached SLAs exactly once',permission:'work.manage',idempotent:true}),
+  r({method:'GET',path:'/work/handovers',operationId:'listHandovers',tag:'Work',summary:'My sent and received handovers with current access filtering',permission:'work.view'}),
+  r({method:'POST',path:'/work/handovers',operationId:'createHandover',tag:'Work',summary:'Prepare shift handover of assigned outstanding work',permission:'work.manage',body:Work.CreateHandoverBody,idempotent:true,status:201}),
+  r({method:'POST',path:'/work/handovers/:id/acknowledge',operationId:'acknowledgeHandover',tag:'Work',summary:'Recipient acknowledges and atomically receives work',permission:'work.manage',body:Work.AcknowledgeHandoverBody,idempotent:true,ifMatch:true}),
+  r({ method:'GET',path:'/health',operationId:'getHealth',tag:'Platform',summary:'API liveness',permission:null,public:true }),
+  r({ method:'GET',path:'/health/ready',operationId:'getReadiness',tag:'Platform',summary:'Database readiness',permission:null,public:true }),
+  r({ method:'GET',path:'/admin/operations',operationId:'getOperationsHealth',tag:'Administration',summary:'Tenant queue and service operations',permission:'admin.tenant' }),
+  r({ method:'POST',path:'/admin/members/:id/status',operationId:'changeMemberStatus',tag:'Administration',summary:'Suspend, revoke or reactivate a membership',permission:'admin.tenant',body:Enterprise.MembershipStatusBody,idempotent:true,ifMatch:true }),
+  r({ method:'POST',path:'/admin/members/:id/revoke-sessions',operationId:'revokeMemberSessions',tag:'Administration',summary:'Invalidate previously issued access tokens',permission:'admin.tenant',body:Enterprise.RevokeSessionsBody,idempotent:true,ifMatch:true }),
+  r({ method:'POST',path:'/admin/members/:id/grants',operationId:'replaceMemberGrants',tag:'Administration',summary:'Replace role grants with validated entity and branch scopes',permission:'admin.tenant',body:Enterprise.ReplaceGrantsBody,idempotent:true,ifMatch:true }),
+  r({ method: 'GET', path: '/rfqs', operationId: 'listRfqs', tag: 'Procurement', summary: 'Legal-entity scoped carrier rate requests', permission: 'rates.view' }),
+  r({ method: 'GET', path: '/rfqs/:id', operationId: 'getRfq', tag: 'Procurement', summary: 'Compare current supplier revisions with immutable history', permission: 'rates.view' }),
+  r({ method: 'POST', path: '/rfqs', operationId: 'createRfq', tag: 'Procurement', summary: 'Prepare a carrier rate request with invited suppliers', permission: 'rates.manage', body: CreateRfqBody, idempotent: true, status: 201 }),
+  r({ method: 'POST', path: '/rfqs/:id/issue', operationId: 'issueRfq', tag: 'Procurement', summary: 'Issue and freeze a request for manual supplier distribution', permission: 'rates.manage', idempotent: true, ifMatch: true }),
+  r({ method: 'POST', path: '/rfqs/:id/offers', operationId: 'recordRfqOffer', tag: 'Procurement', summary: 'Record an invited supplier response as an immutable revision', permission: 'rates.manage', body: RecordRfqOfferBody, idempotent: true, status: 201 }),
+  r({ method: 'POST', path: '/rfqs/:id/award', operationId: 'awardRfq', tag: 'Procurement', summary: 'Independently award a valid latest offer and publish an approved rate', permission: 'rates.manage', body: AwardRfqBody, idempotent: true, ifMatch: true }),
   r({ method: 'GET', path: '/me', operationId: 'getMe', tag: 'Session', summary: 'Current user, tenant and effective permissions', permission: null }),
   r({ method: 'GET', path: '/me/memberships', operationId: 'listMemberships', tag: 'Session', summary: 'Tenants the user belongs to', permission: null }),
   r({ method: 'GET', path: '/legal-entities', operationId: 'listLegalEntities', tag: 'Organization', summary: 'Legal entities', permission: 'parties.view' }),
