@@ -1,6 +1,8 @@
 import { z } from 'zod';
 const Env = z.object({
   NODE_ENV: z.string().default('development'),
+  RAILWAY_FREE_PILOT: z.enum(['true', 'false']).default('false').transform(v => v === 'true'),
+  DB_POOL_MAX: z.coerce.number().int().min(1).max(20).default(10),
   PORT: z.coerce.number().default(3001),
   DATABASE_URL: z.string().default('postgres://dbl_app:dbl_app_dev@localhost:54329/dbl'),
   OIDC_ISSUER_URL: z.string().optional(),
