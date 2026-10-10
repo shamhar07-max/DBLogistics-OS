@@ -1,3 +1,5 @@
+> For the limited free-plan deployment, use [FREE-PILOT.md](FREE-PILOT.md). Railway config-as-code is deprecated; set Dockerfile paths and service settings directly in Railway rather than selecting the JSON config files below.
+
 # Railway hosting with Cloudflare DNS and proxy
 
 This is deployment preparation, not proof of production acceptance. Use an empty staging project first. Railway resource charges apply; the free allowance is unlikely to cover this complete stack.
