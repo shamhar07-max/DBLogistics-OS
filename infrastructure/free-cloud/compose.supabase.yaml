@@ -1,0 +1,16 @@
+# Application schemas on Supabase; Keycloak stays on the VM's private PostgreSQL.
+services:
+  database-setup:
+    environment:
+      ADMIN_DATABASE_URL: ${SUPABASE_ADMIN_DATABASE_URL:?Set Supabase admin session URL}
+      MIGRATION_DATABASE_URL: ${SUPABASE_MIGRATION_DATABASE_URL:?Set migrator session URL}
+  owner-setup:
+    environment:
+      APP_DATABASE_URL: ${SUPABASE_APP_DATABASE_URL:?Set application session URL}
+  api:
+    environment:
+      DATABASE_URL: ${SUPABASE_APP_DATABASE_URL:?Set application session URL}
+      DB_POOL_MAX: '2'
+  worker:
+    environment:
+      WORKER_DATABASE_URL: ${SUPABASE_WORKER_DATABASE_URL:?Set worker session URL}

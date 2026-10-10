@@ -9,8 +9,9 @@ COPY apps/business-hub/package.json apps/business-hub/
 COPY packages packages
 RUN npm ci
 COPY . .
-ENV SESSION_SECRET=build-time-placeholder-build-time-placeholder-0 OIDC_ISSUER_URL=https://placeholder.invalid OIDC_WEB_CLIENT_ID=x OIDC_WEB_CLIENT_SECRET=x NODE_ENV=production
-RUN npm run build -w @dbl/partner-portal
+RUN SESSION_SECRET=build-time-placeholder-build-time-placeholder-0 OIDC_ISSUER_URL=https://placeholder.invalid OIDC_WEB_CLIENT_ID=x OIDC_WEB_CLIENT_SECRET=x NODE_ENV=production npm run build -w @dbl/partner-portal
+ENV NODE_ENV=production
+USER node
 WORKDIR /repo/apps/partner-portal
 EXPOSE 3002
 CMD ["sh", "-c", "npx next start -p ${PORT:-3002}"]

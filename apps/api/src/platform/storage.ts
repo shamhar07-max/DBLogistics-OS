@@ -17,8 +17,8 @@ export const STORAGE = Symbol('STORAGE');
 @Injectable()
 export class S3Storage implements StoragePort {
   private s3: S3Client;
-  constructor(@Inject(CONFIG) private cfg: Config) { this.s3 = new S3Client({ region: process.env.AWS_REGION ?? 'me-central-1', endpoint: cfg.S3_ENDPOINT, forcePathStyle: !!cfg.S3_ENDPOINT }); }
-  presignUpload(key: string, contentType: string, expiresSec: number) { return getSignedUrl(this.s3, new PutObjectCommand({ Bucket: this.cfg.DOCUMENT_BUCKET, Key: key, ContentType: contentType, ServerSideEncryption: 'aws:kms' }), { expiresIn: expiresSec }); }
+  constructor(@Inject(CONFIG) private cfg: Config) { this.s3 = new S3Client({ region: process.env.AWS_REGION ?? 'me-central-1', endpoint: cfg.S3_ENDPOINT, forcePathStyle: cfg.S3_FORCE_PATH_STYLE === undefined ? !!cfg.S3_ENDPOINT : cfg.S3_FORCE_PATH_STYLE === 'true' }); }
+  presignUpload(key: string, contentType: string, expiresSec: number) { return getSignedUrl(this.s3, new PutObjectCommand({ Bucket: this.cfg.DOCUMENT_BUCKET, Key: key, ContentType: contentType, ...(this.cfg.S3_SERVER_SIDE_ENCRYPTION === 'none' ? {} : { ServerSideEncryption: this.cfg.S3_SERVER_SIDE_ENCRYPTION }) }), { expiresIn: expiresSec }); }
   presignDownload(key: string, expiresSec: number) { return getSignedUrl(this.s3, new GetObjectCommand({ Bucket: this.cfg.DOCUMENT_BUCKET, Key: key }), { expiresIn: expiresSec }); }
   async head(key: string) { try { const h = await this.s3.send(new HeadObjectCommand({ Bucket: this.cfg.DOCUMENT_BUCKET, Key: key })); return { size: h.ContentLength ?? 0 }; } catch { return null; } }
 }

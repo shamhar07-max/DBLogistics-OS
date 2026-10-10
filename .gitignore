@@ -12,3 +12,12 @@ seed.json
 apps/partner-portal/e2e/artifacts/
 
 .local/
+
+# Deployment secrets and database exports
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+backups/
