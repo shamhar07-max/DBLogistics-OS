@@ -19,7 +19,7 @@ const RETRYABLE = new Set(['40001', '40P01']);
 @Injectable()
 export class Db implements OnModuleInit, OnModuleDestroy {
   readonly pool: pg.Pool;
-  constructor(@Inject(CONFIG) cfg: Config) { this.pool = new pg.Pool({ connectionString: cfg.DATABASE_URL, max: 10, connectionTimeoutMillis:5000 }); }
+  constructor(@Inject(CONFIG) cfg: Config) { this.pool = new pg.Pool({ connectionString: cfg.DATABASE_URL, max: cfg.RAILWAY_FREE_PILOT ? Math.min(cfg.DB_POOL_MAX, 2) : cfg.DB_POOL_MAX, idleTimeoutMillis:10000, connectionTimeoutMillis:5000 }); }
 
   /** Refuse to run with a role that can bypass row-level security (superuser / BYPASSRLS). */
   async onModuleInit() {

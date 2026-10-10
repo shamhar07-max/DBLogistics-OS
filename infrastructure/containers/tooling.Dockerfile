@@ -9,5 +9,5 @@ COPY apps/business-hub/package.json apps/business-hub/
 COPY packages packages
 RUN npm ci
 COPY . .
-ENV NODE_ENV=production
+ENV NODE_ENV=production TSX_TSCONFIG_PATH=/repo/apps/api/tsconfig.json
 CMD ["npx", "tsx", "scripts/railway-bootstrap.ts"]

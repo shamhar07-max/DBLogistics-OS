@@ -1,12 +1,14 @@
 import { Body, Controller, Inject, Injectable, Module, Param } from '@nestjs/common';
+import { CONFIG, type Config } from '../platform/config';
 import { randomUUID } from 'node:crypto';
 import { audit, canTouch, Ctx, Db, DomainError, documentVisibility, emit, expectVersion, externalIssuerKind, isExternal, Op, Qry, STORAGE, type RequestContext, type StoragePort } from '../platform';
 
 @Injectable()
 export class DocumentsService {
-  constructor(@Inject(Db) private db: Db, @Inject(STORAGE) private storage: StoragePort) {}
+  constructor(@Inject(Db) private db: Db, @Inject(STORAGE) private storage: StoragePort, @Inject(CONFIG) private cfg: Config) {}
   /** 1. authorise a direct-to-storage upload into a private location. */
   createUploadIntent(ctx: RequestContext, b: any) {
+    if (this.cfg.RAILWAY_FREE_PILOT) throw new DomainError('SERVICE_UNAVAILABLE', 'Document uploads are disabled in the free pilot. Configure a worker and malware scanner before enabling uploads.');
     return this.db.run(ctx, async (tx) => {
       const key = `${ctx.tenantId}/incoming/${randomUUID()}`;
       const i = await tx.one(`INSERT INTO platform.upload_intents(tenant_id, storage_key, content_type, max_bytes, created_by, expires_at) VALUES ($1,$2,$3,$4,$5, now() + interval '15 minutes') RETURNING id, expires_at`, [ctx.tenantId, key, b.contentType, b.sizeBytes, ctx.userId]);
@@ -15,6 +17,7 @@ export class DocumentsService {
   }
   /** 2. after upload: verify object, create document + immutable version (scan pending until the worker marks it clean). */
   register(ctx: RequestContext, b: any) {
+    if (this.cfg.RAILWAY_FREE_PILOT) throw new DomainError('SERVICE_UNAVAILABLE', 'Document uploads are disabled in the free pilot. Configure a worker and malware scanner before enabling uploads.');
     return this.db.run(ctx, async (tx) => {
       const i = await tx.maybe(`SELECT * FROM platform.upload_intents WHERE id=$1 FOR UPDATE`, [b.intentId]);
       if (!i || i.created_by !== ctx.userId) throw new DomainError('NOT_FOUND', 'Upload intent not found.');
