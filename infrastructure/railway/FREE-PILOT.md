@@ -34,3 +34,7 @@ For the optional portal set `PORTAL_HOST` to its hostname without scheme/path/po
 5. Monitor monthly usage. Stop services before exhausting credit if a strictly zero-cost pilot is required. Railway's current plan details are authoritative: https://docs.railway.com/pricing/plans and https://docs.railway.com/pricing/free-trial .
 
 To restore full operation, use the separate production Dockerfiles, configure Redis, worker, scanner and storage, and leave `RAILWAY_FREE_PILOT=false` on the API. Review retained asynchronous jobs before starting the worker. The normal production configuration is unchanged.
+
+## Keycloak in the 512 MB pilot
+
+For one replica, set `KC_CACHE=local`, `KC_DB_POOL_INITIAL_SIZE=1`, `KC_DB_POOL_MIN_SIZE=1`, `KC_DB_POOL_MAX_SIZE=3` and `JAVA_OPTS_APPEND=-Xms32m -Xmx128m -XX:MaxMetaspaceSize=160m -XX:CompressedClassSpaceSize=32m -XX:ReservedCodeCacheSize=24m -Xss512k -XX:MaxDirectMemorySize=32m -XX:ActiveProcessorCount=1`. Use `/realms/dbl` as its healthcheck, a 180-second startup window, zero deployment overlap and a 0.5 GB memory limit. These are pilot settings; they do not support a large active user base. A smaller metaspace cap failed when serving login requests in live testing. Keep monitoring after login and normal usage.
