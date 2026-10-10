@@ -10,6 +10,8 @@ const Env = z.object({
   DEV_AUTH_SECRET: z.string().optional(),            // dev/test only: HS256 tokens. Refused when NODE_ENV=production.
   DOCUMENT_BUCKET: z.string().default('dbl-documents-dev'),
   S3_ENDPOINT: z.string().optional(),
+  S3_FORCE_PATH_STYLE: z.enum(['true', 'false']).optional(),
+  S3_SERVER_SIDE_ENCRYPTION: z.enum(['aws:kms', 'AES256', 'none']).default('aws:kms'),
   DEV_STORAGE_DIR: z.string().default('/tmp/dbl-dev-files'),             // local-disk object store, used ONLY when DEV_AUTH_SECRET is set and no S3_ENDPOINT is configured
   PUBLIC_API_URL: z.string().default('http://localhost:3001'),
   AI_DAILY_BUDGET_MICROS: z.coerce.number().default(5_000_000),
