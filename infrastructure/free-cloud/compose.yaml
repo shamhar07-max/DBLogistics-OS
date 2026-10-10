@@ -1,0 +1,196 @@
+name: dbl-free-cloud
+x-app-build: &app-build
+  context: ../..
+x-storage: &storage
+  DOCUMENT_BUCKET: ${DOCUMENT_BUCKET:?Set DOCUMENT_BUCKET}
+  S3_ENDPOINT: ${S3_ENDPOINT:?Set S3_ENDPOINT}
+  AWS_REGION: ${AWS_REGION:?Set AWS_REGION}
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?Set S3 credentials}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?Set S3 credentials}
+  S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-true}
+  S3_SERVER_SIDE_ENCRYPTION: ${S3_SERVER_SIDE_ENCRYPTION:-none}
+x-job-env: &job-env
+  ADMIN_DATABASE_URL: ${ADMIN_DATABASE_URL:?Set admin URL}
+  MIGRATION_DATABASE_URL: ${MIGRATION_DATABASE_URL:?Set migration URL}
+  APP_DATABASE_URL: ${APP_DATABASE_URL:?Set application URL}
+  DBL_MIGRATOR_PASSWORD: ${DBL_MIGRATOR_PASSWORD:?Generate secrets}
+  DBL_APP_PASSWORD: ${DBL_APP_PASSWORD:?Generate secrets}
+  DBL_WORKER_PASSWORD: ${DBL_WORKER_PASSWORD:?Generate secrets}
+  KC_DB_PASSWORD: ${KC_DB_PASSWORD:?Generate secrets}
+  KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}
+  KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD:?Generate secrets}
+  IDENTITY_URL: ${IDENTITY_URL:?Set identity HTTPS origin}
+  OWNER_USERNAME: ${OWNER_USERNAME:-owner}
+  TENANT_SLUG: ${TENANT_SLUG:-digitalburj}
+  TENANT_NAME: ${TENANT_NAME:-DigitalBurj Logistics}
+  TSX_TSCONFIG_PATH: /repo/apps/api/tsconfig.json
+x-job: &job
+  image: dbl-free-tooling:local
+  build:
+    <<: *app-build
+    dockerfile: infrastructure/containers/tooling.Dockerfile
+  profiles: [setup]
+  restart: 'no'
+  environment: *job-env
+services:
+  postgres:
+    image: postgres:16-bookworm
+    restart: unless-stopped
+    mem_limit: 768m
+    environment:
+      POSTGRES_DB: dbl
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Generate secrets}
+    command: [postgres, -c, shared_buffers=64MB, -c, max_connections=60]
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U postgres -d dbl']
+      interval: 10s
+      timeout: 5s
+      retries: 15
+  database-setup:
+    <<: *job
+    command: [node, --import, tsx, scripts/free-cloud-setup.ts, database]
+  identity-setup:
+    <<: *job
+    command: [node, --import, tsx, scripts/free-cloud-setup.ts, identity-database]
+  owner-setup:
+    <<: *job
+    command: [node, --import, tsx, scripts/free-cloud-setup.ts, owner]
+  keycloak:
+    build:
+      <<: *app-build
+      dockerfile: infrastructure/free-cloud/keycloak.Dockerfile
+    restart: unless-stopped
+    mem_limit: 1200m
+    depends_on:
+      postgres: {condition: service_healthy}
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD:?Generate secrets}
+      KC_CACHE: local
+      KC_HTTP_ENABLED: 'true'
+      KC_HTTP_PORT: '8080'
+      KC_PROXY_HEADERS: xforwarded
+      KC_HOSTNAME: ${IDENTITY_URL:?Set identity HTTPS origin}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD:?Generate secrets}
+      KC_STAFF_CLIENT_SECRET: ${KC_STAFF_CLIENT_SECRET:?Generate secrets}
+      KC_PORTAL_CLIENT_SECRET: ${KC_PORTAL_CLIENT_SECRET:?Generate secrets}
+      STAFF_URL: ${STAFF_URL:?Set staff HTTPS origin}
+      PORTAL_URL: ${PORTAL_URL:?Set portal HTTPS origin}
+      OWNER_USERNAME: ${OWNER_USERNAME:-owner}
+      OWNER_EMAIL: ${OWNER_EMAIL:?Set owner email}
+      OWNER_INITIAL_PASSWORD: ${OWNER_INITIAL_PASSWORD:?Generate secrets}
+      KC_DB_POOL_INITIAL_SIZE: '1'
+      KC_DB_POOL_MIN_SIZE: '1'
+      KC_DB_POOL_MAX_SIZE: '5'
+      JAVA_OPTS_APPEND: '-Xms64m -Xmx384m -XX:MaxMetaspaceSize=192m -XX:ActiveProcessorCount=2'
+  api:
+    build:
+      <<: *app-build
+      dockerfile: infrastructure/containers/api.Dockerfile
+    restart: unless-stopped
+    mem_limit: 768m
+    environment:
+      <<: *storage
+      NODE_ENV: production
+      PORT: '3001'
+      DATABASE_URL: ${APP_DATABASE_URL:?Set application URL}
+      DB_POOL_MAX: '3'
+      RAILWAY_FREE_PILOT: ${RAILWAY_FREE_PILOT:-true}
+      OIDC_ISSUER_URL: ${IDENTITY_URL:?Set identity HTTPS origin}/realms/dbl
+      OIDC_AUDIENCE: dbl-api
+      PUBLIC_API_URL: ${STAFF_URL:?Set staff HTTPS origin}
+      CORS_ORIGINS: ${STAFF_URL},${PORTAL_URL}
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3001/api/v1/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+  staff:
+    build:
+      <<: *app-build
+      dockerfile: infrastructure/containers/staff-web.Dockerfile
+    restart: unless-stopped
+    mem_limit: 768m
+    depends_on:
+      api: {condition: service_healthy}
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      API_BASE_URL: http://api:3001
+      SESSION_SECRET: ${STAFF_SESSION_SECRET:?Generate secrets}
+      OIDC_ISSUER_URL: ${IDENTITY_URL}/realms/dbl
+      OIDC_WEB_CLIENT_ID: dbl-staff-web
+      OIDC_WEB_CLIENT_SECRET: ${KC_STAFF_CLIENT_SECRET:?Generate secrets}
+      OIDC_REDIRECT_URI: ${STAFF_URL}/api/auth/callback
+      RAILWAY_FREE_PILOT: ${RAILWAY_FREE_PILOT:-true}
+      NEXT_TELEMETRY_DISABLED: '1'
+  portal:
+    build:
+      <<: *app-build
+      dockerfile: infrastructure/containers/partner-portal.Dockerfile
+    restart: unless-stopped
+    mem_limit: 768m
+    profiles: [portal]
+    depends_on:
+      api: {condition: service_healthy}
+    environment:
+      NODE_ENV: production
+      PORT: '3002'
+      API_BASE_URL: http://api:3001
+      SESSION_SECRET: ${PORTAL_SESSION_SECRET:?Generate secrets}
+      OIDC_ISSUER_URL: ${IDENTITY_URL}/realms/dbl
+      OIDC_WEB_CLIENT_ID: dbl-partner-portal
+      OIDC_WEB_CLIENT_SECRET: ${KC_PORTAL_CLIENT_SECRET:?Generate secrets}
+      OIDC_REDIRECT_URI: ${PORTAL_URL}/api/auth/callback
+      RAILWAY_FREE_PILOT: ${RAILWAY_FREE_PILOT:-true}
+      NEXT_TELEMETRY_DISABLED: '1'
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    mem_limit: 256m
+    command: [tunnel, --no-autoupdate, run]
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?Set tunnel token}
+  redis:
+    image: redis:7-bookworm
+    restart: unless-stopped
+    mem_limit: 384m
+    profiles: [automation]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Generate secrets}
+    command: [/bin/sh, -c, 'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"']
+    volumes: [redis-data:/data]
+  clamav:
+    image: clamav/clamav:stable_base-debian13-slim
+    restart: unless-stopped
+    mem_limit: 2500m
+    profiles: [automation]
+    volumes: [clamav-data:/var/lib/clamav]
+  worker:
+    build:
+      <<: *app-build
+      dockerfile: infrastructure/containers/worker.Dockerfile
+    restart: unless-stopped
+    mem_limit: 1024m
+    profiles: [automation]
+    depends_on: [redis, clamav]
+    environment:
+      <<: *storage
+      NODE_ENV: production
+      WORKER_DATABASE_URL: ${WORKER_DATABASE_URL:?Set worker URL}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      CLAMD_HOST: clamav
+      CLAMD_PORT: '3310'
+      OCR_LANGS: eng+ara
+      PORTAL_BASE_URL: ${PORTAL_URL}
+      SMTP_URL: ${SMTP_URL:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+volumes:
+  postgres-data:
+  redis-data:
+  clamav-data:
