@@ -1,0 +1,93 @@
+{
+  "realm": "dbl",
+  "enabled": true,
+  "displayName": "DigitalBurj Logistics OS",
+  "registrationAllowed": false,
+  "bruteForceProtected": true,
+  "failureFactor": 5,
+  "sslRequired": "external",
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 28800,
+  "ssoSessionMaxLifespan": 604800,
+  "passwordPolicy": "length(10)",
+  "clients": [
+    {
+      "clientId": "dbl-staff-web",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "${KC_STAFF_CLIENT_SECRET}",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "${STAFF_URL}/api/auth/callback"
+      ],
+      "webOrigins": [
+        "${STAFF_URL}"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "${STAFF_URL}/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience-dbl-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "dbl-api",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "dbl-partner-portal",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "${KC_PORTAL_CLIENT_SECRET}",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "${PORTAL_URL}/api/auth/callback"
+      ],
+      "webOrigins": [
+        "${PORTAL_URL}"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "${PORTAL_URL}/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience-dbl-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "dbl-api",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "${OWNER_USERNAME}",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "${OWNER_EMAIL}",
+      "firstName": "Platform",
+      "lastName": "Owner",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${OWNER_INITIAL_PASSWORD}",
+          "temporary": true
+        }
+      ],
+      "requiredActions": [
+        "UPDATE_PASSWORD"
+      ]
+    }
+  ]
+}
