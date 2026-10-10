@@ -18,7 +18,8 @@ const token = await json(`${base}/realms/master/protocol/openid-connect/token`, 
 const users = await json(`${base}/admin/realms/${encodeURIComponent(realm)}/users?username=${encodeURIComponent(username)}&exact=true`, { headers: { Authorization: `Bearer ${token.access_token}` } });
 if (users.length !== 1 || users[0].username !== username || !users[0].enabled) throw new Error('Expected exactly one enabled identity owner');
 const identity = users[0];
-const db = new pg.Client({ connectionString: need('ADMIN_DATABASE_URL') });
+const database = new URL(need('ADMIN_DATABASE_URL')); database.pathname = '/dbl';
+const db = new pg.Client({ connectionString: database.toString() });
 await db.connect();
 try {
   await db.query('BEGIN');
