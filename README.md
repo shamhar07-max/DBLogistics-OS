@@ -1,3 +1,5 @@
+> Free cloud deployment: [Oracle + Cloudflare, with optional Supabase](infrastructure/free-cloud/README.md). Existing Railway deployment remains available.
+
 # DigitalBurj Logistics OS
 
 > **One system. Every operation.** — multi-tenant operating system for freight forwarding, customs brokerage and bonded warehousing, built as a **Business-OS core + Logistics industry pack**.
